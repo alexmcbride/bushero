@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">BusHero</string>
+    <string name="app_name">Bus Hero</string>
+    <string name="bus_stop_distance">%d Metres</string>
 </resources>

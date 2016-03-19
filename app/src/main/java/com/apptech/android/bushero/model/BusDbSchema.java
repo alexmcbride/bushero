@@ -64,6 +64,7 @@ public class BusDbSchema {
             public static final String MODE = "mode";
             public static final String LINE = "line";
             public static final String DIRECTION = "direction";
+            public static final String DESTINATION = "destination";
             public static final String OPERATOR = "operator";
             public static final String TIME = "time";
             public static final String SOURCE = "source";

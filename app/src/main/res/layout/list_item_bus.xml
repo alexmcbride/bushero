@@ -1,12 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:columnCount="3">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textDirection"/>
+    <LinearLayout android:orientation="horizontal" android:layout_columnSpan="3">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textBusLine"
+            tools:text="6"
+            style="@style/Base.TextAppearance.AppCompat.Large"/>
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" - "
+            style="@style/Base.TextAppearance.AppCompat.Large"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textBusDestination"
+            tools:text="Bus Direction"
+            style="@style/Base.TextAppearance.AppCompat.Large"/>
+    </LinearLayout>
+
+    <LinearLayout android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textBusTime"
+            tools:text="12:34"
+            android:layout_marginRight="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textBusDirection"
+            tools:text="Inbound"
+            android:layout_marginRight="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textBusOperator"
+            tools:text="First Glasgow"/>
+    </LinearLayout>
+
+</GridLayout>

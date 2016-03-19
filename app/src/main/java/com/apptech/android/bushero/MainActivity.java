@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
 
     // widgets
     private TextView mTextBusStopName;
+    private TextView mTextBusStopDistance;
+    private TextView mTextBusStopBearing;
+    private TextView mTextBusStopLocality;
     private ListView mListNearestBuses;
 
     @Override
@@ -44,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
 
         // get widgets from view.
         mTextBusStopName = (TextView)findViewById(R.id.textBusStopName);
+        mTextBusStopDistance = (TextView)findViewById(R.id.textBusStopDistance);
+        mTextBusStopBearing = (TextView)findViewById(R.id.textBusStopBearing);
+        mTextBusStopLocality = (TextView)findViewById(R.id.textBusStopLocality);
         mListNearestBuses = (ListView)findViewById(R.id.listNearestBuses);
 
         // cache to store data while app is running
@@ -116,9 +122,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLiveBuses(BusStop busStop) {
-        // update bus stop info before loading live buses so user sees activity on screen and isn't
-        // waiting too long.
+        // update bus stop info before loading live buses so user sees activity on screen.
         mTextBusStopName.setText(busStop.getName());
+        mTextBusStopDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
+        mTextBusStopBearing.setText(busStop.getBearing());
+        mTextBusStopLocality.setText(busStop.getLocality());
 
         // get live buses from cache, if nothing in cache then load from transport API.
         LiveBuses liveBuses = mBusCache.getLiveBuses(busStop.getId());
@@ -162,9 +170,17 @@ public class MainActivity extends AppCompatActivity {
                 convertView = inflater.inflate(R.layout.list_item_bus, parent, false);
             }
 
-            TextView textDirection = (TextView)convertView.findViewById(R.id.textDirection);
+            TextView line = (TextView)convertView.findViewById(R.id.textBusLine);
+            TextView destination = (TextView)convertView.findViewById(R.id.textBusDestination);
+            TextView time = (TextView)convertView.findViewById(R.id.textBusTime);
+            TextView direction = (TextView)convertView.findViewById(R.id.textBusDirection);
+            TextView operator = (TextView)convertView.findViewById(R.id.textBusOperator);
 
-            textDirection.setText(bus.getDirection());
+            line.setText(bus.getLine());
+            destination.setText(bus.getDestination());
+            time.setText(bus.getTime());
+            direction.setText("");
+            operator.setText(bus.getOperator());
 
             return convertView;
         }

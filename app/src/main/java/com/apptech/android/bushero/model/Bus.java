@@ -5,6 +5,7 @@ public class Bus {
     private long mBusStopId;
     private String mMode;
     private String mLine;
+    private String mDestination;
     private String mDirection;
     private String mOperator;
     private String mTime;
@@ -52,6 +53,14 @@ public class Bus {
 
     public void setDirection(String direction) {
         mDirection = direction;
+    }
+
+    public String getDestination() {
+        return mDestination;
+    }
+
+    public void setDestination(String destination) {
+        mDestination = destination;
     }
 
     public String getOperator() {

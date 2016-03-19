@@ -273,6 +273,7 @@ public class BusCache {
         values.put(BusTable.Columns.MODE, bus.getMode());
         values.put(BusTable.Columns.LINE, bus.getLine());
         values.put(BusTable.Columns.DIRECTION, bus.getDirection());
+        values.put(BusTable.Columns.DESTINATION, bus.getDestination());
         values.put(BusTable.Columns.OPERATOR, bus.getOperator());
         values.put(BusTable.Columns.TIME, bus.getTime());
         values.put(BusTable.Columns.SOURCE, bus.getSource());

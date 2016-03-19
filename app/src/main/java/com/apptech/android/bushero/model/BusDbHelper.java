@@ -62,6 +62,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusTable.Columns.BUS_STOP_ID + " INTEGER," +
                 BusTable.Columns.MODE + " TEXT," +
                 BusTable.Columns.LINE + " TEXT," +
+                BusTable.Columns.DESTINATION + " TEXT," +
                 BusTable.Columns.DIRECTION + " TEXT," +
                 BusTable.Columns.OPERATOR + " TEXT," +
                 BusTable.Columns.TIME + " TEXT," +
