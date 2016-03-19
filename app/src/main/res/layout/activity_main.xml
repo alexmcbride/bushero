@@ -17,7 +17,7 @@
         android:columnCount="3">
         <TextView android:id="@+id/textBusStopName"
                   tools:text="Bus Stop Name"
-                  style="@style/Base.TextAppearance.AppCompat.Title"
+                  style="@style/TextAppearance.AppCompat.Large"
                   android:layout_columnSpan="3"/>
 
         <TextView android:id="@+id/textBusStopDistance"
