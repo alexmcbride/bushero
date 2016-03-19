@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_POSITION = "CURRENT_STOP_INDEX";
-    private static final String EXTRA_BUS_STOP_ID = "com.apptech.bushero3.busStopId";
 
     // variables
     private BusCache mBusCache;

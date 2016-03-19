@@ -16,11 +16,9 @@ public class NearestBusStops {
     private int mTotal;
     private String mRequestTime;
     private List<BusStop> mStops;
-    private int mPosition;
 
     public NearestBusStops() {
         mStops = new ArrayList<>();
-        mPosition = 0;
     }
 
     public long getId() {

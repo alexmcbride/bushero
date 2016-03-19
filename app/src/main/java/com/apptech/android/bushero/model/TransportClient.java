@@ -36,7 +36,6 @@ public class TransportClient {
             stop.setLongitude(1.0);
             stop.setLatitude(1.0);
             stop.setDistance(24);
-            stop.setTime("12:24");
             nearest.addStop(stop);
         }
 
@@ -61,6 +60,28 @@ public class TransportClient {
     }
 
     public BusRoute getBusRoute(String atcoCode) {
-        return null;
+        BusRoute route = new BusRoute();
+        route.setLine("Line 1");
+        route.setOperator("FGL");
+        route.setBusId(1);
+        route.setOriginAtcoCode(UUID.randomUUID().toString());
+
+        for (int i = 0; i < 10; i++) {
+            BusStop stop = new BusStop();
+            stop.setAtcoCode(UUID.randomUUID().toString());
+            stop.setSmsCode("12345678");
+            stop.setName("Bus Stop " + (i + 1));
+            stop.setMode("bus");
+            stop.setBearing("NW");
+            stop.setLocality("Glasgow");
+            stop.setIndicator("across");
+            stop.setLongitude(1.0);
+            stop.setLatitude(1.0);
+            stop.setDistance(24);
+            stop.setTime("12:24");
+            route.addStop(stop);
+        }
+
+        return route;
     }
 }
