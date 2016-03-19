@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextBusStopBearing;
     private TextView mTextBusStopLocality;
     private ListView mListNearestBuses;
+    private Button mButtonNearer;
+    private Button mButtonFurther;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         mTextBusStopBearing = (TextView)findViewById(R.id.textBusStopBearing);
         mTextBusStopLocality = (TextView)findViewById(R.id.textBusStopLocality);
         mListNearestBuses = (ListView)findViewById(R.id.listNearestBuses);
+        mButtonNearer = (Button)findViewById(R.id.buttonNearer);
+        mButtonFurther = (Button)findViewById(R.id.buttonFurther);
 
         // cache to store data while app is running
         // client to communicate with transport API
@@ -142,6 +147,21 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             mBusAdapter.updateBuses(liveBuses.getBuses());
+        }
+
+        // show/hide nearer/further buttins.
+        if (mCurrentBusStopIndex == 0) {
+            mButtonNearer.setVisibility(View.INVISIBLE);
+        }
+        else {
+            mButtonNearer.setVisibility(View.VISIBLE);
+        }
+
+        if (mCurrentBusStopIndex == mNearestBusStops.getStopCount() - 1) {
+            mButtonFurther.setVisibility(View.INVISIBLE);
+        }
+        else {
+            mButtonFurther.setVisibility(View.VISIBLE);
         }
     }
 

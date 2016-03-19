@@ -183,7 +183,7 @@ public class TransportClient {
         route.setBusId(1);
         route.setOriginAtcoCode(UUID.randomUUID().toString());
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             BusStop stop = new BusStop();
             stop.setAtcoCode(UUID.randomUUID().toString());
             stop.setSmsCode("12345678");
