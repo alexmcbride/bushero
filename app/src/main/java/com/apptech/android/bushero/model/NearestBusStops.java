@@ -1,0 +1,136 @@
+package com.apptech.android.bushero.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class NearestBusStops {
+    private long mId;
+    private double mMinLongitude;
+    private double mMinLatitude;
+    private double mMaxLongitude;
+    private double mMaxLatitude;
+    private double mSearchLongitude;
+    private double mSearchLatitude;
+    private int mPage;
+    private int mReturnedPerPage;
+    private int mTotal;
+    private String mRequestTime;
+    private List<BusStop> mStops;
+    private int mPosition;
+
+    public NearestBusStops() {
+        mStops = new ArrayList<>();
+        mPosition = 0;
+    }
+
+    public long getId() {
+        return mId;
+    }
+
+    public void setId(long id) {
+        mId = id;
+    }
+
+    public double getMinLongitude() {
+        return mMinLongitude;
+    }
+
+    public void setMinLongitude(double minLongitude) {
+        mMinLongitude = minLongitude;
+    }
+
+    public double getMinLatitude() {
+        return mMinLatitude;
+    }
+
+    public void setMinLatitude(double minLatitude) {
+        mMinLatitude = minLatitude;
+    }
+
+    public double getMaxLongitude() {
+        return mMaxLongitude;
+    }
+
+    public void setMaxLongitude(double maxLongitude) {
+        mMaxLongitude = maxLongitude;
+    }
+
+    public double getMaxLatitude() {
+        return mMaxLatitude;
+    }
+
+    public void setMaxLatitude(double maxLatitude) {
+        mMaxLatitude = maxLatitude;
+    }
+
+    public double getSearchLongitude() {
+        return mSearchLongitude;
+    }
+
+    public void setSearchLongitude(double searchLongitude) {
+        mSearchLongitude = searchLongitude;
+    }
+
+    public double getSearchLatitude() {
+        return mSearchLatitude;
+    }
+
+    public void setSearchLatitude(double searchLatitude) {
+        mSearchLatitude = searchLatitude;
+    }
+
+    public int getPage() {
+        return mPage;
+    }
+
+    public void setPage(int page) {
+        mPage = page;
+    }
+
+    public int getReturnedPerPage() {
+        return mReturnedPerPage;
+    }
+
+    public void setReturnedPerPage(int returnedPerPage) {
+        mReturnedPerPage = returnedPerPage;
+    }
+
+    public int getTotal() {
+        return mTotal;
+    }
+
+    public void setTotal(int total) {
+        mTotal = total;
+    }
+
+    public String getRequestTime() {
+        return mRequestTime;
+    }
+
+    public void setRequestTime(String requestTime) {
+        mRequestTime = requestTime;
+    }
+
+    public List<BusStop> getStops() {
+        return mStops;
+    }
+
+    public void addStop(BusStop stop) {
+        mStops.add(stop);
+    }
+
+    public BusStop getNearestStop() {
+        if (mStops.size() > 0) {
+            return mStops.get(0);
+        }
+        return null;
+    }
+
+    public BusStop getStop(int index) {
+        return mStops.get(index);
+    }
+
+    public int getStopCount() {
+        return mStops.size();
+    }
+}
