@@ -10,15 +10,15 @@ public class BusDbSchema {
         public class Columns {
             public static final String ID = "id";
             public static final String MIN_LONGITUDE = "minLongitude";
-            public static final String MIN_LATITUDE = "MinLatitude";
-            public static final String MAX_LONGITUDE = "MaxLongitude";
-            public static final String MAX_LATITUDE = "MaxLatitude";
-            public static final String SEARCH_LONGITUDE = "SearchLongitude";
-            public static final String SEARCH_LATITUDE = "SearchLatitude";
-            public static final String PAGE = "Page";
-            public static final String RETURNED_PER_PAGE = "ReturnedPerPage";
-            public static final String TOTAL = "Total";
-            public static final String REQUEST_TIME = "RequestTime";
+            public static final String MIN_LATITUDE = "minLatitude";
+            public static final String MAX_LONGITUDE = "maxLongitude";
+            public static final String MAX_LATITUDE = "maxLatitude";
+            public static final String SEARCH_LONGITUDE = "searchLongitude";
+            public static final String SEARCH_LATITUDE = "searchLatitude";
+            public static final String PAGE = "page";
+            public static final String RETURNED_PER_PAGE = "returnedPerPage";
+            public static final String TOTAL = "total";
+            public static final String REQUEST_TIME = "requestTime";
         }
     }
 
