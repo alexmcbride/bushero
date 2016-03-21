@@ -3,10 +3,9 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:columnCount="3">
+              xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout android:orientation="horizontal" android:layout_columnSpan="3">
+    <LinearLayout android:orientation="horizontal">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

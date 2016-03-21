@@ -18,7 +18,8 @@
         <TextView android:id="@+id/textBusStopName"
                   tools:text="Bus Stop Name"
                   style="@style/TextAppearance.AppCompat.Large"
-                  android:layout_columnSpan="3"/>
+                  android:layout_columnSpan="3"
+                  android:onClick="onClickShowBusStopMap"/>
 
         <TextView android:id="@+id/textBusStopDistance"
                   tools:text="29 Metres"
@@ -54,5 +55,4 @@
                 android:id="@+id/buttonFurther"
                 android:onClick="onClickButtonFurther"/>
     </GridLayout>
-
 </LinearLayout>

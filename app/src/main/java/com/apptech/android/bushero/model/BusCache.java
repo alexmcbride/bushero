@@ -225,6 +225,31 @@ public class BusCache {
         }
     }
 
+    public BusStop getBusStop(long id) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getReadableDatabase();
+
+            cursor = db.query(BusStopTable.NAME, null, "((id=?))", new String[]{Long.toString(id)}, null, null, null);
+            BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
+
+            if (busCursor.moveToFirst()) {
+                return busCursor.getBusStop();
+            }
+
+            return null;
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();
         values.put(NearestBusStopsTable.Columns.MIN_LONGITUDE, nearest.getMinLongitude());

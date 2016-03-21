@@ -1,6 +1,7 @@
 package com.apptech.android.bushero;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // get widgets from view.
+        // get widgets from layout.
         mTextBusStopName = (TextView)findViewById(R.id.textBusStopName);
         mTextBusStopDistance = (TextView)findViewById(R.id.textBusStopDistance);
         mTextBusStopBearing = (TextView)findViewById(R.id.textBusStopBearing);
@@ -58,9 +59,12 @@ public class MainActivity extends AppCompatActivity {
         mButtonFurther = (Button)findViewById(R.id.buttonFurther);
 
         // cache to store data while app is running
-        // client to communicate with transport API
         mBusCache = new BusCache(this);
-        mTransportClient = new TransportClient(null, null);
+
+        // client to communicate with transport API
+        String appKey = null;
+        String appId = null;
+        mTransportClient = new TransportClient(appKey, appId);
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
@@ -72,36 +76,34 @@ public class MainActivity extends AppCompatActivity {
             double latitude = 1.0;
 
             // get nearest stops from Transport API and save in cache.
+            Log.d(LOG_TAG, "fetching and caching nearest bus stops");
             mNearestBusStops = mTransportClient.getNearestBusStops(longitude, latitude);
             mBusCache.addNearestBusStops(mNearestBusStops);
 
-            // get the nearest bus stop to the user.
-            BusStop busStop = mNearestBusStops.getNearestStop();
-
-            // used for moving through bus stop list.
+            // used for saving instance state and moving through bus stop list.
             mCurrentBusStopIndex = 0;
             mNearestBusStopId = mNearestBusStops.getId();
-
-            // get live buses for this stop and update UI
-            updateLiveBuses(busStop);
         }
         else {
-            // activity recreated, loading from cache.
+            // activity recreated, loading from instance state.
+            Log.d(LOG_TAG, "getting saved state");
             mCurrentBusStopIndex = savedInstanceState.getInt(SAVED_CURRENT_POSITION);
             mNearestBusStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
 
-            // get stops from cache.
+            // get nearest bus stops from cache.
+            Log.d(LOG_TAG, "loading nearest stops from cache");
             mNearestBusStops = mBusCache.getNearestBusStops(mNearestBusStopId);
-            BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
-
-            // get live buses for this stop and update UI
-            updateLiveBuses(busStop);
         }
+
+        // get nearest bus stop to the user and update the UI with live bus info.
+        BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
+        updateLiveBuses(busStop);
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // save state data so activity can be recreated.
+        Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStopId);
         savedInstanceState.putInt(SAVED_CURRENT_POSITION, mCurrentBusStopIndex);
     }
@@ -136,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         // get live buses from cache, if nothing in cache then load from transport API.
         LiveBuses liveBuses = mBusCache.getLiveBuses(busStop.getId());
         if (liveBuses == null) {
+            Log.d(LOG_TAG, "fetching and caching live buses");
             liveBuses = mTransportClient.getLiveBuses(busStop.getAtcoCode());
             mBusCache.addLiveBuses(liveBuses, busStop.getId());
         }
@@ -149,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             mBusAdapter.updateBuses(liveBuses.getBuses());
         }
 
-        // show/hide nearer/further buttins.
+        // show/hide nearer/further buttons.
         if (mCurrentBusStopIndex == 0) {
             mButtonNearer.setVisibility(View.INVISIBLE);
         }
@@ -163,6 +166,15 @@ public class MainActivity extends AppCompatActivity {
         else {
             mButtonFurther.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void onClickShowBusStopMap(View view) {
+        // this is here to show how to create a new activity and pass data to it. we do not create
+        // the intent ourselves, we let the activity create its own intent, that way it controls
+        // what data it needs.
+        BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
+        Intent intent = MapActivity.newIntent(this, busStop.getId());
+        startActivity(intent);
     }
 
     private class BusAdapter extends ArrayAdapter<Bus> {
@@ -190,17 +202,11 @@ public class MainActivity extends AppCompatActivity {
                 convertView = inflater.inflate(R.layout.list_item_bus, parent, false);
             }
 
-            TextView textLine = (TextView)convertView.findViewById(R.id.textBusLine);
-            TextView textDestination = (TextView)convertView.findViewById(R.id.textBusDestination);
-            TextView textTime = (TextView)convertView.findViewById(R.id.textBusTime);
-            TextView textDirection = (TextView)convertView.findViewById(R.id.textBusDirection);
-            TextView textOperator = (TextView)convertView.findViewById(R.id.textBusOperator);
-
-            textLine.setText(bus.getLine());
-            textDestination.setText(bus.getDestination());
-            textTime.setText(bus.getTime());
-            textDirection.setText(bus.getDirection());
-            textOperator.setText(bus.getOperator());
+            ((TextView)convertView.findViewById(R.id.textBusLine)).setText(bus.getLine());
+            ((TextView)convertView.findViewById(R.id.textBusDestination)).setText(bus.getDestination());
+            ((TextView)convertView.findViewById(R.id.textBusTime)).setText(bus.getTime());
+            ((TextView)convertView.findViewById(R.id.textBusDirection)).setText(bus.getDirection());
+            ((TextView)convertView.findViewById(R.id.textBusOperator)).setText(bus.getOperator());
 
             return convertView;
         }
