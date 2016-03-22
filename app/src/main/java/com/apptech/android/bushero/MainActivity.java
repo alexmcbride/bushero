@@ -202,11 +202,17 @@ public class MainActivity extends AppCompatActivity {
                 convertView = inflater.inflate(R.layout.list_item_bus, parent, false);
             }
 
-            ((TextView)convertView.findViewById(R.id.textBusLine)).setText(bus.getLine());
-            ((TextView)convertView.findViewById(R.id.textBusDestination)).setText(bus.getDestination());
-            ((TextView)convertView.findViewById(R.id.textBusTime)).setText(bus.getTime());
-            ((TextView)convertView.findViewById(R.id.textBusDirection)).setText(bus.getDirection());
-            ((TextView)convertView.findViewById(R.id.textBusOperator)).setText(bus.getOperator());
+            TextView textLine = (TextView)convertView.findViewById(R.id.textBusLine);
+            TextView textDestination = (TextView)convertView.findViewById(R.id.textBusDestination);
+            TextView textTime = (TextView)convertView.findViewById(R.id.textBusTime);
+            TextView textDirection = (TextView)convertView.findViewById(R.id.textBusDirection);
+            TextView textOperator = (TextView)convertView.findViewById(R.id.textBusOperator);
+
+            textLine.setText(bus.getLine());
+            textDestination.setText(bus.getDestination());
+            textTime.setText(bus.getTime());
+            textDirection.setText(bus.getDirection());
+            textOperator.setText(bus.getOperator());
 
             return convertView;
         }

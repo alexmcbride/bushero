@@ -1,52 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              xmlns:tools="http://schemas.android.com/tools">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:background="@color/colorVeryLightGrey" android:columnCount="2">
 
-    <LinearLayout android:orientation="horizontal">
+    <ImageView android:src="@drawable/ic_bus" android:layout_rowSpan="2" android:layout_marginTop="8dp" android:layout_marginRight="8dp"/>
+
+    <LinearLayout android:orientation="horizontal" android:layout_marginTop="8dp">
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textBusLine"
-            tools:text="6"
-            style="@style/Base.TextAppearance.AppCompat.Medium"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:text="0"
+            style="@style/Base.TextAppearance.AppCompat.Medium"
+            android:id="@+id/textBusLine"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:text=" - "
             style="@style/Base.TextAppearance.AppCompat.Medium"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textBusDestination"
-            tools:text="Bus Direction"
-            style="@style/Base.TextAppearance.AppCompat.Medium"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:text="Destination"
+            style="@style/Base.TextAppearance.AppCompat.Medium"
+            android:id="@+id/textBusDestination"/>
     </LinearLayout>
 
-    <LinearLayout android:orientation="horizontal">
+    <LinearLayout android:orientation="horizontal" android:layout_marginBottom="8dp">
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textBusTime"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             tools:text="12:34"
-            android:layout_marginRight="16dp"/>
+            android:layout_marginRight="8dp"
+            android:id="@+id/textBusTime"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textBusDirection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             tools:text="Inbound"
-            android:layout_marginRight="16dp"/>
+            android:layout_marginRight="8dp"
+            android:id="@+id/textBusDirection"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textBusOperator"
-            tools:text="First Glasgow"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:text="First Glasgow"
+            android:layout_marginRight="8dp"
+            android:id="@+id/textBusOperator"/>
     </LinearLayout>
 
 </GridLayout>
