@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
+    private static final String SAVED_BUS_STOP_ID = "BUS_STOP_ID";
     private static final float MAP_ZOOM_LEVEL = 18; // higher is closer
 
     private GoogleMap mMap;
@@ -36,8 +37,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // get bus stop ID from intent.
-        long busStopId = getIntent().getLongExtra(KEY_BUS_STOP_ID, -1);
+        // get bus stop ID from intent or from saved state.
+        long busStopId;
+        if (savedInstanceState == null) {
+            busStopId = getIntent().getLongExtra(KEY_BUS_STOP_ID, -1);
+        }
+        else {
+            busStopId = savedInstanceState.getLong(SAVED_BUS_STOP_ID);
+        }
 
         // get bus stop from cache.
         mBusCache = new BusCache(this);
@@ -62,11 +69,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putLong(SAVED_BUS_STOP_ID, mBusStop.getId());
+    }
+
     public void onClickButtonBack(View view) {
         // TODO: there should be a better way of doing this, look more into ToolBar stuff.
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
         finish();
     }
 

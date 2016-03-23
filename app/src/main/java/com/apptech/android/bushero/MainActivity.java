@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
+            // TODO: find better place to do this???
             // wipe cache when first starting.
             Log.d(LOG_TAG, "deleting cache");
             mBusCache.deleteAll();
