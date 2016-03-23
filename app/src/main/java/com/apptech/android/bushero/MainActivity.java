@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = RouteActivity.newInstance(
                         MainActivity.this,
-                        busStop.getAtcoCode(),
+                        busStop.getId(),
                         bus.getId());
 
                 startActivity(intent);

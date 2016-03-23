@@ -13,11 +13,9 @@ import com.apptech.android.bushero.model.BusRoute;
 import com.apptech.android.bushero.model.BusStop;
 import com.apptech.android.bushero.model.TransportClient;
 
-import java.util.Date;
-
 public class RouteActivity extends AppCompatActivity {
     private static final String LOG_TAG = "RouteActivity";
-    private static final String KEY_ATCO_CODE = "com.apptech.android.bushero.KEY_ATCO_CODE";
+    private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.KEY_BUS_STOP_ID";
     private static final String KEY_BUS_ID = "com.apptech.android.bushero.KEY_BUS_ID";
 
     @Override
@@ -25,13 +23,15 @@ public class RouteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route);
 
+        // get stop and bus info from intent.
         Intent intent = getIntent();
-        String atcoCode = intent.getStringExtra(KEY_ATCO_CODE);
+        long busStopId = intent.getLongExtra(KEY_BUS_STOP_ID, -1);
         long busId = intent.getLongExtra(KEY_BUS_ID, -1);
 
-        Log.d(LOG_TAG, "getting bus from cache for id " + busId);
+        Log.d(LOG_TAG, "getting bus stop and bus from cache for bus id " + busId);
         BusCache busCache = new BusCache(this);
         Bus bus = busCache.getBus(busId);
+        BusStop busStop = busCache.getBusStop(busStopId);
 
         BusRoute busRoute = busCache.getBusRoute(bus.getId());
         if (busRoute == null) {
@@ -39,10 +39,10 @@ public class RouteActivity extends AppCompatActivity {
             // minute and bus is due at 5 past?
 
             // load from transport api
-            Log.d(LOG_TAG, "getting and caching bus route for origin atcocode " + atcoCode);
+            Log.d(LOG_TAG, "getting and caching bus route for bus stop id " + busStopId);
             TransportClient transportClient = new TransportClient("", "");
             busRoute = transportClient.getBusRoute(
-                    atcoCode, // atcocode
+                    busStop.getAtcoCode(), // atcocode
                     bus.getDirection(),
                     bus.getLine(),
                     bus.getOperator(),
@@ -57,9 +57,9 @@ public class RouteActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.textDisplay)).setText(display);
     }
 
-    public static Intent newInstance(Context context, String atcoCode, long busId) {
+    public static Intent newInstance(Context context, long busStopId, long busId) {
         Intent intent = new Intent(context, RouteActivity.class);
-        intent.putExtra(KEY_ATCO_CODE, atcoCode);
+        intent.putExtra(KEY_BUS_STOP_ID, busStopId);
         intent.putExtra(KEY_BUS_ID, busId);
         return intent;
     }
