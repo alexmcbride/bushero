@@ -17,7 +17,9 @@
             android:src="@drawable/ic_back"
             android:background="@null"
             android:layout_marginRight="8dp"
-            android:onClick="onClickButtonBack"/>
+            android:layout_marginEnd="8dp"
+            android:onClick="onClickButtonBack"
+            android:contentDescription="@string/ic_back_content_description"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

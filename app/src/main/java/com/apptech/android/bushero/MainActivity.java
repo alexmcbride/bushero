@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         mButtonNearer = (Button)findViewById(R.id.buttonNearer);
         mButtonFurther = (Button)findViewById(R.id.buttonFurther);
 
-        // attach bus list item click handler
+        // attach bus list item click handler.
         mListNearestBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
                         MainActivity.this,
                         busStop.getId(),
                         bus.getId());
-
                 startActivity(intent);
             }
         });
@@ -188,9 +187,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickShowBusStopMap(View view) {
-        // we let each activity create its own intents, that way they get to own what extras they
-        // need.
+    public void onClickGridLayoutBusStop(View view) {
+        // we let activities create their own intents, that way they get to control what extras they need.
         BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
         Intent intent = MapActivity.newIntent(this, busStop.getId());
         startActivity(intent);

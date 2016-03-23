@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:columnCount="4"
         android:background="@color/colorLightBlue" android:padding="16dp"
-        android:onClick="onClickShowBusStopMap">
+        android:onClick="onClickGridLayoutBusStop">
 
         <ImageView android:src="@drawable/ic_timetable" android:layout_rowSpan="2" android:layout_marginRight="8dp"
                    android:contentDescription="@string/ic_timetable_content_description"/>
@@ -68,9 +68,7 @@
             android:id="@+id/buttonNearer"
             android:onClick="onClickButtonNearer"
             android:background="@color/colorDarkBlue"
-            android:textColor="@color/colorVeryLightGrey"
-            android:padding="2dp"
-            android:layout_margin="0dp"/>
+            android:textColor="@color/colorVeryLightGrey"/>
         <Button android:text="@string/btn_further_text"
             android:layout_columnWeight="1"
             android:layout_gravity="right"

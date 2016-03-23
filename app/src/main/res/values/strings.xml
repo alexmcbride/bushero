@@ -6,4 +6,7 @@
     <string name="btn_further_text">Further</string>
     <string name="title_activity_map">Map</string>
     <string name="map_title">Bus Stop: %s</string>
+    <string name="ic_back_content_description">Back</string>
+    <string name="ic_bus_content_description">Bus</string>
+    <string name="hypen">-</string>
 </resources>
