@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -25,15 +26,16 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
-    private static final String SAVED_CURRENT_POSITION = "CURRENT_STOP_INDEX";
+    private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
 
     // variables
     private BusCache mBusCache;
     private TransportClient mTransportClient;
     private BusAdapter mBusAdapter;
     private NearestBusStops mNearestBusStops;
-    private long mNearestBusStopId;
-    private int mCurrentBusStopIndex;
+    private LiveBuses mLiveBuses;
+    private long mNearestStopId;
+    private int mCurrentStopPosition;
 
     // widgets
     private TextView mTextBusStopName;
@@ -58,17 +60,35 @@ public class MainActivity extends AppCompatActivity {
         mButtonNearer = (Button)findViewById(R.id.buttonNearer);
         mButtonFurther = (Button)findViewById(R.id.buttonFurther);
 
+        // attach bus list item click handler
+        mListNearestBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // get clicked on bus and start route activity.
+                Bus bus = mLiveBuses.getBus(position);
+                BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+
+                Intent intent = RouteActivity.newInstance(
+                        MainActivity.this,
+                        busStop.getAtcoCode(),
+                        bus.getId());
+
+                startActivity(intent);
+            }
+        });
+
         // cache to store data while app is running
         mBusCache = new BusCache(this);
 
         // client to communicate with transport API
+        // TODO: research android config files or equivalent.
         String appKey = null;
         String appId = null;
         mTransportClient = new TransportClient(appKey, appId);
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
-            // TODO: find better place to do this???
+            // TODO: find better place to delete the cache???
             // wipe cache when first starting.
             Log.d(LOG_TAG, "deleting cache");
             mBusCache.deleteAll();
@@ -82,22 +102,22 @@ public class MainActivity extends AppCompatActivity {
             mBusCache.addNearestBusStops(mNearestBusStops);
 
             // used for saving instance state and moving through bus stop list.
-            mCurrentBusStopIndex = 0;
-            mNearestBusStopId = mNearestBusStops.getId();
+            mCurrentStopPosition = 0;
+            mNearestStopId = mNearestBusStops.getId();
         }
         else {
             // activity recreated, loading from instance state.
             Log.d(LOG_TAG, "getting saved state");
-            mCurrentBusStopIndex = savedInstanceState.getInt(SAVED_CURRENT_POSITION);
-            mNearestBusStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
+            mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
+            mNearestStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
 
             // get nearest bus stops from cache.
             Log.d(LOG_TAG, "loading nearest stops from cache");
-            mNearestBusStops = mBusCache.getNearestBusStops(mNearestBusStopId);
+            mNearestBusStops = mBusCache.getNearestBusStops(mNearestStopId);
         }
 
         // get nearest bus stop to the user and update the UI with live bus info.
-        BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
+        BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
         updateLiveBuses(busStop);
     }
 
@@ -105,26 +125,26 @@ public class MainActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // save state data so activity can be recreated.
         Log.d(LOG_TAG, "saving instance state");
-        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStopId);
-        savedInstanceState.putInt(SAVED_CURRENT_POSITION, mCurrentBusStopIndex);
+        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestStopId);
+        savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
     }
 
     public void onClickButtonNearer(View view) {
         // move to previous bus stop in list.
-        if (mCurrentBusStopIndex > 0) {
-            mCurrentBusStopIndex--;
+        if (mCurrentStopPosition > 0) {
+            mCurrentStopPosition--;
 
-            BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
+            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
             updateLiveBuses(busStop);
         }
     }
 
     public void onClickButtonFurther(View view) {
         // move to next bus stop in list.
-        if (mCurrentBusStopIndex + 1 < mNearestBusStops.getStopCount()) {
-            mCurrentBusStopIndex++;
+        if (mCurrentStopPosition + 1 < mNearestBusStops.getStopCount()) {
+            mCurrentStopPosition++;
 
-            BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
+            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
             updateLiveBuses(busStop);
         }
     }
@@ -137,31 +157,30 @@ public class MainActivity extends AppCompatActivity {
         mTextBusStopLocality.setText(busStop.getLocality());
 
         // get live buses from cache, if nothing in cache then load from transport API.
-        LiveBuses liveBuses = mBusCache.getLiveBuses(busStop.getId());
-        if (liveBuses == null) {
+        mLiveBuses = mBusCache.getLiveBuses(busStop.getId());
+        if (mLiveBuses == null) {
             Log.d(LOG_TAG, "fetching and caching live buses");
-            liveBuses = mTransportClient.getLiveBuses(busStop.getAtcoCode());
-            mBusCache.addLiveBuses(liveBuses, busStop.getId());
+            mLiveBuses = mTransportClient.getLiveBuses(busStop.getAtcoCode());
+            mBusCache.addLiveBuses(mLiveBuses, busStop.getId());
         }
 
         // if adapter does not exist then create it, otherwise update it with new list.
         if (mBusAdapter == null) {
-            mBusAdapter = new BusAdapter(this, liveBuses.getBuses());
+            mBusAdapter = new BusAdapter(this, mLiveBuses.getBuses());
             mListNearestBuses.setAdapter(mBusAdapter);
         }
         else {
-            mBusAdapter.updateBuses(liveBuses.getBuses());
+            mBusAdapter.updateBuses(mLiveBuses.getBuses());
         }
 
         // show/hide nearer/further buttons.
-        if (mCurrentBusStopIndex == 0) {
+        if (mCurrentStopPosition == 0) {
             mButtonNearer.setVisibility(View.INVISIBLE);
         }
         else {
             mButtonNearer.setVisibility(View.VISIBLE);
         }
-
-        if (mCurrentBusStopIndex == mNearestBusStops.getStopCount() - 1) {
+        if (mCurrentStopPosition == mNearestBusStops.getStopCount() - 1) {
             mButtonFurther.setVisibility(View.INVISIBLE);
         }
         else {
@@ -170,14 +189,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickShowBusStopMap(View view) {
-        // this is here to show how to create a new activity and pass data to it. we do not create
-        // the intent ourselves, we let the activity create its own intent, that way it controls
-        // what data it needs.
-        BusStop busStop = mNearestBusStops.getStop(mCurrentBusStopIndex);
+        // we let each activity create its own intents, that way they get to own what extras they
+        // need.
+        BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
         Intent intent = MapActivity.newIntent(this, busStop.getId());
         startActivity(intent);
     }
 
+    // Bus adapter for converting a bus object into a view for the ListView.
     private class BusAdapter extends ArrayAdapter<Bus> {
         private List<Bus> mBuses;
 
@@ -196,19 +215,23 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            // get the bus we're showing the view for.
             Bus bus = mBuses.get(position);
 
+            // if a view already exists then reuse it.
             if (convertView == null) {
                 LayoutInflater inflater = getLayoutInflater();
                 convertView = inflater.inflate(R.layout.list_item_bus, parent, false);
             }
 
+            // get widgets
             TextView textLine = (TextView)convertView.findViewById(R.id.textBusLine);
             TextView textDestination = (TextView)convertView.findViewById(R.id.textBusDestination);
             TextView textTime = (TextView)convertView.findViewById(R.id.textBusTime);
             TextView textDirection = (TextView)convertView.findViewById(R.id.textBusDirection);
             TextView textOperator = (TextView)convertView.findViewById(R.id.textBusOperator);
 
+            // set widgets
             textLine.setText(bus.getLine());
             textDestination.setText(bus.getDestination());
             textTime.setText(bus.getTime());

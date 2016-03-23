@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -17,21 +18,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+    private static final String LOG_TAG = "MapActivity";
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
     private static final String SAVED_BUS_STOP_ID = "BUS_STOP_ID";
     private static final float MAP_ZOOM_LEVEL = 18; // higher is closer
 
     private GoogleMap mMap;
-    private BusCache mBusCache;
     private BusStop mBusStop;
-    private TextView mTextBusStopName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-
-        mTextBusStopName = (TextView)findViewById(R.id.textBusStopName);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
@@ -47,23 +45,25 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         }
 
         // get bus stop from cache.
-        mBusCache = new BusCache(this);
-        mBusStop = mBusCache.getBusStop(busStopId);
+        Log.d(LOG_TAG, "fetching cache for bus stop id " + busStopId);
+        BusCache busCache = new BusCache(this);
+        mBusStop = busCache.getBusStop(busStopId);
 
         // update UI
-        mTextBusStopName.setText(mBusStop.getName());
+        TextView textBusStopName = (TextView)findViewById(R.id.textBusStopName);
+        textBusStopName.setText(mBusStop.getName());
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
         // get info for this bus stop.
-        String name = "Bus Stop: " + mBusStop.getName();
+        String name = getString(R.string.map_title, mBusStop.getName());
         double latitude = mBusStop.getLatitude();
         double longitude = mBusStop.getLongitude();
 
-        mMap = googleMap;
-
-        // Add marker to map and move camera to that location.
+        // Add marker to map, move camera to that location, and then zoom.
         LatLng busStopLocation = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(busStopLocation).title(name));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));

@@ -176,12 +176,11 @@ public class TransportClient {
         return live;
     }
 
-    public BusRoute getBusRoute(String atcoCode) {
+    public BusRoute getBusRoute(String atcoCode, String direction, String lineName, String operator, String time) {
         BusRoute route = new BusRoute();
-        route.setLine("Line 1");
-        route.setOperator("FGL");
-        route.setBusId(1);
-        route.setOriginAtcoCode(UUID.randomUUID().toString());
+        route.setLine(lineName);
+        route.setOperator(operator);
+        route.setOriginAtcoCode(atcoCode);
 
         for (int i = 0; i < 20; i++) {
             BusStop stop = new BusStop();

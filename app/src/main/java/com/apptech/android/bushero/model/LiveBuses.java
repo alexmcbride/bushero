@@ -17,4 +17,8 @@ public class LiveBuses {
     public void addBus(Bus bus) {
         mBuses.add(bus);
     }
+
+    public Bus getBus(int index) {
+        return mBuses.get(index);
+    }
 }

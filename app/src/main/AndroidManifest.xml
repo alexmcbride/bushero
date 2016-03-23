@@ -42,6 +42,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.apptech.android.bushero.MainActivity"/>
         </activity>
+        <activity android:name=".RouteActivity">
+        </activity>
     </application>
 
 </manifest>
