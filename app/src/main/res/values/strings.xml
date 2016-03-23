@@ -4,4 +4,5 @@
     <string name="ic_timetable_content_description">timetable</string>
     <string name="btn_nearer_text">Nearer</string>
     <string name="btn_further_text">Further</string>
+    <string name="title_activity_map">Map</string>
 </resources>
