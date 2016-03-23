@@ -6,3 +6,6 @@
 .DS_Store
 /build
 /captures
+
+# ignore this so map API key is not put into source control.
+app/src/debug/res/values/google_maps_api.xml
