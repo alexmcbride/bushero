@@ -29,15 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
 
-    // variables
-    private BusDatabase mBusDatabase;
-    private TransportClient mTransportClient;
-    private BusAdapter mBusAdapter;
-    private NearestBusStops mNearestBusStops;
-    private LiveBuses mLiveBuses;
-    private long mNearestStopId;
-    private int mCurrentStopPosition;
-
     // widgets
     private TextView mTextBusStopName;
     private TextView mTextBusStopDistance;
@@ -46,6 +37,15 @@ public class MainActivity extends AppCompatActivity {
     private ListView mListNearestBuses;
     private Button mButtonNearer;
     private Button mButtonFurther;
+
+    // variables
+    private BusDatabase mBusDatabase;
+    private TransportClient mTransportClient;
+    private BusAdapter mBusAdapter;
+    private NearestBusStops mNearestBusStops;
+    private LiveBuses mLiveBuses;
+    private long mNearestStopId;
+    private int mCurrentStopPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,15 +89,16 @@ public class MainActivity extends AppCompatActivity {
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
             // TODO: find better place to delete the cache???
-            // wipe database when first starting.
+            // wipe previously stored cache data when first starting.
             Log.d(LOG_TAG, "deleting database cache");
             mBusDatabase.deleteCache();
 
+            // get longitude and latitude from Google services.
             double longitude = 1.0;
             double latitude = 1.0;
 
             // download nearest bus stops from transport api on a background thread. this is done to
-            // stop the UI thread from hanging.
+            // stop the UI thread from hanging while the slow network operation is completed.
             new DownloadBusStopsAsyncTask().execute(longitude, latitude);
         }
         else {
@@ -157,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
         if (mLiveBuses == null) {
             // download live bus data on background thread so as not to hang the main UI while the
             // potentially long network operation completes.
+            // TODO: potentially do this with CursorAdapter, avoid creation of asynctask, also
+            // maybe faster?
             new DownloadBusesAsyncTask().execute(busStop);
         }
         else {
@@ -192,8 +195,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickGridLayoutBusStop(View view) {
-        // we let activities create their own intents, that way they get to control what extras
-        // they need.
+        // launch map activity for currently displayed bus stop.
         BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
         Intent intent = MapActivity.newIntent(this, busStop.getId());
         startActivity(intent);
@@ -202,33 +204,33 @@ public class MainActivity extends AppCompatActivity {
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         @Override
         public void onPreExecute() {
-            // show loading dialog?
-
+            // TODO: show loading dialog
             Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.onPreExecute()");
         }
 
         @Override
         protected NearestBusStops doInBackground(Double[] params) {
+            Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.doInBackground()");
+
             double longitude = params[0];
             double latitude = params[1];
 
             // get nearest stops from Transport API and save in database.
-            Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.doInBackground()");
             Log.d(LOG_TAG, "caching nearest bus stops");
             return mTransportClient.getNearestBusStops(longitude, latitude);
         }
 
         @Override
         public void onPostExecute(NearestBusStops result) {
-            // hide loading dialog
             Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.onPostExecute()");
 
-            mNearestBusStops = result;
+            // TODO: hide loading dialog
 
             Log.d(LOG_TAG, "saving nearest stops to database");
             mBusDatabase.addNearestBusStops(result);
+            mNearestBusStops = result;
 
-            // used for saving instance state and moving through bus stop list.
+            // reset current position and store ID of nearest stop row so it can be retrieved later.
             mCurrentStopPosition = 0;
             mNearestStopId = mNearestBusStops.getId();
 
@@ -243,22 +245,23 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPreExecute() {
             // show loading dialog?
-
             Log.d(LOG_TAG, "DownloadBusesAsyncTask.onPreExecute()");
         }
 
         @Override
         protected LiveBuses doInBackground(BusStop... params) {
+            Log.d(LOG_TAG, "DownloadBusesAsyncTask.doInBackground()");
+
             mBusStop = params[0];
 
-            Log.d(LOG_TAG, "DownloadBusesAsyncTask.doInBackground()");
             Log.d(LOG_TAG, "fetching live buses");
             return mTransportClient.getLiveBuses(mBusStop.getAtcoCode());
         }
 
         public void onPostExecute(LiveBuses result) {
-            // hide loading dialog
             Log.d(LOG_TAG, "DownloadBusesAsyncTask.onPostExecute()");
+
+            // hide loading dialog
 
             // add newly downloaded buses to database
             Log.d(LOG_TAG, "caching live buses in database");
