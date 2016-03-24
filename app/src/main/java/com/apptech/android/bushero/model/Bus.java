@@ -1,8 +1,11 @@
 package com.apptech.android.bushero.model;
 
+/**
+ * Class to represent a bus.
+ */
 public class Bus {
     private long mId;
-    private long mBusStopId;
+    private long mBusStopId; // The bus stop this bus is owned by.
     private String mMode;
     private String mLine;
     private String mDestination;

@@ -3,6 +3,9 @@ package com.apptech.android.bushero.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to represent a list of live buses.
+ */
 public class LiveBuses {
     private List<Bus> mBuses;
 

@@ -3,9 +3,12 @@ package com.apptech.android.bushero.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to represent a bus route. A bus route is made up of a list of bus stops.
+ */
 public class BusRoute {
     private long mId;
-    private long mBusId;
+    private long mBusId; // the ID of the bus object used to generate this bus route.
     private String mOperator;
     private String mLine;
     private String mOriginAtcoCode;
@@ -57,10 +60,6 @@ public class BusRoute {
 
     public List<BusStop> getStops() {
         return mStops;
-    }
-
-    public void setStops(List<BusStop> stops) {
-        mStops = stops;
     }
 
     public void addStop(BusStop stop) {

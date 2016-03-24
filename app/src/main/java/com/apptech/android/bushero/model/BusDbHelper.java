@@ -3,6 +3,7 @@ package com.apptech.android.bushero.model;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.apptech.android.bushero.model.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusRouteTable;
@@ -10,6 +11,9 @@ import com.apptech.android.bushero.model.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusTable;
 import com.apptech.android.bushero.model.BusDbSchema.FavouriteStopTable;
 
+/**
+ * Class to help take care of common DB operations. This creates and updates our DB automatically.
+ */
 public class BusDbHelper extends SQLiteOpenHelper {
     public BusDbHelper(Context context) {
         super(context, BusDbSchema.DB_FILE, null, BusDbSchema.DB_VERSION);
@@ -17,6 +21,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Create all the tables used by our app.
         db.execSQL("CREATE TABLE " + NearestBusStopsTable.NAME + " (" +
                 NearestBusStopsTable.Columns.ID + " INTEGER PRIMARY KEY," +
                 NearestBusStopsTable.Columns.MIN_LONGITUDE + " REAL," +

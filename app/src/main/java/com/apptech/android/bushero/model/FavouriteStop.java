@@ -1,5 +1,8 @@
 package com.apptech.android.bushero.model;
 
+/**
+ * Class to represent a favourite bus stop.
+ */
 public class FavouriteStop {
     private long mId;
     private String mAtcoCode;

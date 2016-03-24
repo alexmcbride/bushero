@@ -26,31 +26,35 @@ public class BusDatabase {
         SQLiteDatabase db = null;
 
         try {
+            // BusDbHelper takes care of common database tasks so we don't have to.
             helper = new BusDbHelper(mContext);
+
+            // get a writeable SQLite db object from helper.
             db = helper.getWritableDatabase();
 
-            // clear tables used to store bus cache.
+            // execute SQL to clear tables used to store bus cache.
             db.execSQL("DELETE FROM " + NearestBusStopsTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusRouteTable.NAME + ";");
         }
         finally {
+            // no matter what happens try and free these resources.
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
     }
 
-    public NearestBusStops getNearestBusStops(long nearestBusStopsId) {
+    public NearestBusStops getNearestBusStops(long id) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
         Cursor cursor = null;
-        NearestBusStops nearest = null;
 
         try {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
+            // Query DB for nearest stop info and bus stops in a single query.
             String sql = "SELECT * FROM " + NearestBusStopsTable.NAME +
                     " JOIN " + BusStopTable.NAME +
                     " ON " + NearestBusStopsTable.NAME + "." + NearestBusStopsTable.Columns.ID +
@@ -58,23 +62,33 @@ public class BusDatabase {
                     " WHERE " + NearestBusStopsTable.NAME + "." + NearestBusStopsTable.Columns.ID + "=?" +
                     " ORDER BY " + BusStopTable.Columns.DISTANCE + " ASC;";
 
-            cursor = db.rawQuery(sql, new String[]{Long.toString(nearestBusStopsId)});
+            // Perform DB query passing in our query parametres.
+            cursor = db.rawQuery(sql, new String[] { Long.toString(id) });
+
+            // Create an instance of our own DB cursor which contains methods that turn DB records
+            // into nice Java objects.
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
+            // move to first record, if it exists
             if (busCursor.moveToFirst()) {
+                NearestBusStops nearest = null;
+
                 do {
-                    // create nearest if doesn't exist yet
+                    // If the nearest object doesn't exist yet, then create it and populate it with
+                    // data from DB.
                     if (nearest == null) {
                         nearest = busCursor.getNearestBusStops();
                     }
 
-                    // get individual stop.
+                    // Get individual stops and add them to nearest bus stop object.
                     nearest.addStop(busCursor.getBusStop());
                 }
                 while (cursor.moveToNext()); // keep looping until there are no records left
+
+                return nearest;
             }
 
-            return nearest;
+            return null;
         }
         finally {
             if (cursor != null) cursor.close();
@@ -94,17 +108,17 @@ public class BusDatabase {
             // insert nearest bus stops info.
             ContentValues values = getContentValues(nearest);
             long id = db.insert(NearestBusStopsTable.NAME, null, values);
-            nearest.setId(id);
+            nearest.setId(id); // update nearest object with new ID.
 
             // TODO: look at doing this in a single query.
             // insert each bus stop
             for (BusStop stop : nearest.getStops()) {
-                // hook up relationship to nearest bus
+                // tell stop which nearest bus stops it belongs to.
                 stop.setNearestBusStopsId(id);
 
                 values = getContentValues(stop);
                 long stopId = db.insert(BusStopTable.NAME, null, values);
-                stop.setId(stopId);
+                stop.setId(stopId); // set bus stop id.
             }
         }
         finally {
@@ -117,12 +131,12 @@ public class BusDatabase {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
         Cursor cursor = null;
-        LiveBuses live = new LiveBuses();
 
         try {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
+            // query DB for buses.
             cursor = db.query(
                     BusTable.NAME,
                     null,
@@ -131,7 +145,10 @@ public class BusDatabase {
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
+            // loop through result adding buses to LiveBuses object.
             if (busCursor.moveToFirst()) {
+                LiveBuses live = new LiveBuses();
+
                 do {
                     live.addBus(busCursor.getBus());
                 }
@@ -157,12 +174,14 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
+            // loop through each bus adding it to the database.
             for (Bus bus : live.getBuses()) {
-                bus.setBusStopId(busStopId);
+                bus.setBusStopId(busStopId); // tell which stop the bus belongs to.
 
+                // insert bus into db
                 ContentValues values = getContentValues(bus);
                 long id = db.insert(BusTable.NAME, null, values);
-                bus.setId(id);
+                bus.setId(id); // set new row id for this bus.
             }
         }
         finally {
@@ -171,37 +190,44 @@ public class BusDatabase {
         }
     }
 
-    public BusRoute getBusRoute(long busId) {
+    public BusRoute getBusRoute(long id) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
         Cursor cursor = null;
-        BusRoute route = null;
 
         try {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
+            // select route and stops from db in single query.
             String sql = "SELECT * FROM " + BusRouteTable.NAME +
                     " JOIN " + BusStopTable.NAME +
                     " WHERE " + BusRouteTable.NAME + "." + BusRouteTable.Columns.ID +
                     "=" + BusStopTable.NAME + "." + BusStopTable.Columns.BUS_ROUTE_ID +
                     " AND " + BusRouteTable.NAME + "." + BusRouteTable.Columns.BUS_ID + "=?";
 
-            cursor = db.rawQuery(sql, new String[]{Long.toString(busId)});
+            cursor = db.rawQuery(sql, new String[]{Long.toString(id)});
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
+            // loop through each record.
             if (busCursor.moveToFirst()) {
+                BusRoute route = null;
+
                 do {
+                    // if route not set yet then get it from db.
                     if (route == null) {
                         route = busCursor.getBusRoute();
                     }
 
+                    // add each stop to route.
                     route.addStop(busCursor.getBusStop());
                 }
                 while (busCursor.moveToNext());
+
+                return route;
             }
 
-            return route;
+            return null;
         }
         finally {
             if (cursor != null) cursor.close();
@@ -218,15 +244,17 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
+            // Add bus route to database.
             ContentValues values = getContentValues(route);
             long id = db.insert(BusRouteTable.NAME, null, values);
 
+            // add each stop on the route to the database.
             for (BusStop stop : route.getStops()) {
-                stop.setBusRouteId(id);
+                stop.setBusRouteId(id); // tell stop which route it belongs to.
 
                 values = getContentValues(stop);
                 long stopId = db.insert(BusStopTable.NAME, null, values);
-                stop.setId(stopId);
+                stop.setId(stopId); // set its row id in db
             }
         }
         finally {
@@ -244,6 +272,7 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
+            // query db for the stop matching this id
             cursor = db.query(
                     BusStopTable.NAME,
                     null,
@@ -252,6 +281,7 @@ public class BusDatabase {
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
+            // if cursor contains a record then return it.
             if (busCursor.moveToFirst()) {
                 return busCursor.getBusStop();
             }
@@ -274,6 +304,7 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
+            // query db for bus matching this id.
             cursor = db.query(
                     BusTable.NAME,
                     null,
@@ -282,6 +313,7 @@ public class BusDatabase {
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
+            // if record returned get the bus out and return it.
             if (busCursor.moveToFirst()) {
                 return busCursor.getBus();
             }
@@ -304,19 +336,25 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
+            // query db for favourite stops.
             cursor = db.query(FavouriteStopTable.NAME, null, null, null, null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
-            List<FavouriteStop> stops = new ArrayList<>();
+            // check at least one record in cursor.
             if (busCursor.moveToFirst()) {
+                List<FavouriteStop> stops = new ArrayList<>();
+
+                // loop through records adding them to stops list.
                 do {
                     FavouriteStop stop = busCursor.getFavouriteStop();
                     stops.add(stop);
                 }
                 while (busCursor.moveToNext());
+
+                return stops;
             }
 
-            return stops;
+            return null;
         }
         finally {
             if (cursor != null) cursor.close();
@@ -333,9 +371,10 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
+            // add a single favourite bus stop to db.
             ContentValues values = getContentValues(stop);
             long id = db.insert(FavouriteStopTable.NAME, null, values);
-            stop.setId(id);
+            stop.setId(id); // update stop with its new db id.
         }
         finally {
             if (db != null) db.close();
@@ -343,6 +382,7 @@ public class BusDatabase {
         }
     }
 
+    // Converts object into ContentValues so it can be inserted into DB.
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();
         values.put(NearestBusStopsTable.Columns.MIN_LONGITUDE, nearest.getMinLongitude());

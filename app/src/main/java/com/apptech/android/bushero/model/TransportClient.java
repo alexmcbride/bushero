@@ -3,6 +3,9 @@ package com.apptech.android.bushero.model;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * Transport client communicates with Transport API.
+ */
 public class TransportClient {
     private String mAppKey;
     private String mAppId;

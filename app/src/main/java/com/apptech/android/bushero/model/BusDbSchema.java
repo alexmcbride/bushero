@@ -1,5 +1,8 @@
 package com.apptech.android.bushero.model;
 
+/**
+ * Class to define our DB schema.
+ */
 public class BusDbSchema {
     public static final String DB_FILE = "busHero.db";
     public static final int DB_VERSION = 1;

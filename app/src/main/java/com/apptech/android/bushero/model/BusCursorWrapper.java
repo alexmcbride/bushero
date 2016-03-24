@@ -9,6 +9,10 @@ import com.apptech.android.bushero.model.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusTable;
 import com.apptech.android.bushero.model.BusDbSchema.FavouriteStopTable;
 
+/**
+ * Custom DB cursor that we've populated with our own methods. These methods takes the current DB
+ * record or row and converts it into a nice friendly Java object.
+ */
 public class BusCursorWrapper extends CursorWrapper {
     public BusCursorWrapper(Cursor cursor) {
         super(cursor);
