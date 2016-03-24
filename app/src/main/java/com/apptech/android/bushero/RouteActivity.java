@@ -8,7 +8,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.apptech.android.bushero.model.Bus;
-import com.apptech.android.bushero.model.BusCache;
+import com.apptech.android.bushero.model.BusDatabase;
 import com.apptech.android.bushero.model.BusRoute;
 import com.apptech.android.bushero.model.BusStop;
 import com.apptech.android.bushero.model.TransportClient;
@@ -28,18 +28,18 @@ public class RouteActivity extends AppCompatActivity {
         long busStopId = intent.getLongExtra(KEY_BUS_STOP_ID, -1);
         long busId = intent.getLongExtra(KEY_BUS_ID, -1);
 
-        Log.d(LOG_TAG, "getting bus stop and bus from cache for bus id " + busId);
-        BusCache busCache = new BusCache(this);
-        Bus bus = busCache.getBus(busId);
-        BusStop busStop = busCache.getBusStop(busStopId);
+        Log.d(LOG_TAG, "getting bus stop and bus from database for bus id " + busId);
+        BusDatabase busDatabase = new BusDatabase(this);
+        Bus bus = busDatabase.getBus(busId);
+        BusStop busStop = busDatabase.getBusStop(busStopId);
 
-        BusRoute busRoute = busCache.getBusRoute(bus.getId());
+        BusRoute busRoute = busDatabase.getBusRoute(bus.getId());
         if (busRoute == null) {
             // TODO: if date skipped then defaults to today, but what if standing at stop 5 mins to
             // minute and bus is due at 5 past?
 
             // load from transport api
-            Log.d(LOG_TAG, "getting and caching bus route for bus stop id " + busStopId);
+            Log.d(LOG_TAG, "fetching and storing bus route for bus stop id " + busStopId);
             TransportClient transportClient = new TransportClient("", "");
             busRoute = transportClient.getBusRoute(
                     busStop.getAtcoCode(), // atcocode
@@ -47,7 +47,7 @@ public class RouteActivity extends AppCompatActivity {
                     bus.getLine(),
                     bus.getOperator(),
                     bus.getTime());
-            busCache.addBusRoute(busRoute);
+            busDatabase.addBusRoute(busRoute);
         }
 
         String display = "";

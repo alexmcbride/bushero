@@ -10,14 +10,14 @@ import com.apptech.android.bushero.model.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusRouteTable;
 
-public class BusCache {
+public class BusDatabase {
     private Context mContext;
 
-    public BusCache(Context context) {
+    public BusDatabase(Context context) {
         mContext = context;
     }
 
-    public void deleteAll() {
+    public void deleteCache() {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
 
@@ -29,7 +29,8 @@ public class BusCache {
             db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusRouteTable.NAME + ";");
-        } finally {
+        }
+        finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -69,7 +70,8 @@ public class BusCache {
             }
 
             return nearest;
-        } finally {
+        }
+        finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -99,7 +101,8 @@ public class BusCache {
                 long stopId = db.insert(BusStopTable.NAME, null, values);
                 stop.setId(stopId);
             }
-        } finally {
+        }
+        finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -133,7 +136,8 @@ public class BusCache {
             }
 
             return null;
-        } finally {
+        }
+        finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -155,7 +159,8 @@ public class BusCache {
                 long id = db.insert(BusTable.NAME, null, values);
                 bus.setId(id);
             }
-        } finally {
+        }
+        finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -171,7 +176,12 @@ public class BusCache {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
-            String sql = "SELECT * FROM BusRoute JOIN BusStop WHERE BusRoute.id=BusStop.busRouteId AND BusRoute.busId=?";
+            String sql = "SELECT * FROM " + BusRouteTable.NAME +
+                    " JOIN " + BusStopTable.NAME +
+                    " WHERE " + BusRouteTable.NAME + "." + BusRouteTable.Columns.ID +
+                    "=" + BusStopTable.NAME + "." + BusStopTable.Columns.BUS_ROUTE_ID +
+                    " AND " + BusRouteTable.NAME + "." + BusRouteTable.Columns.BUS_ID + "=?";
+
             cursor = db.rawQuery(sql, new String[]{Long.toString(busId)});
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
@@ -187,7 +197,8 @@ public class BusCache {
             }
 
             return route;
-        } finally {
+        }
+        finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -212,7 +223,8 @@ public class BusCache {
                 long stopId = db.insert(BusStopTable.NAME, null, values);
                 stop.setId(stopId);
             }
-        } finally {
+        }
+        finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -227,7 +239,12 @@ public class BusCache {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
-            cursor = db.query(BusStopTable.NAME, null, "((id=?))", new String[]{Long.toString(id)}, null, null, null);
+            cursor = db.query(
+                    BusStopTable.NAME,
+                    null,
+                    "((" + BusStopTable.Columns.ID + "=?))",
+                    new String[]{Long.toString(id)},
+                    null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
             if (busCursor.moveToFirst()) {
@@ -235,7 +252,8 @@ public class BusCache {
             }
 
             return null;
-        } finally {
+        }
+        finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();

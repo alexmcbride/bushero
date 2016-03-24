@@ -15,7 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.apptech.android.bushero.model.Bus;
-import com.apptech.android.bushero.model.BusCache;
+import com.apptech.android.bushero.model.BusDatabase;
 import com.apptech.android.bushero.model.BusStop;
 import com.apptech.android.bushero.model.LiveBuses;
 import com.apptech.android.bushero.model.NearestBusStops;
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
 
     // variables
-    private BusCache mBusCache;
+    private BusDatabase mBusDatabase;
     private TransportClient mTransportClient;
     private BusAdapter mBusAdapter;
     private NearestBusStops mNearestBusStops;
@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // cache to store data while app is running
-        mBusCache = new BusCache(this);
+        // database to store data while app is running
+        mBusDatabase = new BusDatabase(this);
 
         // client to communicate with transport API
         // TODO: research android config files or equivalent.
@@ -88,17 +88,17 @@ public class MainActivity extends AppCompatActivity {
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
             // TODO: find better place to delete the cache???
-            // wipe cache when first starting.
-            Log.d(LOG_TAG, "deleting cache");
-            mBusCache.deleteAll();
+            // wipe database when first starting.
+            Log.d(LOG_TAG, "deleting database cache");
+            mBusDatabase.deleteCache();
 
             double longitude = 1.0;
             double latitude = 1.0;
 
-            // get nearest stops from Transport API and save in cache.
-            Log.d(LOG_TAG, "fetching and caching nearest bus stops");
+            // get nearest stops from Transport API and save in database.
+            Log.d(LOG_TAG, "fetching and storing nearest bus stops");
             mNearestBusStops = mTransportClient.getNearestBusStops(longitude, latitude);
-            mBusCache.addNearestBusStops(mNearestBusStops);
+            mBusDatabase.addNearestBusStops(mNearestBusStops);
 
             // used for saving instance state and moving through bus stop list.
             mCurrentStopPosition = 0;
@@ -110,9 +110,9 @@ public class MainActivity extends AppCompatActivity {
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
             mNearestStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
 
-            // get nearest bus stops from cache.
-            Log.d(LOG_TAG, "loading nearest stops from cache");
-            mNearestBusStops = mBusCache.getNearestBusStops(mNearestStopId);
+            // get nearest bus stops from database.
+            Log.d(LOG_TAG, "loading nearest stops from database");
+            mNearestBusStops = mBusDatabase.getNearestBusStops(mNearestStopId);
         }
 
         // get nearest bus stop to the user and update the UI with live bus info.
@@ -155,12 +155,12 @@ public class MainActivity extends AppCompatActivity {
         mTextBusStopBearing.setText(busStop.getBearing());
         mTextBusStopLocality.setText(busStop.getLocality());
 
-        // get live buses from cache, if nothing in cache then load from transport API.
-        mLiveBuses = mBusCache.getLiveBuses(busStop.getId());
+        // get live buses from database, if nothing in db then load from transport API.
+        mLiveBuses = mBusDatabase.getLiveBuses(busStop.getId());
         if (mLiveBuses == null) {
-            Log.d(LOG_TAG, "fetching and caching live buses");
+            Log.d(LOG_TAG, "fetching and storing live buses");
             mLiveBuses = mTransportClient.getLiveBuses(busStop.getAtcoCode());
-            mBusCache.addLiveBuses(mLiveBuses, busStop.getId());
+            mBusDatabase.addLiveBuses(mLiveBuses, busStop.getId());
         }
 
         // if adapter does not exist then create it, otherwise update it with new list.

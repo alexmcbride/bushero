@@ -8,7 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.apptech.android.bushero.model.BusCache;
+import com.apptech.android.bushero.model.BusDatabase;
 import com.apptech.android.bushero.model.BusStop;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -44,10 +44,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             busStopId = savedInstanceState.getLong(SAVED_BUS_STOP_ID);
         }
 
-        // get bus stop from cache.
-        Log.d(LOG_TAG, "fetching cache for bus stop id " + busStopId);
-        BusCache busCache = new BusCache(this);
-        mBusStop = busCache.getBusStop(busStopId);
+        // get bus stop from database.
+        Log.d(LOG_TAG, "fetching bus stop from database for id " + busStopId);
+        BusDatabase busDatabase = new BusDatabase(this);
+        mBusStop = busDatabase.getBusStop(busStopId);
 
         // update UI
         TextView textBusStopName = (TextView)findViewById(R.id.textBusStopName);
