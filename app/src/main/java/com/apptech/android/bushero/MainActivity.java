@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.apptech.android.bushero.model.Bus;
 import com.apptech.android.bushero.model.BusDatabase;
 import com.apptech.android.bushero.model.BusStop;
+import com.apptech.android.bushero.model.FavouriteStop;
 import com.apptech.android.bushero.model.LiveBuses;
 import com.apptech.android.bushero.model.NearestBusStops;
 import com.apptech.android.bushero.model.TransportClient;
@@ -118,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
         // get nearest bus stop to the user and update the UI with live bus info.
         BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
         updateLiveBuses(busStop);
+
+//        List<FavouriteStop> favouriteStops = mBusDatabase.getFavouriteStops();
     }
 
     @Override

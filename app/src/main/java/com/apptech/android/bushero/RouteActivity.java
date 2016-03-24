@@ -36,7 +36,7 @@ public class RouteActivity extends AppCompatActivity {
         BusRoute busRoute = busDatabase.getBusRoute(bus.getId());
         if (busRoute == null) {
             // TODO: if date skipped then defaults to today, but what if standing at stop 5 mins to
-            // minute and bus is due at 5 past?
+            // midnight and bus is due at 5 past?
 
             // load from transport api
             Log.d(LOG_TAG, "fetching and storing bus route for bus stop id " + busStopId);

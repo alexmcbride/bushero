@@ -8,6 +8,7 @@ import com.apptech.android.bushero.model.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusTable;
+import com.apptech.android.bushero.model.BusDbSchema.FavouriteStopTable;
 
 public class BusDbHelper extends SQLiteOpenHelper {
     public BusDbHelper(Context context) {
@@ -69,16 +70,24 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusTable.Columns.SOURCE + " TEXT," +
                 "FOREIGN KEY(" + BusTable.Columns.BUS_STOP_ID + ") REFERENCES " + BusStopTable.NAME + "(" + BusStopTable.Columns.ID + ")" +
                 ");");
+
+        db.execSQL("CREATE TABLE " + FavouriteStopTable.NAME + " (" +
+                FavouriteStopTable.Columns.ID + " INTEGER PRIMARY KEY," +
+                FavouriteStopTable.Columns.ATCOCODE + " TEXT," +
+                FavouriteStopTable.Columns.NAME + " TEXT," +
+                FavouriteStopTable.Columns.LONGITUDE + " REAL," +
+                FavouriteStopTable.Columns.LATITUDE + " REAL" +
+                ");");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // when upgrading just drop everything and recreate it.
-
         db.execSQL("DROP TABLE " + NearestBusStopsTable.NAME + ";");
         db.execSQL("DROP TABLE " + BusRouteTable.NAME + ";");
         db.execSQL("DROP TABLE " + BusStopTable.NAME + ";");
         db.execSQL("DROP TABLE " + BusTable.NAME + ";");
+        db.execSQL("DROP TABLE " + FavouriteStopTable.NAME + ";");
         onCreate(db);
     }
 }

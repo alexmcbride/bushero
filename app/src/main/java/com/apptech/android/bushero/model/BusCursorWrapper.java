@@ -7,6 +7,7 @@ import com.apptech.android.bushero.model.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusTable;
+import com.apptech.android.bushero.model.BusDbSchema.FavouriteStopTable;
 
 public class BusCursorWrapper extends CursorWrapper {
     public BusCursorWrapper(Cursor cursor) {
@@ -69,5 +70,15 @@ public class BusCursorWrapper extends CursorWrapper {
         bus.setTime(getString(getColumnIndex(BusTable.Columns.TIME)));
         bus.setSource(getString(getColumnIndex(BusTable.Columns.SOURCE)));
         return bus;
+    }
+
+    public FavouriteStop getFavouriteStop() {
+        FavouriteStop stop = new FavouriteStop();
+        stop.setId(getLong(getColumnIndex(FavouriteStopTable.Columns.ID)));
+        stop.setAtcoCode(getString(getColumnIndex(FavouriteStopTable.Columns.ATCOCODE)));
+        stop.setName(getString(getColumnIndex(FavouriteStopTable.Columns.NAME)));
+        stop.setLongitude(getDouble(getColumnIndex(FavouriteStopTable.Columns.LONGITUDE)));
+        stop.setLatitude(getDouble(getColumnIndex(FavouriteStopTable.Columns.LATITUDE)));
+        return stop;
     }
 }

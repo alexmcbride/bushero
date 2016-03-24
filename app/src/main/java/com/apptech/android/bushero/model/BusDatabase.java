@@ -9,6 +9,10 @@ import com.apptech.android.bushero.model.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusTable;
 import com.apptech.android.bushero.model.BusDbSchema.BusRouteTable;
+import com.apptech.android.bushero.model.BusDbSchema.FavouriteStopTable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BusDatabase {
     private Context mContext;
@@ -25,6 +29,7 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
+            // clear tables used to store bus cache.
             db.execSQL("DELETE FROM " + NearestBusStopsTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusTable.NAME + ";");
@@ -290,6 +295,54 @@ public class BusDatabase {
         }
     }
 
+    public List<FavouriteStop> getFavouriteStops() {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getReadableDatabase();
+
+            cursor = db.query(FavouriteStopTable.NAME, null, null, null, null, null, null);
+            BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
+
+            List<FavouriteStop> stops = new ArrayList<>();
+            if (busCursor.moveToFirst()) {
+                do {
+                    FavouriteStop stop = busCursor.getFavouriteStop();
+                    stops.add(stop);
+                }
+                while (busCursor.moveToNext());
+            }
+
+            return stops;
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public void addFavouriteStop(FavouriteStop stop) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            ContentValues values = getContentValues(stop);
+            long id = db.insert(FavouriteStopTable.NAME, null, values);
+            stop.setId(id);
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();
         values.put(NearestBusStopsTable.Columns.MIN_LONGITUDE, nearest.getMinLongitude());
@@ -342,6 +395,15 @@ public class BusDatabase {
         values.put(BusTable.Columns.OPERATOR, bus.getOperator());
         values.put(BusTable.Columns.TIME, bus.getTime());
         values.put(BusTable.Columns.SOURCE, bus.getSource());
+        return values;
+    }
+
+    private ContentValues getContentValues(FavouriteStop stop) {
+        ContentValues values = new ContentValues();
+        values.put(FavouriteStopTable.Columns.ATCOCODE, stop.getAtcoCode());
+        values.put(FavouriteStopTable.Columns.NAME, stop.getName());
+        values.put(FavouriteStopTable.Columns.LONGITUDE, stop.getLongitude());
+        values.put(FavouriteStopTable.Columns.LATITUDE, stop.getLatitude());
         return values;
     }
 }
