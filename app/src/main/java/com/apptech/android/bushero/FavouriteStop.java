@@ -1,4 +1,4 @@
-package com.apptech.android.bushero.model;
+package com.apptech.android.bushero;
 
 /**
  * Class to represent a favourite bus stop.

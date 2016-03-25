@@ -8,12 +8,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.apptech.android.bushero.model.Bus;
-import com.apptech.android.bushero.model.BusDatabase;
-import com.apptech.android.bushero.model.BusRoute;
-import com.apptech.android.bushero.model.BusStop;
-import com.apptech.android.bushero.model.TransportClient;
-
 public class RouteActivity extends AppCompatActivity {
     private static final String LOG_TAG = "RouteActivity";
     private static final String KEY_BUS_ID = "com.apptech.android.bushero.KEY_BUS_ID";

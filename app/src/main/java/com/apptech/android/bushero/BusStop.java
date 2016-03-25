@@ -1,4 +1,4 @@
-package com.apptech.android.bushero.model;
+package com.apptech.android.bushero;
 
 public class BusStop {
     private long mId;

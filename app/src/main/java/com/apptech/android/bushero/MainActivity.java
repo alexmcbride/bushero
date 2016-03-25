@@ -17,13 +17,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.apptech.android.bushero.model.Bus;
-import com.apptech.android.bushero.model.BusDatabase;
-import com.apptech.android.bushero.model.BusStop;
-import com.apptech.android.bushero.model.LiveBuses;
-import com.apptech.android.bushero.model.NearestBusStops;
-import com.apptech.android.bushero.model.TransportClient;
-
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {

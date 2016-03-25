@@ -1,4 +1,4 @@
-package com.apptech.android.bushero.model;
+package com.apptech.android.bushero;
 
 /**
  * Class to define our DB schema.

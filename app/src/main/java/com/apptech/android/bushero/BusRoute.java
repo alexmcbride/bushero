@@ -1,4 +1,4 @@
-package com.apptech.android.bushero.model;
+package com.apptech.android.bushero;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.apptech.android.bushero.model;
+package com.apptech.android.bushero;
 
 import org.json.JSONArray;
 import org.json.JSONException;
