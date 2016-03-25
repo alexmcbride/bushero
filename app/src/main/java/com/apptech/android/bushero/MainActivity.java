@@ -69,9 +69,8 @@ public class MainActivity extends AppCompatActivity {
                 Bus bus = mLiveBuses.getBus(position);
                 BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
 
-                Intent intent = RouteActivity.newInstance(
+                Intent intent = RouteActivity.newIntent(
                         MainActivity.this,
-                        busStop.getId(),
                         bus.getId());
                 startActivity(intent);
             }
@@ -215,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
             double longitude = params[0];
             double latitude = params[1];
 
-            // get nearest stops from Transport API and save in database.
+            // get nearest stops from Transport API.
             Log.d(LOG_TAG, "caching nearest bus stops");
             return mTransportClient.getNearestBusStops(longitude, latitude);
         }
@@ -226,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
             // TODO: hide loading dialog
 
+            // save nearest stops in database.
             Log.d(LOG_TAG, "saving nearest stops to database");
             mBusDatabase.addNearestBusStops(result);
             mNearestBusStops = result;

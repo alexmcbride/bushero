@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String LOG_TAG = "MapActivity";
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
-    private static final String SAVED_BUS_STOP_ID = "BUS_STOP_ID";
     private static final float MAP_ZOOM_LEVEL = 18; // higher is closer
 
     private GoogleMap mMap;
@@ -36,13 +35,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mapFragment.getMapAsync(this);
 
         // get bus stop ID from intent or from saved state.
-        long busStopId;
-        if (savedInstanceState == null) {
-            busStopId = getIntent().getLongExtra(KEY_BUS_STOP_ID, -1);
-        }
-        else {
-            busStopId = savedInstanceState.getLong(SAVED_BUS_STOP_ID);
-        }
+        long busStopId = getIntent().getLongExtra(KEY_BUS_STOP_ID, 0);
 
         // get bus stop from database.
         Log.d(LOG_TAG, "fetching bus stop from database for id " + busStopId);
@@ -67,11 +60,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         LatLng busStopLocation = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(busStopLocation).title(name));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putLong(SAVED_BUS_STOP_ID, mBusStop.getId());
     }
 
     public void onClickButtonBack(View view) {

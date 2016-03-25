@@ -66,6 +66,7 @@ public class BusCursorWrapper extends CursorWrapper {
     public Bus getBus() {
         Bus bus = new Bus();
         bus.setId(getLong(getColumnIndex(BusTable.Columns.ID)));
+        bus.setBusStopId(getLong(getColumnIndex(BusTable.Columns.BUS_STOP_ID)));
         bus.setMode(getString(getColumnIndex(BusTable.Columns.MODE)));
         bus.setLine(getString(getColumnIndex(BusTable.Columns.LINE)));
         bus.setDestination(getString(getColumnIndex(BusTable.Columns.DESTINATION)));
