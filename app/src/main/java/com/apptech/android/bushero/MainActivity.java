@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
             double latitude = params[1];
 
             // get nearest stops from Transport API.
-            Log.d(LOG_TAG, "caching nearest bus stops");
+            Log.d(LOG_TAG, "fetching nearest bus stops");
             return mTransportClient.getNearestBusStops(longitude, latitude);
         }
 
@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     // save nearest stops in database.
-                    Log.d(LOG_TAG, "saving nearest stops to database");
+                    Log.d(LOG_TAG, "caching nearest stops in database");
                     mBusDatabase.addNearestBusStops(result);
                     mNearestBusStops = result;
 
@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
                     updateBuses(); // update buses UI
 
-                    // hide loading message.
+                    // show stuff hidden while updating.
                     mListNearestBuses.setVisibility(View.VISIBLE);
                     mButtonNearer.setVisibility(View.VISIBLE);
                     mButtonFurther.setVisibility(View.VISIBLE);

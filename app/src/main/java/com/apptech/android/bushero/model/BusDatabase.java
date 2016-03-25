@@ -29,7 +29,7 @@ public class BusDatabase {
             // BusDbHelper takes care of common database tasks so we don't have to.
             helper = new BusDbHelper(mContext);
 
-            // get a writeable SQLite db object from helper.
+            // get a writable SQLite db object from helper.
             db = helper.getWritableDatabase();
 
             // execute SQL to clear tables used to store bus cache.

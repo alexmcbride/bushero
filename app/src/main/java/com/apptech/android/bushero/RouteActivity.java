@@ -22,7 +22,6 @@ public class RouteActivity extends AppCompatActivity {
     private BusStop mBusStop;
     private BusRoute mBusRoute;
     private BusDatabase mBusDatabase;
-    private TransportClient mTransportClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +75,8 @@ public class RouteActivity extends AppCompatActivity {
         protected BusRoute doInBackground(Void... params) {
             // load from transport api
             Log.d(LOG_TAG, "fetching and storing bus route for bus stop id " + mBusStop.getId());
-            mTransportClient = new TransportClient("", "");
-            return mTransportClient.getBusRoute(
+            TransportClient transportClient = new TransportClient("", "");
+            return transportClient.getBusRoute(
                     mBusStop.getAtcoCode(),
                     mBus.getDirection(),
                     mBus.getLine(),

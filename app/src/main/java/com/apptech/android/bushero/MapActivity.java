@@ -34,7 +34,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // get bus stop ID from intent or from saved state.
+        // get bus stop ID from intent.
         long busStopId = getIntent().getLongExtra(KEY_BUS_STOP_ID, 0);
 
         // get bus stop from database.
@@ -56,7 +56,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         double latitude = mBusStop.getLatitude();
         double longitude = mBusStop.getLongitude();
 
-        // Add marker to map, move camera to that location, and then zoom.
+        // Add marker to map, move camera to that location and zoom.
         LatLng busStopLocation = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(busStopLocation).title(name));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
