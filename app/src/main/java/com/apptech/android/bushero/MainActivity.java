@@ -1,8 +1,11 @@
 package com.apptech.android.bushero;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +25,7 @@ import com.apptech.android.bushero.model.LiveBuses;
 import com.apptech.android.bushero.model.NearestBusStops;
 import com.apptech.android.bushero.model.TransportClient;
 
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextBusStopDistance;
     private TextView mTextBusStopBearing;
     private TextView mTextBusStopLocality;
+    private TextView mTextLoading;
     private ListView mListNearestBuses;
     private Button mButtonNearer;
     private Button mButtonFurther;
@@ -53,13 +58,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // get widgets from layout.
-        mTextBusStopName = (TextView)findViewById(R.id.textBusStopName);
-        mTextBusStopDistance = (TextView)findViewById(R.id.textBusStopDistance);
-        mTextBusStopBearing = (TextView)findViewById(R.id.textBusStopBearing);
-        mTextBusStopLocality = (TextView)findViewById(R.id.textBusStopLocality);
-        mListNearestBuses = (ListView)findViewById(R.id.listNearestBuses);
-        mButtonNearer = (Button)findViewById(R.id.buttonNearer);
-        mButtonFurther = (Button)findViewById(R.id.buttonFurther);
+        mTextBusStopName = (TextView) findViewById(R.id.textBusStopName);
+        mTextBusStopDistance = (TextView) findViewById(R.id.textBusStopDistance);
+        mTextBusStopBearing = (TextView) findViewById(R.id.textBusStopBearing);
+        mTextBusStopLocality = (TextView) findViewById(R.id.textBusStopLocality);
+        mListNearestBuses = (ListView) findViewById(R.id.listNearestBuses);
+        mButtonNearer = (Button) findViewById(R.id.buttonNearer);
+        mButtonFurther = (Button) findViewById(R.id.buttonFurther);
 
         // attach bus list item click handler.
         mListNearestBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -99,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
             // download nearest bus stops from transport api on a background thread. this is done to
             // stop the UI thread from hanging while the slow network operation is completed.
             new DownloadBusStopsAsyncTask().execute(longitude, latitude);
-        }
-        else {
+        } else {
             // activity recreated, loading instance state.
             Log.d(LOG_TAG, "getting saved state");
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
@@ -160,8 +164,7 @@ public class MainActivity extends AppCompatActivity {
             // TODO: potentially do this with CursorAdapter, avoid creation of asynctask, also
             // maybe faster?
             new DownloadBusesAsyncTask().execute(busStop);
-        }
-        else {
+        } else {
             updateBuses();
         }
     }
@@ -201,16 +204,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
+        private ProgressDialog mDialog;
+
         @Override
         public void onPreExecute() {
-            // TODO: show loading dialog
-            Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.onPreExecute()");
+            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
         }
 
         @Override
         protected NearestBusStops doInBackground(Double[] params) {
-            Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.doInBackground()");
-
             double longitude = params[0];
             double latitude = params[1];
 
@@ -220,22 +222,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onPostExecute(NearestBusStops result) {
-            Log.d(LOG_TAG, "DownloadBusStopsAsyncTask.onPostExecute()");
+        public void onPostExecute(final NearestBusStops result) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // save nearest stops in database.
+                    Log.d(LOG_TAG, "saving nearest stops to database");
+                    mBusDatabase.addNearestBusStops(result);
+                    mNearestBusStops = result;
 
-            // TODO: hide loading dialog
+                    // reset current position and store ID of nearest stop row so it can be retrieved later.
+                    mCurrentStopPosition = 0;
+                    mNearestStopId = mNearestBusStops.getId();
 
-            // save nearest stops in database.
-            Log.d(LOG_TAG, "saving nearest stops to database");
-            mBusDatabase.addNearestBusStops(result);
-            mNearestBusStops = result;
+                    BusStop stop = result.getNearestStop();
+                    updateBusStop(stop);
 
-            // reset current position and store ID of nearest stop row so it can be retrieved later.
-            mCurrentStopPosition = 0;
-            mNearestStopId = mNearestBusStops.getId();
-
-            BusStop stop = result.getNearestStop();
-            updateBusStop(stop);
+                    // hide loading dialog.
+                    mDialog.dismiss();
+                }
+            }, 2000);
         }
     }
 
@@ -244,31 +251,35 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPreExecute() {
-            // show loading dialog?
-            Log.d(LOG_TAG, "DownloadBusesAsyncTask.onPreExecute()");
+            // show loading message?
+            // hide listview when updating, as otherwise it looks weird.
+            mListNearestBuses.setVisibility(View.INVISIBLE);
         }
 
         @Override
         protected LiveBuses doInBackground(BusStop... params) {
-            Log.d(LOG_TAG, "DownloadBusesAsyncTask.doInBackground()");
-
             mBusStop = params[0];
 
             Log.d(LOG_TAG, "fetching live buses");
             return mTransportClient.getLiveBuses(mBusStop.getAtcoCode());
         }
 
-        public void onPostExecute(LiveBuses result) {
-            Log.d(LOG_TAG, "DownloadBusesAsyncTask.onPostExecute()");
+        public void onPostExecute(final LiveBuses result) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // add newly downloaded buses to database
+                    Log.d(LOG_TAG, "caching live buses in database");
+                    mBusDatabase.addLiveBuses(result, mBusStop.getId());
+                    mLiveBuses = result; // need this later.
 
-            // hide loading dialog
+                    updateBuses(); // update buses UI
 
-            // add newly downloaded buses to database
-            Log.d(LOG_TAG, "caching live buses in database");
-            mBusDatabase.addLiveBuses(result, mBusStop.getId());
-            mLiveBuses = result; // need this later.
-
-            updateBuses(); // update buses UI
+                    // hide loading message.
+                    mListNearestBuses.setVisibility(View.VISIBLE);
+                }
+            }, 3000);
         }
     }
 
@@ -301,11 +312,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // get widgets
-            TextView textLine = (TextView)convertView.findViewById(R.id.textBusLine);
-            TextView textDestination = (TextView)convertView.findViewById(R.id.textBusDestination);
-            TextView textTime = (TextView)convertView.findViewById(R.id.textBusTime);
-            TextView textDirection = (TextView)convertView.findViewById(R.id.textBusDirection);
-            TextView textOperator = (TextView)convertView.findViewById(R.id.textBusOperator);
+            TextView textLine = (TextView) convertView.findViewById(R.id.textBusLine);
+            TextView textDestination = (TextView) convertView.findViewById(R.id.textBusDestination);
+            TextView textTime = (TextView) convertView.findViewById(R.id.textBusTime);
+            TextView textDirection = (TextView) convertView.findViewById(R.id.textBusDirection);
+            TextView textOperator = (TextView) convertView.findViewById(R.id.textBusOperator);
 
             // set widgets
             textLine.setText(bus.getLine());
