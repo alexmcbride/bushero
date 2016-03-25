@@ -31,7 +31,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         setContentView(R.layout.activity_map);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         // get bus stop ID from intent or from saved state.
@@ -43,7 +43,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mBusStop = busDatabase.getBusStop(busStopId);
 
         // update UI
-        TextView textBusStopName = (TextView)findViewById(R.id.textBusStopName);
+        TextView textBusStopName = (TextView) findViewById(R.id.textBusStopName);
         textBusStopName.setText(mBusStop.getName());
     }
 

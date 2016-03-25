@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,7 +24,6 @@ import com.apptech.android.bushero.model.LiveBuses;
 import com.apptech.android.bushero.model.NearestBusStops;
 import com.apptech.android.bushero.model.TransportClient;
 
-import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -104,7 +102,8 @@ public class MainActivity extends AppCompatActivity {
             // download nearest bus stops from transport api on a background thread. this is done to
             // stop the UI thread from hanging while the slow network operation is completed.
             new DownloadBusStopsAsyncTask().execute(longitude, latitude);
-        } else {
+        }
+        else {
             // activity recreated, loading instance state.
             Log.d(LOG_TAG, "getting saved state");
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
@@ -164,7 +163,8 @@ public class MainActivity extends AppCompatActivity {
             // TODO: potentially do this with CursorAdapter, avoid creation of asynctask, also
             // maybe faster?
             new DownloadBusesAsyncTask().execute(busStop);
-        } else {
+        }
+        else {
             updateBuses();
         }
     }
@@ -252,8 +252,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPreExecute() {
             // show loading message?
-            // hide listview when updating, as otherwise it looks weird.
+            // hide listview when updating and stop user navigating stop.
             mListNearestBuses.setVisibility(View.INVISIBLE);
+            mButtonNearer.setVisibility(View.INVISIBLE);
+            mButtonFurther.setVisibility(View.INVISIBLE);
         }
 
         @Override
@@ -278,8 +280,10 @@ public class MainActivity extends AppCompatActivity {
 
                     // hide loading message.
                     mListNearestBuses.setVisibility(View.VISIBLE);
+                    mButtonNearer.setVisibility(View.VISIBLE);
+                    mButtonFurther.setVisibility(View.VISIBLE);
                 }
-            }, 3000);
+            }, 2000);
         }
     }
 

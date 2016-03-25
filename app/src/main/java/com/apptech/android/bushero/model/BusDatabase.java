@@ -63,7 +63,7 @@ public class BusDatabase {
                     " ORDER BY " + BusStopTable.Columns.DISTANCE + " ASC;";
 
             // Perform DB query passing in our query parametres.
-            cursor = db.rawQuery(sql, new String[] { Long.toString(id) });
+            cursor = db.rawQuery(sql, new String[]{Long.toString(id)});
 
             // Create an instance of our own DB cursor which contains methods that turn DB records
             // into nice Java objects.

@@ -56,7 +56,7 @@ public class RouteActivity extends AppCompatActivity {
         for (BusStop stop : mBusRoute.getStops()) {
             display += stop.getName() + "\n";
         }
-        ((TextView)findViewById(R.id.textDisplay)).setText(display);
+        ((TextView) findViewById(R.id.textDisplay)).setText(display);
     }
 
     public static Intent newIntent(Context context, long busId) {
