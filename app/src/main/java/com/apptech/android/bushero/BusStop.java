@@ -1,9 +1,12 @@
 package com.apptech.android.bushero;
 
+/**
+ * Class to represent a bus stop.
+ */
 public class BusStop {
     private long mId;
-    private long mNearestBusStopsId;
-    private long mBusRouteId;
+    private long mNearestBusStopsId; // if this is set this belongs to a nearest bus stops query
+    private long mBusRouteId; // if this is set this belongs to a bus route
     private String mAtcoCode;
     private String mSmsCode;
     private String mName;
@@ -14,7 +17,7 @@ public class BusStop {
     private double mLongitude;
     private double mLatitude;
     private int mDistance;
-    private String mTime;
+    private String mTime; // this is only set for stops that are on a bus route
 
     public BusStop() {
 

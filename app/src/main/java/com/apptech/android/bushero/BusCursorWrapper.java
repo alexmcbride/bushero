@@ -4,8 +4,8 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 
 /**
- * Custom DB cursor that we've populated with our own methods. These methods takes the current DB
- * record or row and converts it into a nice friendly Java object.
+ * Custom DB cursor that we've populated with our own methods. These methods take the current cursor
+ * record and convert it into a nice friendly Java object.
  */
 public class BusCursorWrapper extends CursorWrapper {
     public BusCursorWrapper(Cursor cursor) {

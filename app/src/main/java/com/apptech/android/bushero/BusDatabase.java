@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to represent the database.
+ */
 public class BusDatabase {
     private Context mContext;
 
@@ -68,8 +71,8 @@ public class BusDatabase {
                 NearestBusStops nearest = null;
 
                 do {
-                    // If the nearest object doesn't exist yet, then create it and populate it with
-                    // data from DB.
+                    // If the nearest parent doesn't exist yet, create it and populate it with data
+                    // from DB.
                     if (nearest == null) {
                         nearest = busCursor.getNearestBusStops();
                     }
@@ -82,6 +85,7 @@ public class BusDatabase {
                 return nearest;
             }
 
+            // ain't no records.
             return null;
         }
         finally {

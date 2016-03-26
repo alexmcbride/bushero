@@ -3,6 +3,10 @@ package com.apptech.android.bushero;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to represent the results of a nearest bus stops query. The class contains a list of bus
+ * stops ordered by their distance from the user.
+ */
 public class NearestBusStops {
     private long mId;
     private double mMinLongitude;

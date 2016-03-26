@@ -20,7 +20,7 @@ import android.widget.TextView;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String LOG_TAG = "MainActivity";
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
 
@@ -241,14 +241,17 @@ public class MainActivity extends AppCompatActivity {
 
     private class DownloadBusesAsyncTask extends AsyncTask<BusStop, Void, LiveBuses> {
         private BusStop mBusStop;
+        private ProgressDialog mDialog;
 
         @Override
         public void onPreExecute() {
             // show loading message?
             // hide listview when updating and stop user navigating stop.
-            mListNearestBuses.setVisibility(View.INVISIBLE);
-            mButtonNearer.setVisibility(View.INVISIBLE);
-            mButtonFurther.setVisibility(View.INVISIBLE);
+//            mListNearestBuses.setVisibility(View.INVISIBLE);
+//            mButtonNearer.setVisibility(View.INVISIBLE);
+//            mButtonFurther.setVisibility(View.INVISIBLE);
+
+            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Updating buses", true);
         }
 
         @Override
@@ -272,9 +275,10 @@ public class MainActivity extends AppCompatActivity {
                     updateBuses(); // update buses UI
 
                     // show stuff hidden while updating.
-                    mListNearestBuses.setVisibility(View.VISIBLE);
-                    mButtonNearer.setVisibility(View.VISIBLE);
-                    mButtonFurther.setVisibility(View.VISIBLE);
+//                    mListNearestBuses.setVisibility(View.VISIBLE);
+//                    mButtonNearer.setVisibility(View.VISIBLE);
+//                    mButtonFurther.setVisibility(View.VISIBLE);
+                    mDialog.dismiss();
                 }
             }, 2000);
         }

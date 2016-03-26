@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class BusRoute {
     private long mId;
-    private long mBusId; // the ID of the bus object used to generate this bus route.
+    private long mBusId; // the ID of the bus record used to generate this bus route.
     private String mOperator;
     private String mLine;
     private String mOriginAtcoCode;
