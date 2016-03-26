@@ -327,6 +327,7 @@ public class MainActivity extends AppCompatActivity {
             // set widgets
             textLine.setText(bus.getLine());
             textDestination.setText(bus.getDestination());
+            textTime.setText(bus.getBestDepartureEstimate());
             textDirection.setText(bus.getDirection());
             textOperator.setText(bus.getOperator());
 

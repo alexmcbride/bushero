@@ -69,8 +69,11 @@ public class BusDbSchema {
             public static final String DIRECTION = "direction";
             public static final String DESTINATION = "destination";
             public static final String OPERATOR = "operator";
-            public static final String TIME = "time";
+            public static final String AIMED_DEPARTURE_TIME = "aimedDepartureTime";
+            public static final String EXPECTED_DEPARTURE_TIME = "expectedDepartureTime";
+            public static final String BEST_DEPARTURE_ESTIMATE = "bestDepartureEstimate";
             public static final String SOURCE = "source";
+            public static final String DATE = "date";
         }
     }
 
