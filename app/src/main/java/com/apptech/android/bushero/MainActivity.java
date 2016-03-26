@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -91,8 +90,12 @@ public class MainActivity extends AppCompatActivity {
             mBusDatabase.deleteCache();
 
             // get longitude and latitude from Google services.
-            double latitude = 55.746867;
-            double longitude = -4.181975;
+            // goma: 55.860143, -4.251948
+            // house: 55.746867, -4.181975
+            // eb: 55.944536, -3.218067
+            // mk: 52.034327, -0.782786
+            double latitude = 55.860143;
+            double longitude = -4.251948;
 
             // download nearest bus stops from transport api on a background thread. this is done to
             // stop the UI thread from hanging while the slow network operation is completed.
@@ -147,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         // activity onthe screen.
         mTextBusStopName.setText(busStop.getName());
         mTextBusStopDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
-        mTextBusStopBearing.setText(busStop.getBearing());
+        mTextBusStopBearing.setText(TextHelper.getBearing(busStop.getBearing()));
         mTextBusStopLocality.setText(busStop.getLocality());
 
         // get live buses from database, if nothing in db then load from transport API.
@@ -198,9 +201,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
-        private ProgressDialog mDialog;
+    private ProgressDialog mDialog;
 
+    private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         @Override
         public void onPreExecute() {
             mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
@@ -243,19 +246,20 @@ public class MainActivity extends AppCompatActivity {
             if (stop != null) {
                 updateBusStop(stop);
             }
-
-            // hide loading dialog.
-            mDialog.dismiss();
         }
     }
 
     private class DownloadBusesAsyncTask extends AsyncTask<BusStop, Void, LiveBuses> {
         private BusStop mBusStop;
-        private ProgressDialog mDialog;
 
         @Override
         public void onPreExecute() {
-            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Getting live bus info", true);
+            if (mDialog == null) {
+                mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Loading live buses", true);
+            }
+            else {
+                mDialog.setMessage("Loading live buses");
+            }
         }
 
         @Override
@@ -285,7 +289,9 @@ public class MainActivity extends AppCompatActivity {
 
             updateBuses(); // update buses UI
 
+            // hide loading dialog.
             mDialog.dismiss();
+            mDialog = null;
         }
     }
 
@@ -325,11 +331,11 @@ public class MainActivity extends AppCompatActivity {
             TextView textOperator = (TextView) convertView.findViewById(R.id.textBusOperator);
 
             // set widgets
-            textLine.setText(bus.getLine());
-            textDestination.setText(bus.getDestination());
+            textLine.setText(bus.getLine().trim());
+            textDestination.setText(TextHelper.getDestination(bus.getDestination()));
             textTime.setText(bus.getBestDepartureEstimate());
-            textDirection.setText(bus.getDirection());
-            textOperator.setText(bus.getOperator());
+            textDirection.setText(TextHelper.capitalise(bus.getDirection()));
+            textOperator.setText(TextHelper.getOperator(bus.getOperator()));
 
             return convertView;
         }
