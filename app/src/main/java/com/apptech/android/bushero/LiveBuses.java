@@ -24,4 +24,8 @@ public class LiveBuses {
     public Bus getBus(int index) {
         return mBuses.get(index);
     }
+
+    public int getBusesCount() {
+        return mBuses.size();
+    }
 }

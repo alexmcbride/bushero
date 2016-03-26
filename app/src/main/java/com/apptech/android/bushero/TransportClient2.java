@@ -40,64 +40,64 @@ public class TransportClient2 {
         connection.connect();
 
         InputStream input = null;
-        InputStreamReader reader = null;
-        JsonReader jsonReader = null;
+        InputStreamReader streamReader = null;
+        JsonReader reader = null;
 
         try {
             input = new BufferedInputStream(url.openStream());
-            reader = new InputStreamReader(input);
-            jsonReader = new JsonReader(reader);
+            streamReader = new InputStreamReader(input);
+            reader = new JsonReader(streamReader);
 
-            jsonReader.beginObject();
+            reader.beginObject();
             NearestBusStops nearest = new NearestBusStops();
-            while (jsonReader.hasNext()) {
-                String name = jsonReader.nextName();
+            while (reader.hasNext()) {
+                String name = reader.nextName();
                 switch (name) {
                     case "minlon":
-                        nearest.setMinLongitude(jsonReader.nextDouble());
+                        nearest.setMinLongitude(reader.nextDouble());
                         break;
                     case "minlat":
-                        nearest.setMinLatitude(jsonReader.nextDouble());
+                        nearest.setMinLatitude(reader.nextDouble());
                         break;
                     case "maxlon":
-                        nearest.setMaxLongitude(jsonReader.nextDouble());
+                        nearest.setMaxLongitude(reader.nextDouble());
                         break;
                     case "maxlat":
-                        nearest.setMaxLatitude(jsonReader.nextDouble());
+                        nearest.setMaxLatitude(reader.nextDouble());
                         break;
                     case "searchlon":
-                        nearest.setSearchLongitude(jsonReader.nextDouble());
+                        nearest.setSearchLongitude(reader.nextDouble());
                         break;
                     case "searchlat":
-                        nearest.setSearchLatitude(jsonReader.nextDouble());
+                        nearest.setSearchLatitude(reader.nextDouble());
                         break;
                     case "page":
-                        nearest.setPage(jsonReader.nextInt());
+                        nearest.setPage(reader.nextInt());
                         break;
                     case "rpp":
-                        nearest.setReturnedPerPage(jsonReader.nextInt());
+                        nearest.setReturnedPerPage(reader.nextInt());
                         break;
                     case "total":
-                        nearest.setTotal(jsonReader.nextInt());
+                        nearest.setTotal(reader.nextInt());
                         break;
                     case "request_time":
-                        nearest.setRequestTime(jsonReader.nextString());
+                        nearest.setRequestTime(reader.nextString());
                         break;
                     default:
-                        if (name.equals("stops") && jsonReader.peek() != JsonToken.NULL) {
-                            List<BusStop> stops = readBusStops(jsonReader);
+                        if (name.equals("stops") && reader.peek() != JsonToken.NULL) {
+                            List<BusStop> stops = readBusStops(reader);
                             nearest.setStops(stops);
                         }
                         break;
                 }
             }
-            jsonReader.endObject();
+            reader.endObject();
 
             return nearest;
         }
         finally {
-            if (jsonReader != null) jsonReader.close();
             if (reader != null) reader.close();
+            if (streamReader != null) streamReader.close();
             if (input != null) input.close();
         }
     }
@@ -187,54 +187,7 @@ public class TransportClient2 {
 
                         name = reader.nextName();
                         if (name.equals("all") && reader.peek() != JsonToken.NULL) {
-                            reader.beginArray();
-
-                            while (reader.hasNext()) {
-                                reader.beginObject();
-                                Bus bus = new Bus();
-
-                                while (reader.hasNext()) {
-                                    name = reader.nextName();
-
-                                    switch (name) {
-                                        case "mode":
-                                            bus.setMode(reader.nextString());
-                                            break;
-                                        case "line":
-                                            bus.setLine(reader.nextString());
-                                            break;
-                                        case "direction":
-                                            bus.setDestination(reader.nextString());
-                                            break;
-                                        case "operator":
-                                            bus.setOperator(reader.nextString());
-                                            break;
-                                        case "aimed_departure_time":
-                                            bus.setAimedDepartureTime(reader.nextString());
-                                            break;
-                                        case "dir":
-                                            bus.setDirection(reader.nextString());
-                                            break;
-                                        case "date":
-                                            bus.setDate(reader.nextString());
-                                            break;
-                                        case "source":
-                                            bus.setSource(reader.nextString());
-                                            break;
-                                        case "best_departure_estimate":
-                                            bus.setBestDepartureEstimate(reader.nextString());
-                                            break;
-                                        case "expected_departure_time":
-                                            bus.setExpectedDepartureTime(reader.nextString());
-                                            break;
-                                    }
-                                }
-
-                                buses.addBus(bus);
-                                reader.endObject();
-                            }
-
-                            reader.endArray();
+                            getBuses(reader, buses);
                         }
 
                         reader.endObject();
@@ -251,6 +204,58 @@ public class TransportClient2 {
             if (streamReader != null) streamReader.close();
             if (input != null) input.close();
         }
+    }
+
+    private void getBuses(JsonReader reader, LiveBuses buses) throws IOException {
+        String name;
+        reader.beginArray();
+
+        while (reader.hasNext()) {
+            reader.beginObject();
+            Bus bus = new Bus();
+
+            while (reader.hasNext()) {
+                name = reader.nextName();
+
+                switch (name) {
+                    case "mode":
+                        bus.setMode(reader.nextString());
+                        break;
+                    case "line":
+                        bus.setLine(reader.nextString());
+                        break;
+                    case "direction":
+                        bus.setDestination(reader.nextString());
+                        break;
+                    case "operator":
+                        bus.setOperator(reader.nextString());
+                        break;
+                    case "aimed_departure_time":
+                        bus.setAimedDepartureTime(reader.nextString());
+                        break;
+                    case "dir":
+                        bus.setDirection(reader.nextString());
+                        break;
+                    case "date":
+                        bus.setDate(reader.nextString());
+                        break;
+                    case "source":
+                        bus.setSource(reader.nextString());
+                        break;
+                    case "best_departure_estimate":
+                        bus.setBestDepartureEstimate(reader.nextString());
+                        break;
+                    case "expected_departure_time":
+                        bus.setExpectedDepartureTime(reader.nextString());
+                        break;
+                }
+            }
+
+            buses.addBus(bus);
+            reader.endObject();
+        }
+
+        reader.endArray();
     }
 }
 

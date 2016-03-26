@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView mListNearestBuses;
     private Button mButtonNearer;
     private Button mButtonFurther;
+    private ProgressDialog mDialog;
 
     // variables
     private BusDatabase mBusDatabase;
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
                 // get clicked on bus and start route activity.
                 Bus bus = mLiveBuses.getBus(position);
                 BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-
                 Intent intent = RouteActivity.newIntent(
                         MainActivity.this,
                         bus.getId());
@@ -84,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
-            // TODO: find better place to delete the cache???
             // wipe previously stored cache data when first starting.
+            // TODO: find better place to delete the cache???
             Log.d(LOG_TAG, "deleting database cache");
             mBusDatabase.deleteCache();
 
@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             // house: 55.746867, -4.181975
             // eb: 55.944536, -3.218067
             // mk: 52.034327, -0.782786
+            // france: 50.317035, 2.600803
             double latitude = 55.860143;
             double longitude = -4.251948;
 
@@ -168,6 +169,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateBuses() {
+        // check there is anything to show.
+        if (mLiveBuses == null || mLiveBuses.getBusesCount() == 0) {
+            return;
+        }
+
         // if adapter does not exist then create it, otherwise update it with new list.
         if (mBusAdapter == null) {
             mBusAdapter = new BusAdapter(this, mLiveBuses.getBuses());
@@ -201,11 +207,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private ProgressDialog mDialog;
-
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         @Override
         public void onPreExecute() {
+            // show loading dialog. this isn't hidden until the end of DownloadBusesAsyncTask.
             mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
         }
 
@@ -243,7 +248,11 @@ public class MainActivity extends AppCompatActivity {
 
             // get nearest bus stop if there are any stops returned.
             BusStop stop = result.getNearestStop();
-            if (stop != null) {
+            if (stop == null) {
+                mDialog.dismiss();
+                mDialog = null;
+            }
+            else {
                 updateBusStop(stop);
             }
         }
@@ -278,20 +287,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void onPostExecute(final LiveBuses result) {
-            if (result == null) {
-                return;
+            try {
+                if (result == null) {
+                    return;
+                }
+
+                // add newly downloaded buses to database
+                Log.d(LOG_TAG, "caching live buses in database");
+                mBusDatabase.addLiveBuses(result, mBusStop.getId());
+                mLiveBuses = result; // need this later.
+
+                updateBuses(); // update buses UI
             }
-
-            // add newly downloaded buses to database
-            Log.d(LOG_TAG, "caching live buses in database");
-            mBusDatabase.addLiveBuses(result, mBusStop.getId());
-            mLiveBuses = result; // need this later.
-
-            updateBuses(); // update buses UI
-
-            // hide loading dialog.
-            mDialog.dismiss();
-            mDialog = null;
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                // hide loading dialog.
+                mDialog.dismiss();
+                mDialog = null;
+            }
         }
     }
 
