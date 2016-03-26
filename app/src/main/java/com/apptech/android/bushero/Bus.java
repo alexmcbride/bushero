@@ -11,8 +11,11 @@ public class Bus {
     private String mDestination;
     private String mDirection;
     private String mOperator;
-    private String mTime;
+    private String mAimedDepartureTime;
+    private String mExpectedDepartureTime;
+    private String mBestDepartureEstimate;
     private String mSource;
+    private String mDate;
 
     public Bus() {
 
@@ -74,12 +77,28 @@ public class Bus {
         mOperator = operator;
     }
 
-    public String getTime() {
-        return mTime;
+    public String getAimedDepartureTime() {
+        return mAimedDepartureTime;
     }
 
-    public void setTime(String time) {
-        mTime = time;
+    public void setAimedDepartureTime(String aimedDepartureTime) {
+        mAimedDepartureTime = aimedDepartureTime;
+    }
+
+    public String getExpectedDepartureTime() {
+        return mExpectedDepartureTime;
+    }
+
+    public void setExpectedDepartureTime(String expectedDepartureTime) {
+        mExpectedDepartureTime = expectedDepartureTime;
+    }
+
+    public String getBestDepartureEstimate() {
+        return mBestDepartureEstimate;
+    }
+
+    public void setBestDepartureEstimate(String bestDepartureEstimate) {
+        mBestDepartureEstimate = bestDepartureEstimate;
     }
 
     public String getSource() {
@@ -88,5 +107,13 @@ public class Bus {
 
     public void setSource(String source) {
         mSource = source;
+    }
+
+    public String getDate() {
+        return mDate;
+    }
+
+    public void setDate(String date) {
+        mDate = date;
     }
 }

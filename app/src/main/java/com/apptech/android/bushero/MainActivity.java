@@ -16,7 +16,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     // variables
     private BusDatabase mBusDatabase;
-    private TransportClient mTransportClient;
+    private TransportClient2 mTransportClient;
     private BusAdapter mBusAdapter;
     private NearestBusStops mNearestBusStops;
     private LiveBuses mLiveBuses;
@@ -77,9 +79,9 @@ public class MainActivity extends AppCompatActivity {
 
         // client to communicate with transport API
         // TODO: research android config files or equivalent.
-        String appKey = null;
-        String appId = null;
-        mTransportClient = new TransportClient(appKey, appId);
+        String appKey = "bffef3b1ab0a109dffa95562c1687756";
+        String appId = "a10284ad";
+        mTransportClient = new TransportClient2(appKey, appId);
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
@@ -89,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
             mBusDatabase.deleteCache();
 
             // get longitude and latitude from Google services.
-            double longitude = 1.0;
-            double latitude = 1.0;
+            double latitude = 55.746867;
+            double longitude = -4.181975;
 
             // download nearest bus stops from transport api on a background thread. this is done to
             // stop the UI thread from hanging while the slow network operation is completed.
@@ -209,33 +211,41 @@ public class MainActivity extends AppCompatActivity {
             double longitude = params[0];
             double latitude = params[1];
 
-            // get nearest stops from Transport API.
-            Log.d(LOG_TAG, "fetching nearest bus stops");
-            return mTransportClient.getNearestBusStops(longitude, latitude);
+            try {
+                // get nearest stops from Transport API.
+                Log.d(LOG_TAG, "fetching nearest bus stops");
+                return mTransportClient.getNearestBusStops(longitude, latitude);
+            }
+            catch (IOException e) {
+                Log.d(LOG_TAG, "Nearest Bus Stops Exception: " + e.toString());
+                Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return null;
+            }
         }
 
         @Override
         public void onPostExecute(final NearestBusStops result) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // save nearest stops in database.
-                    Log.d(LOG_TAG, "caching nearest stops in database");
-                    mBusDatabase.addNearestBusStops(result);
-                    mNearestBusStops = result;
+            if (result == null) {
+                return;
+            }
 
-                    // reset current position and store ID of nearest stop row so it can be retrieved later.
-                    mCurrentStopPosition = 0;
-                    mNearestStopId = mNearestBusStops.getId();
+            // save nearest stops in database.
+            Log.d(LOG_TAG, "caching nearest stops in database");
+            mBusDatabase.addNearestBusStops(result);
+            mNearestBusStops = result;
 
-                    BusStop stop = result.getNearestStop();
-                    updateBusStop(stop);
+            // reset current position and store ID of nearest stop row so it can be retrieved later.
+            mCurrentStopPosition = 0;
+            mNearestStopId = mNearestBusStops.getId();
 
-                    // hide loading dialog.
-                    mDialog.dismiss();
-                }
-            }, 2000);
+            // get nearest bus stop if there are any stops returned.
+            BusStop stop = result.getNearestStop();
+            if (stop != null) {
+                updateBusStop(stop);
+            }
+
+            // hide loading dialog.
+            mDialog.dismiss();
         }
     }
 
@@ -245,13 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPreExecute() {
-            // show loading message?
-            // hide listview when updating and stop user navigating stop.
-//            mListNearestBuses.setVisibility(View.INVISIBLE);
-//            mButtonNearer.setVisibility(View.INVISIBLE);
-//            mButtonFurther.setVisibility(View.INVISIBLE);
-
-            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Updating buses", true);
+            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Getting live bus info", true);
         }
 
         @Override
@@ -259,28 +263,29 @@ public class MainActivity extends AppCompatActivity {
             mBusStop = params[0];
 
             Log.d(LOG_TAG, "fetching live buses");
-            return mTransportClient.getLiveBuses(mBusStop.getAtcoCode());
+            try {
+                return mTransportClient.getLiveBuses(mBusStop.getAtcoCode());
+            }
+            catch (IOException e) {
+                Log.d(LOG_TAG, "Live Buses Exception: " + e.toString());
+                Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return null;
+            }
         }
 
         public void onPostExecute(final LiveBuses result) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // add newly downloaded buses to database
-                    Log.d(LOG_TAG, "caching live buses in database");
-                    mBusDatabase.addLiveBuses(result, mBusStop.getId());
-                    mLiveBuses = result; // need this later.
+            if (result == null) {
+                return;
+            }
 
-                    updateBuses(); // update buses UI
+            // add newly downloaded buses to database
+            Log.d(LOG_TAG, "caching live buses in database");
+            mBusDatabase.addLiveBuses(result, mBusStop.getId());
+            mLiveBuses = result; // need this later.
 
-                    // show stuff hidden while updating.
-//                    mListNearestBuses.setVisibility(View.VISIBLE);
-//                    mButtonNearer.setVisibility(View.VISIBLE);
-//                    mButtonFurther.setVisibility(View.VISIBLE);
-                    mDialog.dismiss();
-                }
-            }, 2000);
+            updateBuses(); // update buses UI
+
+            mDialog.dismiss();
         }
     }
 
@@ -322,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
             // set widgets
             textLine.setText(bus.getLine());
             textDestination.setText(bus.getDestination());
-            textTime.setText(bus.getTime());
             textDirection.setText(bus.getDirection());
             textOperator.setText(bus.getOperator());
 

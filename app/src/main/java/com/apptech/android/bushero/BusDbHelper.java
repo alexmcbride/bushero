@@ -64,8 +64,11 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusDbSchema.BusTable.Columns.DESTINATION + " TEXT," +
                 BusDbSchema.BusTable.Columns.DIRECTION + " TEXT," +
                 BusDbSchema.BusTable.Columns.OPERATOR + " TEXT," +
-                BusDbSchema.BusTable.Columns.TIME + " TEXT," +
+                BusDbSchema.BusTable.Columns.AIMED_DEPARTURE_TIME + " TEXT," +
+                BusDbSchema.BusTable.Columns.EXPECTED_DEPARTURE_TIME + " TEXT," +
+                BusDbSchema.BusTable.Columns.BEST_DEPARTURE_ESTIMATE + " TEXT," +
                 BusDbSchema.BusTable.Columns.SOURCE + " TEXT," +
+                BusDbSchema.BusTable.Columns.DATE + " TEXT," +
                 "FOREIGN KEY(" + BusDbSchema.BusTable.Columns.BUS_STOP_ID + ") REFERENCES " + BusDbSchema.BusStopTable.NAME + "(" + BusDbSchema.BusStopTable.Columns.ID + ")" +
                 ");");
 

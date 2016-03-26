@@ -66,8 +66,11 @@ public class BusCursorWrapper extends CursorWrapper {
         bus.setDestination(getString(getColumnIndex(BusDbSchema.BusTable.Columns.DESTINATION)));
         bus.setDirection(getString(getColumnIndex(BusDbSchema.BusTable.Columns.DIRECTION)));
         bus.setOperator(getString(getColumnIndex(BusDbSchema.BusTable.Columns.OPERATOR)));
-        bus.setTime(getString(getColumnIndex(BusDbSchema.BusTable.Columns.TIME)));
+        bus.setAimedDepartureTime(getString(getColumnIndex(BusDbSchema.BusTable.Columns.AIMED_DEPARTURE_TIME)));
+        bus.setExpectedDepartureTime(getString(getColumnIndex(BusDbSchema.BusTable.Columns.EXPECTED_DEPARTURE_TIME)));
+        bus.setBestDepartureEstimate(getString(getColumnIndex(BusDbSchema.BusTable.Columns.BEST_DEPARTURE_ESTIMATE)));
         bus.setSource(getString(getColumnIndex(BusDbSchema.BusTable.Columns.SOURCE)));
+        bus.setDate(getString(getColumnIndex(BusDbSchema.BusTable.Columns.DATE)));
         return bus;
     }
 

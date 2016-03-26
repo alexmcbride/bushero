@@ -75,7 +75,7 @@ public class RouteActivity extends AppCompatActivity {
                     mBus.getDirection(),
                     mBus.getLine(),
                     mBus.getOperator(),
-                    mBus.getTime());
+                    mBus.getBestDepartureEstimate());
         }
 
         @Override

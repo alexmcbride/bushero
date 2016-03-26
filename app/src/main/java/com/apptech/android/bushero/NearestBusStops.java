@@ -117,6 +117,10 @@ public class NearestBusStops {
         return mStops;
     }
 
+    public void setStops(List<BusStop> stops) {
+        mStops = stops;
+    }
+
     public void addStop(BusStop stop) {
         mStops.add(stop);
     }

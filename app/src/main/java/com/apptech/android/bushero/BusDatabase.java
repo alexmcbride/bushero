@@ -431,8 +431,11 @@ public class BusDatabase {
         values.put(BusDbSchema.BusTable.Columns.DIRECTION, bus.getDirection());
         values.put(BusDbSchema.BusTable.Columns.DESTINATION, bus.getDestination());
         values.put(BusDbSchema.BusTable.Columns.OPERATOR, bus.getOperator());
-        values.put(BusDbSchema.BusTable.Columns.TIME, bus.getTime());
+        values.put(BusDbSchema.BusTable.Columns.AIMED_DEPARTURE_TIME, bus.getAimedDepartureTime());
+        values.put(BusDbSchema.BusTable.Columns.EXPECTED_DEPARTURE_TIME, bus.getExpectedDepartureTime());
+        values.put(BusDbSchema.BusTable.Columns.BEST_DEPARTURE_ESTIMATE, bus.getBestDepartureEstimate());
         values.put(BusDbSchema.BusTable.Columns.SOURCE, bus.getSource());
+        values.put(BusDbSchema.BusTable.Columns.DATE, bus.getDate());
         return values;
     }
 

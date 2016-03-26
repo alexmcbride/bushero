@@ -167,7 +167,7 @@ public class TransportClient {
 
         for (int i = 0; i < 10; i++) {
             Bus bus = new Bus();
-            bus.setTime("15:38");
+            bus.setExpectedDepartureTime("15:38");
             bus.setMode("bus");
             bus.setLine("" + random.nextInt(100));
             bus.setDestination("Desintation " + (i + 1));
