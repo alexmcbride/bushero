@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
             updateBusStop(busStop);
         }
 
+        // TODO: this gets called when recreating app?
         // TODO: mock GPS coords when running in emulator?
         // initialise google play services API to access location GPS data. we do this last to let
         // all the database stuff be setup.
@@ -117,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
             public void onConnected(Bundle bundle) {
                 // google play services API connected, update location.
                 // TODO: user request object to improve accuracy.
+                // http://developer.android.com/training/location/change-location-settings.html
                 Log.d(LOG_TAG, "Google API Client connected.");
                 updateLocation();
             }
@@ -149,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
             else {
                 Log.d(LOG_TAG, "Location - longitude: " + location.getLongitude() + " latitude: " + location.getLatitude());
                 Log.d(LOG_TAG, "Starting DownloadBusStopsAsyncTask()");
+                // TODO: check network permission??
                 new DownloadBusStopsAsyncTask().execute(location.getLongitude(), location.getLatitude());
             }
         }
@@ -157,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "Location permission needed, requesting it");
             ActivityCompat.requestPermissions(
                     MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
                     REQUEST_PERMISSION_FINE_LOCATION);
         }
     }
@@ -168,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_PERMISSION_FINE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // yes we have permission.
+                    // yes we have permission, try and update location again.
                     updateLocation();
                 }
                 else {

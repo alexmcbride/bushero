@@ -46,9 +46,15 @@
         </activity>
         <activity android:name=".RouteActivity"
                   android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.apptech.android.bushero.MainActivity"/>
         </activity>
         <activity android:name=".AboutActivity"
                   android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.apptech.android.bushero.MainActivity"/>
         </activity>
     </application>
 
