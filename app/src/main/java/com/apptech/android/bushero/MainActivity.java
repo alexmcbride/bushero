@@ -115,23 +115,28 @@ public class MainActivity extends AppCompatActivity {
             updateBusStop(busStop);
         }
 
+        // TODO: mock GPS coords when running in emulator?
         // initialise google play services API to access location GPS data. we do this last to let
         // all the database stuff be setup.
         mGoogleApi = new GoogleApiClient.Builder(this).addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
             @Override
             public void onConnected(Bundle bundle) {
                 // google play services API connected, update location.
+                // TODO: user request object to improve accuracy.
+                Log.d(LOG_TAG, "Google API Client connected.");
                 updateLocation();
             }
 
             @Override
             public void onConnectionSuspended(int i) {
                 // not currently used.
+                Log.d(LOG_TAG, "Google API Client suspended.");
             }
         }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
             @Override
             public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
                 // google play has failed us. :(
+                Log.d(LOG_TAG, "Google API Client connection failed.");
                 Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
             }
         }).addApi(LocationServices.API).build();
@@ -141,14 +146,21 @@ public class MainActivity extends AppCompatActivity {
         // check if we have permission to use location info.
         int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            Log.d(LOG_TAG, "Location permission granted.");
             // yes, we have permission, get latitude and longitude and update bus info asynchronously.
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApi);
-            if (location != null) {
+            if (location == null) {
+                Log.d(LOG_TAG, "No location returned from LocationServices");
+            }
+            else {
+                Log.d(LOG_TAG, "Location - longitude: " + location.getLongitude() + " latitude: " + location.getLatitude());
+                Log.d(LOG_TAG, "Starting DownloadBusStopsAsyncTask()");
                 new DownloadBusStopsAsyncTask().execute(location.getLongitude(), location.getLatitude());
             }
         }
         else {
             // we don't have permission, request it from the user, triggering an onRequestPermissionsResult callback.
+            Log.d(LOG_TAG, "Location permission needed, requesting it");
             ActivityCompat.requestPermissions(
                     MainActivity.this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -166,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
                     updateLocation();
                 }
                 else {
+                    Log.d(LOG_TAG, "Location permission refused :(");
                     // no we don't :(
                     // TODO: make this an alert box so the user can't miss it.
                     Toast.makeText(MainActivity.this, "App needs location permission", Toast.LENGTH_SHORT).show();
@@ -177,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         // connect to google play services api on start
+        Log.d(LOG_TAG, "Connecting to Google API Service");
         mGoogleApi.connect();
         super.onStart();
     }
@@ -184,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         // disconnect from google play services api on stop.
+        Log.d(LOG_TAG, "Disconnecting to Google API Service");
         mGoogleApi.disconnect();
         super.onStop();
     }
@@ -208,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickButtonFurther(View view) {
         // move to next bus stop in list.
-        if (mCurrentStopPosition + 1 < mNearestBusStops.getStopCount()) {
+        if (mNearestBusStops != null && mCurrentStopPosition + 1 < mNearestBusStops.getStopCount()) {
             mCurrentStopPosition++;
 
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
@@ -270,9 +285,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickGridLayoutBusStop(View view) {
         // launch map activity for currently displayed bus stop.
-        BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-        Intent intent = MapActivity.newIntent(this, busStop.getId());
-        startActivity(intent);
+        if (mNearestBusStops != null) {
+            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+            Intent intent = MapActivity.newIntent(this, busStop.getId());
+            startActivity(intent);
+        }
     }
 
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
