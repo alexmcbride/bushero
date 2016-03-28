@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
+    private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
+    private static final String APP_ID = "a10284ad";
 
     // widgets
     private TextView mTextBusStopName;
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     // variables
     private BusDatabase mBusDatabase;
-    private TransportClient2 mTransportClient;
+    private TransportClient mTransportClient;
     private BusAdapter mBusAdapter;
     private NearestBusStops mNearestBusStops;
     private LiveBuses mLiveBuses;
@@ -61,16 +63,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // get widgets from layout.
+        // get widgets from layout and setup events.
         mTextBusStopName = (TextView) findViewById(R.id.textBusStopName);
         mTextBusStopDistance = (TextView) findViewById(R.id.textBusStopDistance);
         mTextBusStopBearing = (TextView) findViewById(R.id.textBusStopBearing);
         mTextBusStopLocality = (TextView) findViewById(R.id.textBusStopLocality);
-        mListNearestBuses = (ListView) findViewById(R.id.listNearestBuses);
         mButtonNearer = (Button) findViewById(R.id.buttonNearer);
         mButtonFurther = (Button) findViewById(R.id.buttonFurther);
-
-        // attach bus list item click handler.
+        mListNearestBuses = (ListView) findViewById(R.id.listNearestBuses);
         mListNearestBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -84,21 +84,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // database to store data while app is running
+        // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
-
-        // client to communicate with transport API
-        // TODO: research android config files or equivalent.
-        String appKey = "bffef3b1ab0a109dffa95562c1687756";
-        String appId = "a10284ad";
-        mTransportClient = new TransportClient2(appKey, appId);
+        mTransportClient = new TransportClient(APP_KEY, APP_ID);
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
-            // wipe previously stored cache data when first starting.
             // TODO: find better place to delete the cache???
             Log.d(LOG_TAG, "deleting database cache");
-            mBusDatabase.deleteCache();
+            mBusDatabase.deleteCache(); // delete stuff only needed when app is running.
         }
         else {
             // activity recreated, loading instance state.
