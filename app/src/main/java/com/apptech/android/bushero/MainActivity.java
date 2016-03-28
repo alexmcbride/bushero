@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,7 +25,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
+    private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
 
     // widgets
     private TextView mTextBusStopName;
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private LiveBuses mLiveBuses;
     private long mNearestStopId;
     private int mCurrentStopPosition;
+    private GoogleApiClient mGoogleApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,20 +99,6 @@ public class MainActivity extends AppCompatActivity {
             // TODO: find better place to delete the cache???
             Log.d(LOG_TAG, "deleting database cache");
             mBusDatabase.deleteCache();
-
-            // get longitude and latitude from Google services.
-            // goma: 55.860143, -4.251948
-            // house: 55.746867, -4.181975
-            // eb: 55.944536, -3.218067
-            // mk: 52.034327, -0.782786
-            // france: 50.317035, 2.600803
-
-            double latitude = 55.860143;
-            double longitude = -4.251948;
-
-            // download nearest bus stops from transport api on a background thread. this is done to
-            // stop the UI thread from hanging while the slow network operation is completed.
-            new DownloadBusStopsAsyncTask().execute(longitude, latitude);
         }
         else {
             // activity recreated, loading instance state.
@@ -125,6 +114,78 @@ public class MainActivity extends AppCompatActivity {
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
             updateBusStop(busStop);
         }
+
+        // initialise google play services API to access location GPS data. we do this last to let
+        // all the database stuff be setup.
+        mGoogleApi = new GoogleApiClient.Builder(this).addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+            @Override
+            public void onConnected(Bundle bundle) {
+                // google play services API connected, update location.
+                updateLocation();
+            }
+
+            @Override
+            public void onConnectionSuspended(int i) {
+                // not currently used.
+            }
+        }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+            @Override
+            public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                // google play has failed us. :(
+                Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
+            }
+        }).addApi(LocationServices.API).build();
+    }
+
+    private void updateLocation() {
+        // check if we have permission to use location info.
+        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            // yes, we have permission, get latitude and longitude and update bus info asynchronously.
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApi);
+            if (location != null) {
+                new DownloadBusStopsAsyncTask().execute(location.getLongitude(), location.getLatitude());
+            }
+        }
+        else {
+            // we don't have permission, request it from the user, triggering an onRequestPermissionsResult callback.
+            ActivityCompat.requestPermissions(
+                    MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_PERMISSION_FINE_LOCATION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        // called after user prompted to award app permission.
+        switch (requestCode) {
+            case REQUEST_PERMISSION_FINE_LOCATION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // yes we have permission.
+                    updateLocation();
+                }
+                else {
+                    // no we don't :(
+                    // TODO: make this an alert box so the user can't miss it.
+                    Toast.makeText(MainActivity.this, "App needs location permission", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        // connect to google play services api on start
+        mGoogleApi.connect();
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        // disconnect from google play services api on stop.
+        mGoogleApi.disconnect();
+        super.onStop();
     }
 
     @Override
