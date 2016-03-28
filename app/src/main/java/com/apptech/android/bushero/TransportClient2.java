@@ -176,6 +176,8 @@ public class TransportClient2 {
 
                 switch (name) {
                     case "atcocode":
+                        Log.i("TransportClient", "atcocode: " + reader.nextString());
+                        break;
                     case "smscode":
                     case "request_time":
                     case "bearing":
@@ -185,9 +187,11 @@ public class TransportClient2 {
                     case "departures":
                         reader.beginObject();
 
-                        name = reader.nextName();
-                        if (name.equals("all") && reader.peek() != JsonToken.NULL) {
-                            getBuses(reader, buses);
+                        if (reader.peek() != JsonToken.END_OBJECT) {
+                            name = reader.nextName();
+                            if (name.equals("all") && reader.peek() != JsonToken.NULL) {
+                                getBuses(reader, buses);
+                            }
                         }
 
                         reader.endObject();

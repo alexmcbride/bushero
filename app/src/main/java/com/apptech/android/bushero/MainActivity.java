@@ -1,9 +1,13 @@
 package com.apptech.android.bushero;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +20,11 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
+import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextBusStopDistance;
     private TextView mTextBusStopBearing;
     private TextView mTextBusStopLocality;
-    private TextView mTextLoading;
     private ListView mListNearestBuses;
     private Button mButtonNearer;
     private Button mButtonFurther;
@@ -95,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
             // eb: 55.944536, -3.218067
             // mk: 52.034327, -0.782786
             // france: 50.317035, 2.600803
+
             double latitude = 55.860143;
             double longitude = -4.251948;
 
@@ -159,8 +168,6 @@ public class MainActivity extends AppCompatActivity {
         if (mLiveBuses == null) {
             // download live bus data on background thread so as not to hang the main UI while the
             // potentially long network operation completes.
-            // TODO: potentially do this with CursorAdapter, avoid creation of asynctask, also
-            // maybe faster?
             new DownloadBusesAsyncTask().execute(busStop);
         }
         else {
@@ -170,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateBuses() {
         // check there is anything to show.
-        if (mLiveBuses == null || mLiveBuses.getBusesCount() == 0) {
+        if (mLiveBuses == null) {
             return;
         }
 
