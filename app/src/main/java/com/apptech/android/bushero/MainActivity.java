@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeGoogleApiClient() {
-        mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
+//        mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
 
         // TODO: this gets called when recreating app?
         // TODO: mock GPS coords when running in emulator?
@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // when recreating activity this gets called, check if we actually need to refresh
                 // our location stuff.
+                // TODO: maybe do this based on time span?
                 if (mIsFirstStartup) {
                     updateLocation();
                     mIsFirstStartup = false;
@@ -368,6 +369,8 @@ public class MainActivity extends AppCompatActivity {
             mNearestStopId = mNearestBusStops.getId();
 
             // get nearest bus stop if there are any stops returned.
+            // TODO: reselect previously selected
+
             BusStop stop = result.getNearestStop();
             if (stop == null) {
                 mDialog.dismiss();
