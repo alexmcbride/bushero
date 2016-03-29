@@ -232,6 +232,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        // stop showing dialog. this helps if user rotates app when asynctask is running
+        // TODO: fix asynctask completeing after app rotated.
+        // TODO: maybe OK so long as get fresh widgets from IDs when task completeing. That way
+        // they'll get from new layout...
+        if (mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+            mDialog = null;
+        }
+        super.onPause();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // save state data so activity can be recreated.
         Log.d(LOG_TAG, "saving instance state");
@@ -328,12 +341,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPreExecute() {
             // show loading dialog. this isn't hidden until the end of DownloadBusesAsyncTask.
-            if (mDialog == null) {
-                mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
-            }
-            else {
-                mDialog.setMessage("Finding nearest bus stop");
-            }
+            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
         }
 
         @Override
@@ -370,7 +378,6 @@ public class MainActivity extends AppCompatActivity {
 
             // get nearest bus stop if there are any stops returned.
             // TODO: reselect previously selected
-
             BusStop stop = result.getNearestStop();
             if (stop == null) {
                 mDialog.dismiss();
@@ -423,13 +430,12 @@ public class MainActivity extends AppCompatActivity {
 
                 updateBuses(); // update buses UI
             }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
             finally {
                 // hide loading dialog.
-                mDialog.dismiss();
-                mDialog = null;
+                if (mDialog != null && mDialog.isShowing()) {
+                    mDialog.dismiss();
+                    mDialog = null;
+                }
             }
         }
     }
