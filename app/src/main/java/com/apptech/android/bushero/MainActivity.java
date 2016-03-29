@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onConnected(Bundle bundle) {
                 Log.d(LOG_TAG, "Google API Client connected.");
-                updateLocation();
+                updateLocation(false);
             }
 
             @Override
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         }).addApi(LocationServices.API).build();
     }
 
-    private void updateLocation() {
+    private void updateLocation(boolean forceUpdate) {
         final float MIN_UPDATE_DISTANCE = 10; // metres
 
         // check if we have permission to use location info.
@@ -160,6 +160,14 @@ public class MainActivity extends AppCompatActivity {
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApi);
             if (location == null) {
                 Log.d(LOG_TAG, "No location returned from LocationServices");
+
+                // if running in emulator we fake a location.
+                if (isRunningInEmulator()) {
+                    Log.d(LOG_TAG, "running in emulator - faking a location");
+                    mLastLongitude = -4.251989; // GOMA: 55.860121, -4.251989
+                    mLastLatitude = 55.860121;
+                    new DownloadBusStopsAsyncTask().execute();
+                }
             }
             else {
                 Log.d(LOG_TAG, "Location - longitude: " + location.getLongitude() + " latitude: " + location.getLatitude());
@@ -169,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: check to see if we've moved far since last location update?
 
                 // check we've moved since the last update.
-                if (getDistanceFromLastKnown(location.getLongitude(), location.getLatitude()) > MIN_UPDATE_DISTANCE) {
+                if (forceUpdate || getDistanceFromLastKnown(location.getLongitude(), location.getLatitude()) > MIN_UPDATE_DISTANCE) {
                     mLastLongitude = location.getLongitude();
                     mLastLatitude = location.getLatitude();
                     new DownloadBusStopsAsyncTask().execute();
@@ -186,6 +194,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private static boolean isRunningInEmulator() {
+        // bit of a hack to see if we're running inside the emulator or not.
+        return Build.FINGERPRINT.contains("generic");
+    }
+
     private float getDistanceFromLastKnown(double longitude, double latitude) {
         float[] results = new float[1];
         Location.distanceBetween(mLastLatitude, mLastLongitude, latitude, longitude, results);
@@ -199,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_PERMISSION_FINE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // yes we have permission, try and update location again.
-                    updateLocation();
+                    updateLocation(false);
                 }
                 else {
                     Log.d(LOG_TAG, "Location permission refused :(");
@@ -255,6 +268,10 @@ public class MainActivity extends AppCompatActivity {
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
             updateBusStop(busStop);
         }
+    }
+
+    public void onClickButtonUpdate(View view) {
+        updateLocation(true);
     }
 
     private void updateBusStop(BusStop busStop) {

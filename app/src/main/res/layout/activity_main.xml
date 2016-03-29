@@ -58,7 +58,7 @@
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="2"
+        android:columnCount="3"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp">
@@ -69,6 +69,13 @@
             android:onClick="onClickButtonNearer"
             android:background="@color/colorDarkBlue"
             android:textColor="@color/colorVeryLightGrey"/>
+
+        <Button android:text="Update"
+            android:layout_gravity="center"
+            android:background="@color/colorDarkBlue"
+            android:textColor="@color/colorVeryLightGrey"
+            android:onClick="onClickButtonUpdate"/>
+
         <Button android:text="@string/btn_further_text"
             android:layout_columnWeight="1"
             android:layout_gravity="right"
