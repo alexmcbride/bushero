@@ -15,6 +15,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.StringReader;
+
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String LOG_TAG = "MapActivity";
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
@@ -22,6 +24,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     private GoogleMap mMap;
     private BusStop mBusStop;
+    private NearestBusStops mNearestBusStops;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +36,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mapFragment.getMapAsync(this);
 
         // get bus stop ID from intent.
-        long busStopId = getIntent().getLongExtra(KEY_BUS_STOP_ID, 0);
+        Intent intent = getIntent();
+        long busStopId = intent.getLongExtra(KEY_BUS_STOP_ID, 0);
 
         // get bus stop from database.
         Log.d(LOG_TAG, "fetching bus stop from database for id " + busStopId);
         BusDatabase busDatabase = new BusDatabase(this);
         mBusStop = busDatabase.getBusStop(busStopId);
+
+        // get nearest bus stops for search location.
+        mNearestBusStops = busDatabase.getNearestBusStops(mBusStop.getNearestBusStopsId());
 
         // update UI
         TextView textBusStopName = (TextView) findViewById(R.id.textBusStopName);
@@ -53,6 +60,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         String name = getString(R.string.map_title, mBusStop.getName());
         double latitude = mBusStop.getLatitude();
         double longitude = mBusStop.getLongitude();
+
+        // TODO: use different marker icons?
+
+        // Add marker for your current position.
+        LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
+        mMap.addMarker(new MarkerOptions().position(currentLocation).title("You"));
 
         // Add marker to map, move camera to that location and zoom.
         LatLng busStopLocation = new LatLng(latitude, longitude);
