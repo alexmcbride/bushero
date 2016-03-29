@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
+    private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
+    private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
     private static final String APP_ID = "a10284ad";
@@ -57,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private long mNearestStopId;
     private int mCurrentStopPosition;
     private GoogleApiClient mGoogleApi;
+    private double mLastLongitude;
+    private double mLastLatitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "getting saved state");
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
             mNearestStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
+            mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
+            mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
 
             // get nearest bus stops from database.
             Log.d(LOG_TAG, "loading nearest stops from database");
@@ -109,6 +117,12 @@ public class MainActivity extends AppCompatActivity {
             updateBusStop(busStop);
         }
 
+        initializeGoogleApiClient();
+    }
+
+    private void initializeGoogleApiClient() {
+        mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
+
         // TODO: this gets called when recreating app?
         // TODO: mock GPS coords when running in emulator?
         // initialise google play services API to access location GPS data. we do this last to let
@@ -116,16 +130,12 @@ public class MainActivity extends AppCompatActivity {
         mGoogleApi = new GoogleApiClient.Builder(this).addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
             @Override
             public void onConnected(Bundle bundle) {
-                // google play services API connected, update location.
-                // TODO: user request object to improve accuracy.
-                // http://developer.android.com/training/location/change-location-settings.html
                 Log.d(LOG_TAG, "Google API Client connected.");
                 updateLocation();
             }
 
             @Override
             public void onConnectionSuspended(int i) {
-                // not currently used.
                 Log.d(LOG_TAG, "Google API Client suspended.");
             }
         }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
@@ -139,10 +149,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLocation() {
+        final float MIN_UPDATE_DISTANCE = 10; // metres
+
         // check if we have permission to use location info.
         int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
             Log.d(LOG_TAG, "Location permission granted.");
+
             // yes, we have permission, get latitude and longitude and update bus info asynchronously.
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApi);
             if (location == null) {
@@ -151,8 +164,16 @@ public class MainActivity extends AppCompatActivity {
             else {
                 Log.d(LOG_TAG, "Location - longitude: " + location.getLongitude() + " latitude: " + location.getLatitude());
                 Log.d(LOG_TAG, "Starting DownloadBusStopsAsyncTask()");
+
                 // TODO: check network permission??
-                new DownloadBusStopsAsyncTask().execute(location.getLongitude(), location.getLatitude());
+                // TODO: check to see if we've moved far since last location update?
+
+                // check we've moved since the last update.
+                if (getDistanceFromLastKnown(location.getLongitude(), location.getLatitude()) > MIN_UPDATE_DISTANCE) {
+                    mLastLongitude = location.getLongitude();
+                    mLastLatitude = location.getLatitude();
+                    new DownloadBusStopsAsyncTask().execute();
+                }
             }
         }
         else {
@@ -163,6 +184,12 @@ public class MainActivity extends AppCompatActivity {
                     new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
                     REQUEST_PERMISSION_FINE_LOCATION);
         }
+    }
+
+    private float getDistanceFromLastKnown(double longitude, double latitude) {
+        float[] results = new float[1];
+        Location.distanceBetween(mLastLatitude, mLastLongitude, latitude, longitude, results);
+        return results[0];
     }
 
     @Override
@@ -206,6 +233,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestStopId);
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+        savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
+        savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
     }
 
     public void onClickButtonNearer(View view) {
@@ -289,22 +318,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
+    private class DownloadBusStopsAsyncTask extends AsyncTask<Void, Void, NearestBusStops> {
         @Override
         public void onPreExecute() {
             // show loading dialog. this isn't hidden until the end of DownloadBusesAsyncTask.
-            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
+            if (mDialog == null) {
+                mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
+            }
+            else {
+                mDialog.setMessage("Finding nearest bus stop");
+            }
         }
 
         @Override
-        protected NearestBusStops doInBackground(Double[] params) {
-            double longitude = params[0];
-            double latitude = params[1];
-
-            try {
+        protected NearestBusStops doInBackground(Void[] params) {
+           try {
                 // get nearest stops from Transport API.
                 Log.d(LOG_TAG, "fetching nearest bus stops");
-                return mTransportClient.getNearestBusStops(longitude, latitude);
+                return mTransportClient.getNearestBusStops(mLastLongitude, mLastLatitude);
             }
             catch (IOException e) {
                 Log.d(LOG_TAG, "Nearest Bus Stops Exception: " + e.toString());

@@ -261,5 +261,9 @@ public class TransportClient {
 
         reader.endArray();
     }
+
+    public BusRoute getBusRoute(String atcoCode, String direction, String line, String operator, String bestDepartureEstimate) {
+        return null;
+    }
 }
 
