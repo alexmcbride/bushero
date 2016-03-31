@@ -4,9 +4,6 @@ package com.apptech.android.bushero;
  * Class to define our DB schema.
  */
 public class BusDbSchema {
-    public static final String DB_FILE = "busHero.db";
-    public static final int DB_VERSION = 1;
-
     public class NearestBusStopsTable {
         public static final String NAME = "NearestBusStops";
 
@@ -31,6 +28,7 @@ public class BusDbSchema {
         public class Columns {
             public static final String ID = "id";
             public static final String BUS_ID = "busId";
+            public static final String REQUEST_TIME = "requestTime";
             public static final String OPERATOR = "operator";
             public static final String LINE = "line";
             public static final String ORIGIN_ATCOCODE = "originAtcoCode";

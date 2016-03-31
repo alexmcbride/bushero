@@ -17,21 +17,24 @@ import java.util.List;
 public class TransportClient {
     private static final String NEAREST_BUS_STOPS_URL = "http://transportapi.com/v3/uk/bus/stops/near.json?app_key=%s&app_id=%s&lat=%f&lon=%f&page=%d&rpp=%d";
     private static final String LIVE_BUSES_URL = "http://transportapi.com/v3/uk/bus/stop/%s/live.json?app_key=%s&app_id=%s&group=no&limit=%d&nextbuses=no";
+    private static final String BUS_ROUTE_URL = "http://transportapi.com/v3/uk/bus/route/%s/%s/%s/%s/%s/%s/timetable.json?app_key=%s&app_id=%s";
+    private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
+    private static final String APP_ID = "a10284ad";
 
-    private final String mAppKey;
-    private final String mAppId;
+    public TransportClient() {
 
-    public TransportClient(String appKey, String appId) {
-        mAppKey = appKey;
-        mAppId = appId;
     }
 
     private URL getNearestBusStopsUrl(double longitude, double latitude, int page, int returnPerPage) throws MalformedURLException {
-        return new URL(String.format(NEAREST_BUS_STOPS_URL, mAppKey, mAppId, latitude, longitude, page, returnPerPage));
+        return new URL(String.format(NEAREST_BUS_STOPS_URL, APP_KEY, APP_ID, latitude, longitude, page, returnPerPage));
     }
 
     private URL getLiveBusesUrl(String atcoCode, int limit) throws MalformedURLException {
-        return new URL(String.format(LIVE_BUSES_URL, atcoCode, mAppKey, mAppId, limit));
+        return new URL(String.format(LIVE_BUSES_URL, atcoCode, APP_KEY, APP_ID, limit));
+    }
+
+    private URL getBusRouteUrl(String operator, String line, String direction, String atcoCode, String date, String time) throws MalformedURLException {
+        return new URL(String.format(BUS_ROUTE_URL, operator, line, direction, atcoCode, date, time, APP_KEY, APP_ID));
     }
 
     public NearestBusStops getNearestBusStops(double longitude, double latitude) throws IOException {
@@ -156,7 +159,7 @@ public class TransportClient {
     }
 
     public LiveBuses getLiveBuses(String atcoCode) throws IOException {
-        URL url = getLiveBusesUrl(atcoCode, 10);
+        URL url = getLiveBusesUrl(atcoCode, 20);
         URLConnection connection = url.openConnection();
         connection.connect();
 
@@ -262,8 +265,94 @@ public class TransportClient {
         reader.endArray();
     }
 
-    public BusRoute getBusRoute(String atcoCode, String direction, String line, String operator, String bestDepartureEstimate) {
-        return null;
+    public BusRoute getBusRoute(String operator, String line, String direction, String atcoCode, String date, String time) throws IOException {
+        URL url = getBusRouteUrl(operator, line, direction, atcoCode, date, time);
+        URLConnection connection = url.openConnection();
+        connection.connect();
+
+        InputStream input = null;
+        InputStreamReader streamReader = null;
+        JsonReader reader = null;
+
+        try {
+            input = new BufferedInputStream(url.openStream());
+            streamReader = new InputStreamReader(input);
+            reader = new JsonReader(streamReader);
+            LiveBuses buses = new LiveBuses();
+
+            reader.beginObject();
+            BusRoute route = new BusRoute();
+
+            while (reader.hasNext()) {
+                String name = reader.nextName();
+
+                switch (name) {
+                    case "request_time":
+                        route.setRequestTime(reader.nextString());
+                        break;
+                    case "operator":
+                        route.setOperator(reader.nextString());
+                        break;
+                    case "line":
+                        route.setLine(reader.nextString());
+                        break;
+                    case "origin_atcocode":
+                        route.setOriginAtcoCode(reader.nextString());
+                        break;
+                    case "stops":
+                        if (reader.peek() != JsonToken.NULL) {
+                            reader.beginArray();
+                            while (reader.hasNext()) {
+                                reader.beginObject();
+                                BusStop stop = new BusStop();
+                                while (reader.hasNext()) {
+                                    name = reader.nextName();
+                                    switch (name) {
+                                        case "time":
+                                            stop.setTime(reader.nextString());
+                                            break;
+                                        case "atcocode":
+                                            stop.setAtcoCode(reader.nextString());
+                                            break;
+                                        case "smscode":
+                                            stop.setSmsCode(reader.nextString());
+                                            break;
+                                        case "name":
+                                            stop.setName(reader.nextString());
+                                            break;
+                                        case "locality":
+                                            stop.setLocality(reader.nextString());
+                                            break;
+                                        case "indicator":
+                                            stop.setIndicator(reader.nextString());
+                                            break;
+                                        case "latitude":
+                                            stop.setLatitude(reader.nextDouble());
+                                            break;
+                                        case "longitude":
+                                            stop.setLongitude(reader.nextDouble());
+                                            break;
+                                        case "bearing":
+                                            stop.setBearing(reader.nextString());
+                                            break;
+                                    }
+                                }
+                                route.addStop(stop);
+                                reader.endObject();
+                            }
+                            reader.endArray();
+                        }
+                        break;
+                }
+            }
+
+            return route;
+        }
+        finally {
+            if (reader != null) reader.close();
+            if (streamReader != null) streamReader.close();
+            if (input != null) input.close();
+        }
     }
 }
 

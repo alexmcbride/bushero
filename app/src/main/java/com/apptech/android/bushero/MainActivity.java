@@ -32,12 +32,10 @@ import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
-    private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
-    private static final String APP_ID = "a10284ad";
 
     // widgets
     private TextView mTextBusStopName;
@@ -78,17 +76,18 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // get clicked on bus and start route activity.
                 Bus bus = mLiveBuses.getBus(position);
-                BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
                 Intent intent = RouteActivity.newIntent(
                         MainActivity.this,
-                        bus.getId());
+                        bus.getId(),
+                        stop.getAtcoCode());
                 startActivity(intent);
             }
         });
 
         // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
-        mTransportClient = new TransportClient(APP_KEY, APP_ID);
+        mTransportClient = new TransportClient();
 
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
@@ -120,9 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeGoogleApiClient() {
 //        mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
-
-        // TODO: this gets called when recreating app?
-        // TODO: mock GPS coords when running in emulator?
         // initialise google play services API to access location GPS data. we do this last to let
         // all the database stuff be setup.
         mGoogleApi = new GoogleApiClient.Builder(this).addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
@@ -155,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateLocation() {
         // check if we have permission to use location info.
+        // TODO: maybe move permission check to onCreate()? if no permission then no point in app running.
         int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
             Log.d(LOG_TAG, "Location permission granted.");
@@ -226,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         // disconnect from google play services api on stop.
-        Log.d(LOG_TAG, "Disconnecting to Google API Service");
+        Log.d(LOG_TAG, "Disconnecting from Google API Service");
         mGoogleApi.disconnect();
         super.onStop();
     }
@@ -234,9 +231,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         // stop showing dialog. this helps if user rotates app when asynctask is running
-        // TODO: fix asynctask completeing after app rotated.
-        // TODO: maybe OK so long as get fresh widgets from IDs when task completeing. That way
-        // they'll get from new layout...
+        // TODO: fix asynctask completing after app rotated.
+        // TODO: maybe OK so long as get fresh widgets from IDs when task completeing. That way they'll get from new layout...
+        // TODO: maybe set mIsUpdating boolean that's saved to instance state, get widgets fresh from layout before update.
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
             mDialog = null;
@@ -278,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateBusStop(BusStop busStop) {
         // update current bus stop info before loading live buses so user sees at least some
-        // activity onthe screen.
+        // activity on the screen.
         mTextBusStopName.setText(busStop.getName());
         mTextBusStopDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
         mTextBusStopBearing.setText(TextHelper.getBearing(busStop.getBearing()));

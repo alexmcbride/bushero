@@ -16,7 +16,7 @@
         android:onClick="onClickGridLayoutBusStop">
 
         <ImageView android:src="@drawable/ic_timetable" android:layout_rowSpan="2" android:layout_marginRight="8dp"
-                   android:contentDescription="@string/ic_timetable_content_description"/>
+                   android:contentDescription="@string/ic_timetable_description"/>
 
         <TextView android:id="@+id/textBusStopName"
                   tools:text="Bus Stop Name"

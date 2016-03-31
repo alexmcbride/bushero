@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Bus Hero</string>
     <string name="bus_stop_distance">%d Metres</string>
-    <string name="ic_timetable_content_description">timetable</string>
+    <string name="ic_timetable_description">Timetable</string>
     <string name="btn_nearer_text">Nearer</string>
     <string name="btn_further_text">Further</string>
     <string name="title_activity_map">Map</string>
@@ -9,4 +9,7 @@
     <string name="ic_back_content_description">Back</string>
     <string name="ic_bus_content_description">Bus</string>
     <string name="hypen">-</string>
+    <string name="btn_back_text">Back</string>
+    <string name="text_route_line" formatted="false">%s - %s</string>
+    <string name="ic_clock_description">Clock</string>
 </resources>

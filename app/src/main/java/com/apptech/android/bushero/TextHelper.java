@@ -23,7 +23,45 @@ public class TextHelper {
     public static String getOperator(String operator) {
         switch (operator) {
             case "FGL":
-                return "First Glasgow";
+                return "First";
+            case "MCG":
+                return "McGill";
+            case "WHI":
+                return "Whitelaws";
+
+            // http://www.travelinescotland.com/pdfs/timetables/PTAO100.pdf
+            case "COL":
+                return "Colchri Coaches";
+            case "STW":
+                return "Stagecoach";
+            case "BLL":
+                return "A+J Ballantyne";
+            case "SHU":
+                return "Shuttlebus";
+            case "JJT":
+                return "JJ Travel";
+            case "SIL":
+                return "Silverdale";
+            case "DUP":
+                return "C+M Coaches";
+            case "STU":
+                return "Stuarts Coaches";
+            case "PCV":
+                return "Canavan Travel";
+            case "CTB":
+                return "Glasgow Citybus";
+            case "MBL":
+                return "Marbill Coaches";
+            case "RDT":
+                return "Rural Development Trust";
+            case "MCL":
+                return "McColls Coaches";
+            case "DAC":
+                return "CA Coaches";
+            case "AVO":
+                return "Avondale Coaches";
+            case "ART":
+                return "Arthurs Coaches";
             default:
                 return operator;
         }

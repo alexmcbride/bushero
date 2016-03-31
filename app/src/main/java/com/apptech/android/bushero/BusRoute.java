@@ -9,6 +9,7 @@ import java.util.List;
 public class BusRoute {
     private long mId;
     private long mBusId; // the ID of the bus record used to generate this bus route.
+    private String mRequestTime;
     private String mOperator;
     private String mLine;
     private String mOriginAtcoCode;
@@ -32,6 +33,14 @@ public class BusRoute {
 
     public void setBusId(long busId) {
         mBusId = busId;
+    }
+
+    public String getRequestTime() {
+        return mRequestTime;
+    }
+
+    public void setRequestTime(String requestTime) {
+        mRequestTime = requestTime;
     }
 
     public String getOperator() {
