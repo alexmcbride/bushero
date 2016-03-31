@@ -1,5 +1,6 @@
 package com.apptech.android.bushero;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -24,6 +25,7 @@ public class RouteActivity extends AppCompatActivity {
     private static final String SAVED_ATCOCODE = "ATCOCODE";
 
     private ListView mListBusStops;
+    private ProgressDialog mProgressDialog;
 
     private BusDatabase mBusDatabase;
     private String mAtcoCode;
@@ -96,6 +98,7 @@ public class RouteActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        dismissProgressDialog();
         super.onPause();
     }
 
@@ -110,11 +113,23 @@ public class RouteActivity extends AppCompatActivity {
         return intent;
     }
 
+    private void showProgressDialog() {
+        mProgressDialog = ProgressDialog.show(this, "Loading", "Loading bus route", true);
+    }
+
+    private void dismissProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
+        }
+    }
+
     private class DownloadRouteAsyncTask extends AsyncTask<Void, Void, BusRoute> {
         @Override
         protected void onPreExecute() {
-            // show progress
             Log.d(LOG_TAG, "async task pre");
+
+            showProgressDialog();
         }
 
         @Override
@@ -139,7 +154,7 @@ public class RouteActivity extends AppCompatActivity {
 
             updateBusRoute();
 
-            // hide progress
+            dismissProgressDialog();
         }
     }
 

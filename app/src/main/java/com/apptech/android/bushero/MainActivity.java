@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView mListNearestBuses;
     private Button mButtonNearer;
     private Button mButtonFurther;
-    private ProgressDialog mDialog;
+    private ProgressDialog mProgressDialog;
 
     // variables
     private BusDatabase mBusDatabase;
@@ -234,10 +234,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO: fix asynctask completing after app rotated.
         // TODO: maybe OK so long as get fresh widgets from IDs when task completeing. That way they'll get from new layout...
         // TODO: maybe set mIsUpdating boolean that's saved to instance state, get widgets fresh from layout before update.
-        if (mDialog != null && mDialog.isShowing()) {
-            mDialog.dismiss();
-            mDialog = null;
-        }
+        dismissProgressDialog();
         super.onPause();
     }
 
@@ -334,11 +331,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showProgressDialog(String message) {
+        if (mProgressDialog == null) {
+            mProgressDialog = ProgressDialog.show(this, "Loading", message, true);
+        }
+        else if (mProgressDialog.isShowing()){
+            mProgressDialog.setMessage(message);
+        }
+    }
+
+    private void dismissProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
+        mProgressDialog = null;
+    }
+
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         @Override
         public void onPreExecute() {
             // show loading dialog. this isn't hidden until the end of DownloadBusesAsyncTask.
-            mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Finding nearest bus stop", true);
+            showProgressDialog("Finding nearest bus stop");
         }
 
         @Override
@@ -377,8 +390,7 @@ public class MainActivity extends AppCompatActivity {
             // TODO: reselect previously selected
             BusStop stop = result.getNearestStop();
             if (stop == null) {
-                mDialog.dismiss();
-                mDialog = null;
+                dismissProgressDialog();
             }
             else {
                 updateBusStop(stop);
@@ -391,12 +403,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPreExecute() {
-            if (mDialog == null) {
-                mDialog = ProgressDialog.show(MainActivity.this, "Loading", "Loading live buses", true);
-            }
-            else {
-                mDialog.setMessage("Loading live buses");
-            }
+            showProgressDialog("Loading live buses");
         }
 
         @Override
@@ -428,11 +435,7 @@ public class MainActivity extends AppCompatActivity {
                 updateBuses(); // update buses UI
             }
             finally {
-                // hide loading dialog.
-                if (mDialog != null && mDialog.isShowing()) {
-                    mDialog.dismiss();
-                    mDialog = null;
-                }
+                dismissProgressDialog();
             }
         }
     }
