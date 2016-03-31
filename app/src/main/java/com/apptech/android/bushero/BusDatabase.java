@@ -203,9 +203,15 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
-            String s = "SELECT * FROM BusRoute JOIN BusStop ON BusRoute.id=BusStop.busRouteId WHERE BusRoute.busId=?";
+            //SELECT * FROM BusRoute JOIN BusStop ON BusRoute.id=BusStop.busRouteId WHERE BusRoute.busId=?
 
-            cursor = db.rawQuery(s, new String[]{Long.toString(busId)});
+            String sql = "SELECT * FROM " + BusRouteTable.NAME +
+                    " JOIN " + BusStopTable.NAME +
+                    " ON " + BusRouteTable.NAME + "." + BusRouteTable.Columns.ID +
+                    "=" + BusStopTable.NAME + "." + BusStopTable.Columns.BUS_ROUTE_ID +
+                    " WHERE " + BusRouteTable.NAME + "." + BusRouteTable.Columns.BUS_ID + "=?;";
+
+            cursor = db.rawQuery(sql, new String[]{Long.toString(busId)});
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
             BusRoute route = null;

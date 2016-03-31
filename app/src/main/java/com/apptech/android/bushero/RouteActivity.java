@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,12 +20,15 @@ public class RouteActivity extends AppCompatActivity {
     private static final String LOG_TAG = "RouteActivity";
     private static final String KEY_BUS_ID = "com.apptech.android.bushero.KEY_BUS_ID";
     private static final String KEY_ATCOCODE = "com.apptech.android.bushero.ATCOCODE";
+    private static final String SAVED_BUS_ID = "BUS_ID";
+    private static final String SAVED_ATCOCODE = "ATCOCODE";
 
     private ListView mListBusStops;
 
     private BusDatabase mBusDatabase;
     private String mAtcoCode;
     private Bus mBus;
+    private BusRoute mBusRoute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,41 +40,57 @@ public class RouteActivity extends AppCompatActivity {
         TextView textDirection = (TextView) findViewById(R.id.textRouteDirection);
         TextView textOperator = (TextView) findViewById(R.id.textRouteOperator);
         mListBusStops = (ListView)findViewById(R.id.listRouteBusStops);
+        mListBusStops.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                BusStop busStop = mBusRoute.getStop(position);
+                Intent intent = MapActivity.newIntent(RouteActivity.this, busStop.getId());
+                startActivity(intent);
+            }
+        });
 
-        // get stop and bus info from intent.
-        Intent intent = getIntent();
-        long busId = intent.getLongExtra(KEY_BUS_ID, -1);
-        mAtcoCode = intent.getStringExtra(KEY_ATCOCODE);
+        // get info from intent or saved instance state if it exists.
+        long busId;
+        if (savedInstanceState == null) {
+            Intent intent = getIntent();
+            busId = intent.getLongExtra(KEY_BUS_ID, -1);
+            mAtcoCode = intent.getStringExtra(KEY_ATCOCODE);
+        }
+        else {
+            busId = savedInstanceState.getLong(SAVED_BUS_ID);
+            mAtcoCode = savedInstanceState.getString(SAVED_ATCOCODE);
+        }
 
         // get bus and route from database.
         mBusDatabase = new BusDatabase(this);
         mBus = mBusDatabase.getBus(busId);
-        BusRoute route = mBusDatabase.getBusRoute(busId);
+        mBusRoute = mBusDatabase.getBusRoute(busId);
 
         // update bus info.
-        textLine.setText(getString(R.string.text_route_line, mBus.getLine(), mBus.getDestination()));
-        textDirection.setText(mBus.getDirection());
-        textOperator.setText(mBus.getOperator());
+        textLine.setText(getString(R.string.text_route_line, mBus.getLine(), TextHelper.getDestination(mBus.getDestination())));
+        textDirection.setText(TextHelper.getDestination(mBus.getDirection()));
+        textOperator.setText(TextHelper.getOperator(mBus.getOperator()));
 
         // if no route found download from transport api
-        if (route == null) {
+        if (mBusRoute == null) {
             Log.d(LOG_TAG, "no route in DB, starting async download task.");
             new DownloadRouteAsyncTask().execute();
         }
         else {
             Log.d(LOG_TAG, "updating route from DB");
-            updateBusRoute(route);
+            updateBusRoute();
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
-        // not needed cause intent handles it?
+        savedInstanceState.putLong(SAVED_BUS_ID, mBus.getId());
+        savedInstanceState.putString(SAVED_ATCOCODE, mAtcoCode);
     }
 
-    private void updateBusRoute(BusRoute route) {
+    private void updateBusRoute() {
         BusStopArrayAdapter arrayAdapter = new BusStopArrayAdapter(this);
-        arrayAdapter.addAll(route.getStops());
+        arrayAdapter.addAll(mBusRoute.getStops());
         mListBusStops.setAdapter(arrayAdapter);
     }
 
@@ -115,8 +135,9 @@ public class RouteActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "caching route in database");
 
             mBusDatabase.addBusRoute(result, mBus.getId());
+            mBusRoute = result;
 
-            updateBusRoute(result);
+            updateBusRoute();
 
             // hide progress
         }
@@ -140,16 +161,14 @@ public class RouteActivity extends AppCompatActivity {
             // get widgets from view.
             TextView name = (TextView)convertView.findViewById(R.id.textName);
             TextView time = (TextView)convertView.findViewById(R.id.textTime);
-            TextView indicator = (TextView)convertView.findViewById(R.id.textIndicator);
             TextView locality = (TextView)convertView.findViewById(R.id.textLocality);
             TextView bearing = (TextView)convertView.findViewById(R.id.textBearing);
 
             // update them
             name.setText(stop.getName());
             time.setText(stop.getTime());
-            indicator.setText(stop.getIndicator());
             locality.setText(stop.getLocality());
-            bearing.setText(stop.getBearing());
+            bearing.setText(TextHelper.getBearing(stop.getBearing()));
 
             return convertView;
         }

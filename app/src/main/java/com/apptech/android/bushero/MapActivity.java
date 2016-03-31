@@ -63,9 +63,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // TODO: use different marker icons?
 
-        // Add marker for your current position.
-        LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
-        mMap.addMarker(new MarkerOptions().position(currentLocation).title("You"));
+        // Add marker for your current position if we have.
+        // TODO: maybe get this from GPS coords so we can show in all situations?
+        if (mNearestBusStops != null) {
+            LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
+            mMap.addMarker(new MarkerOptions().position(currentLocation).title("You"));
+        }
 
         // Add marker to map, move camera to that location and zoom.
         LatLng busStopLocation = new LatLng(latitude, longitude);

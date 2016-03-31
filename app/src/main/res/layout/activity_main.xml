@@ -12,10 +12,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:columnCount="4"
-        android:background="@color/colorLightBlue" android:padding="16dp"
+        android:background="@color/colorLightBlue" android:padding="8dp"
         android:onClick="onClickGridLayoutBusStop">
 
-        <ImageView android:src="@drawable/ic_timetable" android:layout_rowSpan="2" android:layout_marginRight="8dp"
+        <ImageView android:src="@drawable/ic_timetable"
+                   android:layout_width="44dp"
+                   android:layout_height="44dp"
+                   android:layout_rowSpan="2"
+                   android:layout_marginRight="8dp"
                    android:contentDescription="@string/ic_timetable_description"/>
 
         <TextView android:id="@+id/textBusStopName"
@@ -50,18 +54,18 @@
         android:layout_height="0dp"
         android:id="@+id/listNearestBuses"
         android:layout_weight="1"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"/>
 
     <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:columnCount="3"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp">
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp">
         <Button android:text="@string/btn_nearer_text"
             android:layout_columnWeight="1"
             android:layout_gravity="left"

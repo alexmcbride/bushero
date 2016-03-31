@@ -74,4 +74,11 @@ public class BusRoute {
     public void addStop(BusStop stop) {
         mStops.add(stop);
     }
+
+    public BusStop getStop(int position) {
+        if (mStops.size() > 0) {
+            return mStops.get(position);
+        }
+        return null;
+    }
 }

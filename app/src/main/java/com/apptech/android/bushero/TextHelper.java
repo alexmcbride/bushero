@@ -89,4 +89,23 @@ public class TextHelper {
                 return bearing;
         }
     }
+
+    public static String getIndicator(String indicator) {
+        indicator = indicator.toLowerCase();
+
+        switch (indicator) {
+            case "at":
+                return "At";
+            case "opp":
+                return "Opposite";
+            case "after":
+                return "After";
+            case "before":
+                return "Before";
+            case "near":
+                return "Near";
+            default:
+                return capitalise(indicator);
+        }
+    }
 }
