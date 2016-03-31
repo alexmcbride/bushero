@@ -10,7 +10,7 @@
         android:src="@drawable/ic_clock"
         android:id="@+id/imageClock"
         android:layout_marginRight="8dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
         android:layout_marginTop="4dp"
         android:contentDescription="@string/ic_clock_description"/>

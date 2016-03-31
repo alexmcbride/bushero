@@ -13,6 +13,7 @@
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:paddingRight="8dp"
+        android:paddingEnd="8dp"
         android:id="@+id/toolbarRoute">
         <ImageButton
             android:layout_width="wrap_content"
@@ -35,7 +36,8 @@
                 tools:text="75 - Castlemilk"
                 android:textColor="@color/colorVeryLightGrey"
                 android:textStyle="bold"
-                style="@style/Base.TextAppearance.AppCompat.Large"/>
+                style="@style/Base.TextAppearance.AppCompat.Large"
+                tools:ignore="RelativeOverlap"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -53,14 +55,18 @@
                 tools:text="First"
                 android:layout_below="@+id/textRouteLine"
                 android:layout_toRightOf="@+id/textRouteDirection"
+                android:layout_toEndOf="@+id/textRouteDirection"
                 android:textColor="@color/colorVeryLightGrey"
                 android:id="@+id/textRouteOperator"/>
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_bus"
-                android:layout_alignParentRight="true"/>
+                android:src="@drawable/ic_bus_white"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="4dp"
+                android:layout_marginEnd="4dp"/>
         </RelativeLayout>
 
     </android.support.v7.widget.Toolbar>

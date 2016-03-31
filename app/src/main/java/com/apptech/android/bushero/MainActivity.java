@@ -479,7 +479,7 @@ public class MainActivity extends AppCompatActivity {
             textLine.setText(bus.getLine().trim());
             textDestination.setText(TextHelper.getDestination(bus.getDestination()));
             textTime.setText(bus.getBestDepartureEstimate());
-            textDirection.setText(TextHelper.capitalise(bus.getDirection()));
+            textDirection.setText(TextHelper.getDirection(bus.getDirection()));
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
 
             return convertView;

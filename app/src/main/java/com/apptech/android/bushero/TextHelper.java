@@ -12,7 +12,8 @@ public class TextHelper {
         return dest;
     }
 
-    public static String capitalise(String direction) {
+    public static String getDirection(String direction) {
+        // capitalise first character
         char[] chars = direction.toCharArray();
         if (chars.length > 0) {
             chars[0] = Character.toUpperCase(chars[0]);
@@ -105,7 +106,7 @@ public class TextHelper {
             case "near":
                 return "Near";
             default:
-                return capitalise(indicator);
+                return getDirection(indicator);
         }
     }
 }

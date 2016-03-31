@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import java.io.IOException;
 
-public class RouteActivity extends AppCompatActivity {
+public class RouteActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String LOG_TAG = "RouteActivity";
     private static final String KEY_BUS_ID = "com.apptech.android.bushero.KEY_BUS_ID";
     private static final String KEY_ATCOCODE = "com.apptech.android.bushero.ATCOCODE";
@@ -42,14 +42,7 @@ public class RouteActivity extends AppCompatActivity {
         TextView textDirection = (TextView) findViewById(R.id.textRouteDirection);
         TextView textOperator = (TextView) findViewById(R.id.textRouteOperator);
         mListBusStops = (ListView)findViewById(R.id.listRouteBusStops);
-        mListBusStops.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                BusStop busStop = mBusRoute.getStop(position);
-                Intent intent = MapActivity.newIntent(RouteActivity.this, busStop.getId());
-                startActivity(intent);
-            }
-        });
+        mListBusStops.setOnItemClickListener(this);
 
         // get info from intent or saved instance state if it exists.
         long busId;
@@ -69,8 +62,10 @@ public class RouteActivity extends AppCompatActivity {
         mBusRoute = mBusDatabase.getBusRoute(busId);
 
         // update bus info.
-        textLine.setText(getString(R.string.text_route_line, mBus.getLine(), TextHelper.getDestination(mBus.getDestination())));
-        textDirection.setText(TextHelper.getDestination(mBus.getDirection()));
+        textLine.setText(getString(
+                R.string.text_route_line, mBus.getLine(),
+                TextHelper.getDestination(mBus.getDestination())));
+        textDirection.setText(TextHelper.getDirection(mBus.getDirection()));
         textOperator.setText(TextHelper.getOperator(mBus.getOperator()));
 
         // if no route found download from transport api
@@ -106,13 +101,6 @@ public class RouteActivity extends AppCompatActivity {
         finish();
     }
 
-    public static Intent newIntent(Context context, long busId, String atcoCode) {
-        Intent intent = new Intent(context, RouteActivity.class);
-        intent.putExtra(KEY_BUS_ID, busId);
-        intent.putExtra(KEY_ATCOCODE, atcoCode);
-        return intent;
-    }
-
     private void showProgressDialog() {
         mProgressDialog = ProgressDialog.show(this, "Loading", "Loading bus route", true);
     }
@@ -122,6 +110,20 @@ public class RouteActivity extends AppCompatActivity {
             mProgressDialog.dismiss();
             mProgressDialog = null;
         }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        BusStop busStop = mBusRoute.getStop(position);
+        Intent intent = MapActivity.newIntent(RouteActivity.this, busStop.getId());
+        startActivity(intent);
+    }
+
+    public static Intent newIntent(Context context, long busId, String atcoCode) {
+        Intent intent = new Intent(context, RouteActivity.class);
+        intent.putExtra(KEY_BUS_ID, busId);
+        intent.putExtra(KEY_ATCOCODE, atcoCode);
+        return intent;
     }
 
     private class DownloadRouteAsyncTask extends AsyncTask<Void, Void, BusRoute> {
