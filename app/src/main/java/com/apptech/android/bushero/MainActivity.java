@@ -120,34 +120,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onConnected(Bundle bundle) {
         Log.d(LOG_TAG, "Google API Client connected.");
 
-        // check we have permission to get user's location.
+        startLocationUpdates();
+    }
+
+    private void startLocationUpdates() {
         Log.d(LOG_TAG, "checking permissions");
-        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
+        int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            // set location settings.
+            LocationRequest request = new LocationRequest();
+            request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            request.setInterval(LOCATION_UPDATE_INTERVAL);
+            request.setFastestInterval(LOCATION_UPDATE_INTERVAL);
+
+            Log.d(LOG_TAG, "requesting location updates");
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
         }
         else {
             ActivityCompat.requestPermissions(
                     MainActivity.this,
                     new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
                     REQUEST_PERMISSION_FINE_LOCATION);
-        }
-    }
-
-    private void startLocationUpdates() {
-        // set location settings.
-        LocationRequest request = new LocationRequest();
-        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        request.setInterval(LOCATION_UPDATE_INTERVAL);
-        request.setFastestInterval(LOCATION_UPDATE_INTERVAL);
-
-        try {
-            Log.d(LOG_TAG, "requesting location updates");
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
-        }
-        catch (SecurityException e) {
-            // we've already requested permission but Android studio won't shutup about it.
-            Toast.makeText(MainActivity.this, "No permission to access location", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -357,8 +350,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // launch map activity for currently displayed bus stop.
         if (mNearestBusStops != null) {
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-            Intent intent = MapActivity.newIntent(this, busStop.getId());
-            startActivity(intent);
+            if (busStop != null) {
+                Intent intent = MapActivity.newIntent(this, busStop.getId());
+                startActivity(intent);
+            }
         }
     }
 
