@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_clock"
+        android:id="@+id/imageClock"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="4dp"
+        android:contentDescription="@string/ic_clock_description"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textName"
+        tools:text="Gallery of Modern Art"
+        android:textColor="@color/colorVeryDarkGrey"
+        style="@style/Base.TextAppearance.AppCompat.Medium"
+        android:layout_toRightOf="@+id/imageClock"
+        android:layout_toEndOf="@+id/imageClock"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="12:23"
+        android:id="@+id/textTime"
+        android:layout_toRightOf="@+id/imageClock"
+        android:layout_toEndOf="@+id/imageClock"
+        android:layout_below="@+id/textName"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="North West"
+        android:id="@+id/textBearing"
+        android:layout_toRightOf="@+id/textTime"
+        android:layout_toEndOf="@+id/textTime"
+        android:layout_below="@+id/textName"
+        android:layout_marginRight="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Glasgow"
+        android:id="@+id/textLocality"
+        android:layout_below="@+id/textName"
+        android:layout_toRightOf="@+id/textBearing"
+        android:layout_toEndOf="@+id/textBearing"/>
+</RelativeLayout>

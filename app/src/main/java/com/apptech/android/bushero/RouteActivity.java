@@ -178,17 +178,17 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             // if a view already exists then reuse it.
             if (convertView == null) {
                 LayoutInflater inflater = getLayoutInflater();
-                convertView = inflater.inflate(R.layout.list_item_bus_stop, parent, false);
+                convertView = inflater.inflate(R.layout.list_item_route_stop, parent, false);
             }
 
             // get widgets from view.
-            TextView name = (TextView)convertView.findViewById(R.id.textName);
+            TextView textName = (TextView)convertView.findViewById(R.id.textName);
             TextView time = (TextView)convertView.findViewById(R.id.textTime);
             TextView locality = (TextView)convertView.findViewById(R.id.textLocality);
             TextView bearing = (TextView)convertView.findViewById(R.id.textBearing);
 
             // update them
-            name.setText(stop.getName());
+            textName.setText(stop.getName());
             time.setText(stop.getTime());
             locality.setText(stop.getLocality());
             bearing.setText(TextHelper.getBearing(stop.getBearing()));

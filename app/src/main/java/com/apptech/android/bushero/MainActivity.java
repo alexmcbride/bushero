@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,7 +34,7 @@ import com.google.android.gms.location.LocationServices;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
@@ -52,6 +53,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Button mButtonNearer;
     private Button mButtonFurther;
     private ProgressDialog mProgressDialog;
+    private ListView mListFavourites;
+    private ListView mListNearest;
+    private DrawerLayout mLayoutDrawer;
 
     // variables
     private BusDatabase mBusDatabase;
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private GoogleApiClient mGoogleApi;
     private double mLastLongitude;
     private double mLastLatitude;
+    private FavouritesAdapter mFavouritesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +82,65 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mTextLocality = (TextView) findViewById(R.id.textLocality);
         mButtonNearer = (Button) findViewById(R.id.buttonNearer);
         mButtonFurther = (Button) findViewById(R.id.buttonFurther);
+        mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
+
         mListBuses = (ListView) findViewById(R.id.listBuses);
-        mListBuses.setOnItemClickListener(this);
+        mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // get clicked on bus and start route activity.
+                Bus bus = mLiveBuses.getBus(position);
+                BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
+                Intent intent = RouteActivity.newIntent(
+                        MainActivity.this,
+                        bus.getId(),
+                        stop.getAtcoCode());
+                startActivity(intent);
+            }
+        });
+
+        mListFavourites = (ListView)findViewById(R.id.listFavourites);
+        mListFavourites.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // get favorite stop and get stop from transport api.
+                FavouriteStop favourite = mFavouritesAdapter.getItem(position);
+
+                mLayoutDrawer.closeDrawers();
+
+                // check and see if this stop is already in our download list.
+                boolean found = false;
+                for (int i = 0; i < mNearestBusStops.getStopCount(); i++) {
+                    BusStop nearest = mNearestBusStops.getStop(i);
+                    if (nearest.getAtcoCode().equals(favourite.getAtcoCode())) {
+                        updateBusStop(nearest);
+                        found = true;
+                        break;
+                    }
+                }
+
+                // it's not, download fresh.
+                if (!found) {
+                    new DownloadFavouriteStopAsyncTask().execute(favourite);
+                }
+            }
+        });
+
+        mListNearest = (ListView)findViewById(R.id.listNearest);
+        mListNearest.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // select this stop.
+                BusStop stop = mNearestBusStops.getStop(position);
+
+                mNearestStopId = stop.getId();
+                mCurrentStopPosition = position;
+
+                updateBusStop(stop);
+
+                mLayoutDrawer.closeDrawers();
+            }
+        });
 
         // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
@@ -115,7 +177,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 .addApi(LocationServices.API)
                 .build();
 
-        // TODO: if no location then show favourite bus stop.
+        // setup favourites
+        // TODO: move to drawer open event?
+        List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
+        mFavouritesAdapter = new FavouritesAdapter(this, favourites);
+        mListFavourites.setAdapter(mFavouritesAdapter);
+
+        // TODO: if no location found then show favourite bus stop?
     }
 
     @Override
@@ -141,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         else {
             ActivityCompat.requestPermissions(
                     MainActivity.this,
-                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_PERMISSION_FINE_LOCATION);
         }
     }
@@ -165,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             if (distance > MIN_DISTANCE_METRES) {
                 // request user updates their current bus stop.
-                View view = findViewById(R.id.mainLayout);
+                View view = findViewById(R.id.drawerLayout);
                 final Snackbar snackbar = Snackbar.make(view, R.string.snackbar_message, Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
                     @Override
@@ -261,7 +329,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestStopId);
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
-
+        savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
+        savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
     }
 
     public void onClickNearer(View view) {
@@ -284,18 +353,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // get clicked on bus and start route activity.
-        Bus bus = mLiveBuses.getBus(position);
-        BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
-        Intent intent = RouteActivity.newIntent(
-                this,
-                bus.getId(),
-                stop.getAtcoCode());
-        startActivity(intent);
-    }
-
     private void updateBusStop(BusStop busStop) {
         // update current bus stop info before loading live buses so user sees at least some
         // activity on the screen.
@@ -314,6 +371,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         else {
             updateBuses();
         }
+
+        // update nearest bus stops list in mLayoutDrawer.
+        NearestStopsAdapter adapter = new NearestStopsAdapter(this, mNearestBusStops.getStops());
+        mListNearest.setAdapter(adapter);
     }
 
     private void updateBuses() {
@@ -373,6 +434,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             mProgressDialog.dismiss();
         }
         mProgressDialog = null;
+    }
+
+    public void onClickAddFavourite(View view) {
+        // add currently viewed bus stop to favourites.
+        BusStop nearest = mNearestBusStops.getStop(mCurrentStopPosition);
+        if (mBusDatabase.hasFavouriteStop(nearest.getAtcoCode())) {
+            Toast.makeText(MainActivity.this, "Stop already in favourites", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            FavouriteStop favourite = new FavouriteStop();
+            favourite.setAtcoCode(nearest.getAtcoCode());
+            favourite.setLongitude(nearest.getLongitude());
+            favourite.setLatitude(nearest.getLatitude());
+            favourite.setName(nearest.getName());
+
+            mBusDatabase.addFavouriteStop(favourite);
+            mFavouritesAdapter.add(favourite);
+
+            Toast.makeText(MainActivity.this, "Added stop to favourites", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
@@ -468,6 +549,59 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    private class DownloadFavouriteStopAsyncTask extends AsyncTask<FavouriteStop, Void, NearestBusStops> {
+        private FavouriteStop mFavouriteStop;
+
+        @Override
+        public void onPreExecute() {
+            // close the mLayoutDrawer...
+            showProgressDialog("Finding nearest bus stop");
+        }
+
+        @Override
+        protected NearestBusStops doInBackground(FavouriteStop... params) {
+            mFavouriteStop = params[0];
+
+            try {
+                return mTransportClient.getNearestBusStops(
+                        mFavouriteStop.getLongitude(),
+                        mFavouriteStop.getLatitude());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        public void onPostExecute(final NearestBusStops result) {
+            if (result == null) {
+                return;
+            }
+
+            // set nearest stop stuff.
+            mNearestBusStops = result;
+            mNearestStopId = result.getId();
+            mBusDatabase.addNearestBusStops(result);
+
+            // get our favoroute stop based on the atcocode.
+            for (int i = 0; i < result.getStops().size(); i++) {
+                if (result.getStop(i).getAtcoCode().equals(mFavouriteStop.getAtcoCode())) {
+                    mCurrentStopPosition = i;
+
+                    BusStop stop = mNearestBusStops.getStop(i);
+                    if (stop == null) {
+                        dismissProgressDialog();
+                    }
+                    else {
+                        updateBusStop(stop);
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
     // Bus adapter for converting a bus object into a view for the ListView.
     private class BusAdapter extends ArrayAdapter<Bus> {
         public BusAdapter(Context context, List<Bus> buses) {
@@ -505,6 +639,60 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             textTime.setText(bus.getBestDepartureEstimate());
             textDirection.setText(TextHelper.getDirection(bus.getDirection()));
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
+
+            return convertView;
+        }
+    }
+
+    private class FavouritesAdapter extends ArrayAdapter<FavouriteStop> {
+        public FavouritesAdapter(Context context, List<FavouriteStop> stops) {
+            super(context, -1);
+
+            if (stops != null) {
+                addAll(stops);
+            }
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            FavouriteStop stop = getItem(position);
+
+            // if a view already exists then reuse it.
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.list_item_favourite, parent, false);
+            }
+
+            TextView textName = (TextView)convertView.findViewById(R.id.textName);
+
+            textName.setText(stop.getName());
+
+            return convertView;
+        }
+    }
+
+    private class NearestStopsAdapter extends ArrayAdapter<BusStop> {
+        public NearestStopsAdapter(Context context, List<BusStop> stops) {
+            super(context, -1);
+
+            if (stops != null) {
+                addAll(stops);
+            }
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            BusStop stop = getItem(position);
+
+            // if a view already exists then reuse it.
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.list_item_bus_stop, parent, false);
+            }
+
+            TextView textName = (TextView)convertView.findViewById(R.id.textName);
+
+            textName.setText(stop.getName());
 
             return convertView;
         }

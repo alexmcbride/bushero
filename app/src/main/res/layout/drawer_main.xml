@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:id="@+id/leftDrawer">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Favourites"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        android:textColor="@color/colorVeryDarkGrey"
+        android:id="@+id/textFavouritesTitle"
+        android:layout_marginBottom="8dp"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_star"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/buttonFavourite"
+        android:layout_marginBottom="8dp"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_below="@+id/buttonFavourite"
+        android:id="@+id/listFavourites"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nearest Bus Stops"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        android:textColor="@color/colorVeryDarkGrey"
+        android:layout_below="@+id/listFavourites"
+        android:id="@+id/textBusStopsTitle"
+        android:layout_marginBottom="8dp"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_below="@+id/textBusStopsTitle"
+        android:layout_marginBottom="8dp"
+        android:id="@+id/listBusStops"/>
+
+</RelativeLayout>
