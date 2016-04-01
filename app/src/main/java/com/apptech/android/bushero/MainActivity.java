@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -42,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
-    private static final int MIN_DISTANCE = 30; // metres
+    private static final int MIN_DISTANCE_METRES = 30;
 
     // widgets
     private TextView mTextName;
@@ -160,18 +159,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         final double latitude = location.getLatitude();
         Log.d(LOG_TAG, "location: " + latitude + "," + longitude);
 
+        // check if this is first location update.
         if (mLastLatitude == 0 && mLastLongitude == 0) {
-            // no previous location, just update it.
             updateLocation(longitude, latitude);
         }
         else {
-            float distance = getDistance(longitude, latitude);
+            // check to see how far the user has moved since last update.
+            float distance = getDistanceInMetres(longitude, latitude);
             Log.d(LOG_TAG, "distance:" + distance);
 
-            if (distance > MIN_DISTANCE) {
-                // show button, asking user if they want to update location.
-
-                // request user updates
+            if (distance > MIN_DISTANCE_METRES) {
+                // request user updates their current bus stop.
                 View view = findViewById(R.id.mainLayout);
                 final Snackbar snackbar = Snackbar.make(view, R.string.snackbar_message, Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
@@ -187,13 +185,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void updateLocation(double longitude, double latitude) {
+        // start async task to download nearest bus stops.
         new DownloadBusStopsAsyncTask().execute(longitude, latitude);
 
+        // keep track of where we were.
         mLastLongitude = longitude;
         mLastLatitude = latitude;
     }
 
-    private float getDistance(double longitude, double latitude) {
+    private float getDistanceInMetres(double longitude, double latitude) {
         float[] results = new float[1];
         Location.distanceBetween(mLastLatitude, mLastLongitude, latitude, longitude, results);
         return results[0];
