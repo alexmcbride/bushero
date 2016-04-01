@@ -31,18 +31,18 @@ import com.google.android.gms.location.LocationServices;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
 
     // widgets
-    private TextView mTextBusStopName;
-    private TextView mTextBusStopDistance;
-    private TextView mTextBusStopBearing;
-    private TextView mTextBusStopLocality;
-    private ListView mListNearestBuses;
+    private TextView mTextName;
+    private TextView mTextDistance;
+    private TextView mTextBearing;
+    private TextView mTextLocality;
+    private ListView mListBuses;
     private Button mButtonNearer;
     private Button mButtonFurther;
     private ProgressDialog mProgressDialog;
@@ -64,26 +64,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // get widgets from layout and setup events.
-        mTextBusStopName = (TextView) findViewById(R.id.textBusStopName);
-        mTextBusStopDistance = (TextView) findViewById(R.id.textBusStopDistance);
-        mTextBusStopBearing = (TextView) findViewById(R.id.textBusStopBearing);
-        mTextBusStopLocality = (TextView) findViewById(R.id.textBusStopLocality);
+        mTextName = (TextView) findViewById(R.id.textName);
+        mTextDistance = (TextView) findViewById(R.id.textDistance);
+        mTextBearing = (TextView) findViewById(R.id.textBearing);
+        mTextLocality = (TextView) findViewById(R.id.textLocality);
         mButtonNearer = (Button) findViewById(R.id.buttonNearer);
         mButtonFurther = (Button) findViewById(R.id.buttonFurther);
-        mListNearestBuses = (ListView) findViewById(R.id.listNearestBuses);
-        mListNearestBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // get clicked on bus and start route activity.
-                Bus bus = mLiveBuses.getBus(position);
-                BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
-                Intent intent = RouteActivity.newIntent(
-                        MainActivity.this,
-                        bus.getId(),
-                        stop.getAtcoCode());
-                startActivity(intent);
-            }
-        });
+        mListBuses = (ListView) findViewById(R.id.listBuses);
+        mListBuses.setOnItemClickListener(this);
 
         // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
@@ -114,39 +102,39 @@ public class MainActivity extends AppCompatActivity {
             mIsFirstStartup = false;
         }
 
-        initializeGoogleApiClient();
-    }
-
-    private void initializeGoogleApiClient() {
-//        mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
+        // mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
         // initialise google play services API to access location GPS data. we do this last to let
         // all the database stuff be setup.
-        mGoogleApi = new GoogleApiClient.Builder(this).addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-            @Override
-            public void onConnected(Bundle bundle) {
-                Log.d(LOG_TAG, "Google API Client connected.");
+        mGoogleApi = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
 
-                // when recreating activity this gets called, check if we actually need to refresh
-                // our location stuff.
-                // TODO: maybe do this based on time span?
-                if (mIsFirstStartup) {
-                    updateLocation();
-                    mIsFirstStartup = false;
-                }
-            }
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(LOG_TAG, "Google API Client connected.");
 
-            @Override
-            public void onConnectionSuspended(int i) {
-                Log.d(LOG_TAG, "Google API Client suspended.");
-            }
-        }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-            @Override
-            public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                // google play has failed us. :(
-                Log.d(LOG_TAG, "Google API Client connection failed.");
-                Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
-            }
-        }).addApi(LocationServices.API).build();
+        // when recreating activity this gets called, check if we actually need to refresh
+        // our location stuff.
+        // TODO: maybe do this based on time span?
+        if (mIsFirstStartup) {
+            updateLocation();
+            mIsFirstStartup = false;
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(LOG_TAG, "Google API Client suspended.");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // google play has failed us. :(
+        Log.d(LOG_TAG, "Google API Client connection failed.");
+        Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
     }
 
     private void updateLocation() {
@@ -231,8 +219,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         // stop showing dialog. this helps if user rotates app when asynctask is running
-        // TODO: fix asynctask completing after app rotated.
-        // TODO: maybe OK so long as get fresh widgets from IDs when task completeing. That way they'll get from new layout...
         // TODO: maybe set mIsUpdating boolean that's saved to instance state, get widgets fresh from layout before update.
         dismissProgressDialog();
         super.onPause();
@@ -246,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
     }
 
-    public void onClickButtonNearer(View view) {
+    public void onClickNearer(View view) {
         // move to previous bus stop in list.
         if (mCurrentStopPosition > 0) {
             mCurrentStopPosition--;
@@ -256,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickButtonFurther(View view) {
+    public void onClickFurther(View view) {
         // move to next bus stop in list.
         if (mNearestBusStops != null && mCurrentStopPosition + 1 < mNearestBusStops.getStopCount()) {
             mCurrentStopPosition++;
@@ -266,17 +252,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickButtonUpdate(View view) {
-        updateLocation();
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // get clicked on bus and start route activity.
+        Bus bus = mLiveBuses.getBus(position);
+        BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
+        Intent intent = RouteActivity.newIntent(
+                MainActivity.this,
+                bus.getId(),
+                stop.getAtcoCode());
+        startActivity(intent);
     }
 
     private void updateBusStop(BusStop busStop) {
         // update current bus stop info before loading live buses so user sees at least some
         // activity on the screen.
-        mTextBusStopName.setText(busStop.getName());
-        mTextBusStopDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
-        mTextBusStopBearing.setText(TextHelper.getBearing(busStop.getBearing()));
-        mTextBusStopLocality.setText(busStop.getLocality());
+        mTextName.setText(busStop.getName());
+        mTextDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
+        mTextBearing.setText(TextHelper.getBearing(busStop.getBearing()));
+        mTextLocality.setText(busStop.getLocality());
 
         // get live buses from database, if nothing in db then load from transport API.
         mLiveBuses = mBusDatabase.getLiveBuses(busStop.getId());
@@ -299,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
         // if adapter does not exist then create it, otherwise update it with new list.
         if (mBusAdapter == null) {
             mBusAdapter = new BusAdapter(this, mLiveBuses.getBuses());
-            mListNearestBuses.setAdapter(mBusAdapter);
+            mListBuses.setAdapter(mBusAdapter);
         }
         else {
             mBusAdapter.updateBuses(mLiveBuses.getBuses());
@@ -322,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickGridLayoutBusStop(View view) {
+    public void onClickShowMap(View view) {
         // launch map activity for currently displayed bus stop.
         if (mNearestBusStops != null) {
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
@@ -469,11 +463,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // get widgets
-            TextView textLine = (TextView) convertView.findViewById(R.id.textBusLine);
-            TextView textDestination = (TextView) convertView.findViewById(R.id.textBusDestination);
-            TextView textTime = (TextView) convertView.findViewById(R.id.textBusTime);
-            TextView textDirection = (TextView) convertView.findViewById(R.id.textBusDirection);
-            TextView textOperator = (TextView) convertView.findViewById(R.id.textBusOperator);
+            TextView textLine = (TextView) convertView.findViewById(R.id.textLine);
+            TextView textDestination = (TextView) convertView.findViewById(R.id.textDestination);
+            TextView textTime = (TextView) convertView.findViewById(R.id.textTime);
+            TextView textDirection = (TextView) convertView.findViewById(R.id.textDirection);
+            TextView textOperator = (TextView) convertView.findViewById(R.id.textOperator);
 
             // set widgets
             textLine.setText(bus.getLine().trim());

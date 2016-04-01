@@ -29,11 +29,16 @@ public class TextHelper {
                 return "McGill";
             case "WHI":
                 return "Whitelaws";
+            case "NAT":
+                return "National Express";
+            case "GLH":
+                return "Garelochhead";
 
             // http://www.travelinescotland.com/pdfs/timetables/PTAO100.pdf
             case "COL":
                 return "Colchri Coaches";
             case "STW":
+            case "STG":
                 return "Stagecoach";
             case "BLL":
                 return "A+J Ballantyne";
@@ -50,7 +55,7 @@ public class TextHelper {
             case "PCV":
                 return "Canavan Travel";
             case "CTB":
-                return "Glasgow Citybus";
+                return "Citybus";
             case "MBL":
                 return "Marbill Coaches";
             case "RDT":

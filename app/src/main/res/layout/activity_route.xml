@@ -68,7 +68,6 @@
                 android:layout_marginRight="4dp"
                 android:layout_marginEnd="4dp"/>
         </RelativeLayout>
-
     </android.support.v7.widget.Toolbar>
 
     <ListView
@@ -76,5 +75,6 @@
         android:layout_height="match_parent"
         android:id="@+id/listRouteBusStops"
         android:layout_below="@+id/toolbarRoute"
-        android:layout_margin="8dp"/>
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"/>
 </RelativeLayout>
