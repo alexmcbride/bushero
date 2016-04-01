@@ -9,6 +9,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -155,44 +156,47 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onLocationChanged(Location location) {
         Log.d(LOG_TAG, "location changed");
 
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
-        float distance = getDistance(longitude, latitude);
-
+        final double longitude = location.getLongitude();
+        final double latitude = location.getLatitude();
         Log.d(LOG_TAG, "location: " + latitude + "," + longitude);
-        Log.d(LOG_TAG, "distance:" + distance);
 
-        if (distance > MIN_DISTANCE) {
-            // show button, asking user if they want to update location.
-
-            new DownloadBusStopsAsyncTask().execute(longitude, latitude);
-
-            mLastLongitude = longitude;
-            mLastLatitude = latitude;
+        if (mLastLatitude == 0 && mLastLongitude == 0) {
+            // no previous location, just update it.
+            updateLocation(longitude, latitude);
         }
+        else {
+            float distance = getDistance(longitude, latitude);
+            Log.d(LOG_TAG, "distance:" + distance);
+
+            if (distance > MIN_DISTANCE) {
+                // show button, asking user if they want to update location.
+
+                // request user updates
+                View view = findViewById(R.id.mainLayout);
+                final Snackbar snackbar = Snackbar.make(view, R.string.snackbar_message, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        updateLocation(longitude, latitude);
+                        snackbar.dismiss();
+                    }
+                });
+                snackbar.show();
+            }
+        }
+    }
+
+    private void updateLocation(double longitude, double latitude) {
+        new DownloadBusStopsAsyncTask().execute(longitude, latitude);
+
+        mLastLongitude = longitude;
+        mLastLatitude = latitude;
     }
 
     private float getDistance(double longitude, double latitude) {
         float[] results = new float[1];
         Location.distanceBetween(mLastLatitude, mLastLongitude, latitude, longitude, results);
         return results[0];
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.d(LOG_TAG, "Google API Client suspended.");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // google play has failed us. :(
-        Log.d(LOG_TAG, "Google API Client connection failed.");
-        Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
-    }
-
-    private static boolean isRunningInEmulator() {
-        // bit of a hack to see if we're running inside the emulator or not.
-        return Build.FINGERPRINT.contains("generic");
     }
 
     @Override
@@ -216,6 +220,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(LOG_TAG, "Google API Client suspended.");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // google play has failed us. :(
+        Log.d(LOG_TAG, "Google API Client connection failed.");
+        Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     protected void onStart() {
         // connect to google play services api on start
         Log.d(LOG_TAG, "Connecting to Google API Service");
@@ -236,6 +252,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // stop showing dialog. this helps if user rotates app when asynctask is running
         // TODO: maybe set mIsUpdating boolean that's saved to instance state, get widgets fresh from layout before update.
         dismissProgressDialog();
+
+        // stop getting updates when paused, wastes battery life.
+//        Log.d(LOG_TAG, "stopping location updates");
+//        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApi, this);
+
         super.onPause();
     }
 
@@ -452,17 +473,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Bus adapter for converting a bus object into a view for the ListView.
     private class BusAdapter extends ArrayAdapter<Bus> {
-        private List<Bus> mBuses;
-
         public BusAdapter(Context context, List<Bus> buses) {
             super(context, -1);
 
-            mBuses = buses;
             addAll(buses);
         }
 
         public void updateBuses(List<Bus> buses) {
-            mBuses = buses;
             clear();
             addAll(buses);
         }
@@ -470,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             // get the bus we're showing the view for.
-            Bus bus = mBuses.get(position);
+            Bus bus = getItem(position);
 
             // if a view already exists then reuse it.
             if (convertView == null) {

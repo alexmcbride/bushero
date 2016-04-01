@@ -12,4 +12,6 @@
     <string name="btn_back_text">Back</string>
     <string name="text_route_line" formatted="false">%s - %s</string>
     <string name="ic_clock_description">Clock</string>
+    <string name="snackbar_message">Location Changed</string>
+    <string name="snackbar_update">Update?</string>
 </resources>
