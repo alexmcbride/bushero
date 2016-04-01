@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
+    private static final String SAVED_LOCATION_UPDATED = "LOCATION_UPDATED";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private GoogleApiClient mGoogleApi;
     private double mLastLongitude;
     private double mLastLatitude;
+    private boolean mLocationUpdated;
     private FavouritesAdapter mFavouritesAdapter;
 
     @Override
@@ -159,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mNearestStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
             mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
+            mLocationUpdated = savedInstanceState.getBoolean(SAVED_LOCATION_UPDATED);
 
             // get nearest bus stops from database.
             Log.d(LOG_TAG, "loading nearest stops from database");
@@ -223,12 +226,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.d(LOG_TAG, "location: " + latitude + "," + longitude);
 
         // check if this is first location update.
-        if (mLastLatitude == 0 && mLastLongitude == 0) {
+        if (!mLocationUpdated) {
             locationChanged(longitude, latitude);
+            mLocationUpdated = true;
         }
         else {
             // check to see how far the user has moved since last update.
-            float distance = getDistanceInMetres(longitude, latitude);
+            float distance = getDistanceSinceLastUpdate(longitude, latitude);
             Log.d(LOG_TAG, "distance:" + distance);
 
             if (distance > MIN_DISTANCE_METRES) {
@@ -256,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLastLatitude = latitude;
     }
 
-    private float getDistanceInMetres(double longitude, double latitude) {
+    private float getDistanceSinceLastUpdate(double longitude, double latitude) {
         float[] results = new float[1];
         Location.distanceBetween(mLastLatitude, mLastLongitude, latitude, longitude, results);
         return results[0];
@@ -331,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
+        savedInstanceState.putBoolean(SAVED_LOCATION_UPDATED, mLocationUpdated);
     }
 
     public void onClickNearer(View view) {
