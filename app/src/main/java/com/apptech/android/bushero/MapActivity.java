@@ -12,6 +12,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -63,11 +65,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // TODO: use different marker icons?
 
-        // Add marker for your current position if we have.
-        // TODO: maybe get this from GPS coords so we can show in all situations?
+        // Add marker for your current position if we have it.
         if (mNearestBusStops != null) {
+            BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
             LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
-            mMap.addMarker(new MarkerOptions().position(currentLocation).title("You"));
+            mMap.addMarker(new MarkerOptions().position(currentLocation).icon(icon).title("You"));
         }
 
         // Add marker to map, move camera to that location and zoom.
