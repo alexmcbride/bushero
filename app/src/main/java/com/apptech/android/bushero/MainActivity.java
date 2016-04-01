@@ -26,16 +26,22 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
+    private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
+    private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
+    private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
+    private static final int MIN_DISTANCE = 30; // metres
 
     // widgets
     private TextView mTextName;
@@ -56,7 +62,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private long mNearestStopId;
     private int mCurrentStopPosition;
     private GoogleApiClient mGoogleApi;
-    private boolean mIsFirstStartup;
+    private double mLastLongitude;
+    private double mLastLatitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,14 +89,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO: find better place to delete the cache???
             Log.d(LOG_TAG, "deleting database cache");
             mBusDatabase.deleteCache(); // delete stuff only needed when app is running.
-
-            mIsFirstStartup = true;
         }
         else {
             // activity recreated, loading instance state.
             Log.d(LOG_TAG, "getting saved state");
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
             mNearestStopId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
+            mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
+            mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
 
             // get nearest bus stops from database.
             Log.d(LOG_TAG, "loading nearest stops from database");
@@ -98,13 +105,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // get the currently viewed bus stop and update the UI.
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
             updateBusStop(busStop);
-
-            mIsFirstStartup = false;
         }
 
         // mDialog = ProgressDialog.show(this, "Loading", "Finding your location", true);
-        // initialise google play services API to access location GPS data. we do this last to let
-        // all the database stuff be setup.
+        // initialise google play services API to access location GPS data
         mGoogleApi = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -116,13 +120,62 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onConnected(Bundle bundle) {
         Log.d(LOG_TAG, "Google API Client connected.");
 
-        // when recreating activity this gets called, check if we actually need to refresh
-        // our location stuff.
-        // TODO: maybe do this based on time span?
-        if (mIsFirstStartup) {
-            updateLocation();
-            mIsFirstStartup = false;
+        // check we have permission to get user's location.
+        Log.d(LOG_TAG, "checking permissions");
+        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates();
         }
+        else {
+            ActivityCompat.requestPermissions(
+                    MainActivity.this,
+                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+                    REQUEST_PERMISSION_FINE_LOCATION);
+        }
+    }
+
+    private void startLocationUpdates() {
+        // set location settings.
+        LocationRequest request = new LocationRequest();
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        request.setInterval(LOCATION_UPDATE_INTERVAL);
+        request.setFastestInterval(LOCATION_UPDATE_INTERVAL);
+
+        try {
+            Log.d(LOG_TAG, "requesting location updates");
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
+        }
+        catch (SecurityException e) {
+            // we've already requested permission but Android studio won't shutup about it.
+            Toast.makeText(MainActivity.this, "No permission to access location", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.d(LOG_TAG, "location changed");
+
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+        float distance = getDistance(longitude, latitude);
+
+        Log.d(LOG_TAG, "location: " + latitude + "," + longitude);
+        Log.d(LOG_TAG, "distance:" + distance);
+
+        if (distance > MIN_DISTANCE) {
+            // show button, asking user if they want to update location.
+
+            new DownloadBusStopsAsyncTask().execute(longitude, latitude);
+
+            mLastLongitude = longitude;
+            mLastLatitude = latitude;
+        }
+    }
+
+    private float getDistance(double longitude, double latitude) {
+        float[] results = new float[1];
+        Location.distanceBetween(mLastLatitude, mLastLongitude, latitude, longitude, results);
+        return results[0];
     }
 
     @Override
@@ -137,45 +190,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
     }
 
-    private void updateLocation() {
-        // check if we have permission to use location info.
-        // TODO: maybe move permission check to onCreate()? if no permission then no point in app running.
-        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            Log.d(LOG_TAG, "Location permission granted.");
-
-            // yes, we have permission, get latitude and longitude and update bus info asynchronously.
-            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApi);
-            if (location == null) {
-                Log.d(LOG_TAG, "No location returned from LocationServices");
-
-                // if running in emulator we fake a location.
-                if (isRunningInEmulator()) {
-                    Log.d(LOG_TAG, "running in emulator - faking a location");
-                    double longitude = -4.251989; // GOMA: 55.860121, -4.251989
-                    double latitude = 55.860121;
-                    new DownloadBusStopsAsyncTask().execute(longitude, latitude);
-                }
-            }
-            else {
-                Log.d(LOG_TAG, "Location - longitude: " + location.getLongitude() + " latitude: " + location.getLatitude());
-                Log.d(LOG_TAG, "Starting DownloadBusStopsAsyncTask()");
-
-                // TODO: check network permission??
-                // TODO: check to see if we've moved far since last location update?
-                new DownloadBusStopsAsyncTask().execute(location.getLongitude(), location.getLatitude());
-            }
-        }
-        else {
-            // we don't have permission, request it from the user, triggering an onRequestPermissionsResult callback.
-            Log.d(LOG_TAG, "Location permission needed, requesting it");
-            ActivityCompat.requestPermissions(
-                    MainActivity.this,
-                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
-                    REQUEST_PERMISSION_FINE_LOCATION);
-        }
-    }
-
     private static boolean isRunningInEmulator() {
         // bit of a hack to see if we're running inside the emulator or not.
         return Build.FINGERPRINT.contains("generic");
@@ -188,10 +202,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case REQUEST_PERMISSION_FINE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // yes we have permission, try and update location again.
-                    updateLocation();
+                    Log.d(LOG_TAG, "permission granted");
+                    startLocationUpdates();
                 }
                 else {
-                    Log.d(LOG_TAG, "Location permission refused :(");
+                    Log.d(LOG_TAG, "location permission refused :(");
                     // no we don't :(
                     // TODO: make this an alert box so the user can't miss it.
                     Toast.makeText(MainActivity.this, "App needs location permission", Toast.LENGTH_SHORT).show();
@@ -230,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestStopId);
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+
     }
 
     public void onClickNearer(View view) {
