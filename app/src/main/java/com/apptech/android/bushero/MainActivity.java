@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mButtonFurther = (Button) findViewById(R.id.buttonFurther);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
 
+        // handle main bus list.
         mListBuses = (ListView) findViewById(R.id.listBuses);
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -101,16 +102,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        // handle drawer favourites list.
         mListFavourites = (ListView)findViewById(R.id.listFavourites);
         mListFavourites.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // get favorite stop and get stop from transport api.
+                mLayoutDrawer.closeDrawers(); // close navigation drawer.
+
+                // get favorite stop from adapter.
                 FavouriteStop favourite = mFavouritesAdapter.getItem(position);
 
-                mLayoutDrawer.closeDrawers();
-
-                // check and see if this stop is already in our download list.
+                // check and see if this stop is already in our downloaded stops list.
                 boolean found = false;
                 for (int i = 0; i < mNearestBusStops.getStopCount(); i++) {
                     BusStop nearest = mNearestBusStops.getStop(i);
@@ -128,19 +130,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        // handle drawer nearest list.
         mListNearest = (ListView)findViewById(R.id.listNearest);
         mListNearest.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // select this stop.
+                mLayoutDrawer.closeDrawers(); // close navigation drawer.
+
+                // get this stop.
                 BusStop stop = mNearestBusStops.getStop(position);
 
+                // update stop.
                 mNearestStopId = stop.getId();
                 mCurrentStopPosition = position;
-
                 updateBusStop(stop);
-
-                mLayoutDrawer.closeDrawers();
             }
         });
 
@@ -559,7 +562,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         public void onPreExecute() {
-            // close the mLayoutDrawer...
             showProgressDialog("Finding nearest bus stop");
         }
 
@@ -588,12 +590,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mNearestStopId = result.getId();
             mBusDatabase.addNearestBusStops(result);
 
-            // get our favoroute stop based on the atcocode.
+            // make sure to get our actual favourite stop from the list.
             for (int i = 0; i < result.getStops().size(); i++) {
                 if (result.getStop(i).getAtcoCode().equals(mFavouriteStop.getAtcoCode())) {
                     mCurrentStopPosition = i;
 
-                    BusStop stop = mNearestBusStops.getStop(i);
+                    BusStop stop = result.getStop(i);
                     if (stop == null) {
                         dismissProgressDialog();
                     }
@@ -605,6 +607,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         }
+
+        // TODO: handle no stop found and progressdialog showing.
     }
 
     // Bus adapter for converting a bus object into a view for the ListView.
