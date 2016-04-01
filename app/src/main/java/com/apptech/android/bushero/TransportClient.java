@@ -15,15 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransportClient {
+    private static final String LOG_TAG = "TransportClient";
+
     private static final String NEAREST_BUS_STOPS_URL = "http://transportapi.com/v3/uk/bus/stops/near.json?app_key=%s&app_id=%s&lat=%f&lon=%f&page=%d&rpp=%d";
     private static final String LIVE_BUSES_URL = "http://transportapi.com/v3/uk/bus/stop/%s/live.json?app_key=%s&app_id=%s&group=no&limit=%d&nextbuses=no";
     private static final String BUS_ROUTE_URL = "http://transportapi.com/v3/uk/bus/route/%s/%s/%s/%s/%s/%s/timetable.json?app_key=%s&app_id=%s";
     private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
     private static final String APP_ID = "a10284ad";
 
-    public TransportClient() {
-
-    }
+    public TransportClient() {}
 
     private URL getNearestBusStopsUrl(double longitude, double latitude, int page, int returnPerPage) throws MalformedURLException {
         return new URL(String.format(NEAREST_BUS_STOPS_URL, APP_KEY, APP_ID, latitude, longitude, page, returnPerPage));
@@ -41,6 +41,8 @@ public class TransportClient {
         URL url = getNearestBusStopsUrl(longitude, latitude, 1, 10);
         URLConnection connection = url.openConnection();
         connection.connect();
+
+        Log.d(LOG_TAG, "URL: " + url);
 
         InputStream input = null;
         InputStreamReader streamReader = null;
@@ -163,6 +165,8 @@ public class TransportClient {
         URLConnection connection = url.openConnection();
         connection.connect();
 
+        Log.d(LOG_TAG, "URL: " + url);
+
         InputStream input = null;
         InputStreamReader streamReader = null;
         JsonReader reader = null;
@@ -269,6 +273,8 @@ public class TransportClient {
         URL url = getBusRouteUrl(operator, line, direction, atcoCode, date, time);
         URLConnection connection = url.openConnection();
         connection.connect();
+
+        Log.d(LOG_TAG, "URL: " + url);
 
         InputStream input = null;
         InputStreamReader streamReader = null;

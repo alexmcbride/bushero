@@ -114,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+
+        // TODO: if no location then show favourite bus stop.
     }
 
     @Override
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // check if this is first location update.
         if (mLastLatitude == 0 && mLastLongitude == 0) {
-            updateLocation(longitude, latitude);
+            locationChanged(longitude, latitude);
         }
         else {
             // check to see how far the user has moved since last update.
@@ -168,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        updateLocation(longitude, latitude);
+                        locationChanged(longitude, latitude);
                         snackbar.dismiss();
                     }
                 });
@@ -177,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    private void updateLocation(double longitude, double latitude) {
+    private void locationChanged(double longitude, double latitude) {
         // start async task to download nearest bus stops.
         new DownloadBusStopsAsyncTask().execute(longitude, latitude);
 
@@ -288,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Bus bus = mLiveBuses.getBus(position);
         BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
         Intent intent = RouteActivity.newIntent(
-                MainActivity.this,
+                this,
                 bus.getId(),
                 stop.getAtcoCode());
         startActivity(intent);

@@ -138,7 +138,13 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         protected BusRoute doInBackground(Void... params) {
             TransportClient client = new TransportClient();
             try {
-                return client.getBusRoute(mBus.getOperator(), mBus.getLine(), mBus.getDirection(), mAtcoCode, mBus.getDate(), mBus.getExpectedDepartureTime());
+                return client.getBusRoute(
+                        mBus.getOperator(),
+                        mBus.getLine(),
+                        mBus.getDirection(),
+                        mAtcoCode,
+                        mBus.getDate(),
+                        mBus.getBestDepartureEstimate());
             }
             catch (IOException e) {
                 e.printStackTrace();
