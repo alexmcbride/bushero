@@ -15,4 +15,9 @@
     <string name="snackbar_message">Location Changed</string>
     <string name="snackbar_update">Update?</string>
     <string name="text_nearest_distance">%dM</string>
+    <string name="text_favourites">Favourites</string>
+    <string name="add_favourite_content_description">Add Favourite</string>
+    <string name="text_nearest_bus_stops">Nearest Bus Stops</string>
+    <string name="text_bus">Bus</string>
+    <string name="button_remove_favourite">Remove Favourite</string>
 </resources>

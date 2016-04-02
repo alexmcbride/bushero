@@ -66,7 +66,8 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginRight="4dp"
-                android:layout_marginEnd="4dp"/>
+                android:layout_marginEnd="4dp"
+                android:contentDescription="@string/text_bus"/>
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 

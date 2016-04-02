@@ -125,12 +125,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Favourites"
+            android:text="@string/text_favourites"
             style="@style/Base.TextAppearance.AppCompat.Large"
             android:textStyle="bold"
             android:textColor="@color/colorVeryDarkGrey"
             android:id="@+id/textFavouritesTitle"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            tools:ignore="RelativeOverlap"/>
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -141,7 +142,8 @@
             android:id="@+id/buttonFavourite"
             android:layout_marginBottom="8dp"
             android:background="@null"
-            android:onClick="onClickAddFavourite"/>
+            android:onClick="onClickAddFavourite"
+            android:contentDescription="@string/add_favourite_content_description"/>
 
         <ListView
             android:layout_width="match_parent"
@@ -155,7 +157,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nearest Bus Stops"
+            android:text="@string/text_nearest_bus_stops"
             style="@style/Base.TextAppearance.AppCompat.Large"
             android:textStyle="bold"
             android:textColor="@color/colorVeryDarkGrey"

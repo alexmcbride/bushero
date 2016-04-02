@@ -209,13 +209,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             request.setInterval(LOCATION_UPDATE_INTERVAL);
             request.setFastestInterval(LOCATION_UPDATE_INTERVAL);
 
-            Log.d(LOG_TAG, "requesting location updates");
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
-
             // if this is first time then show progress dialog.
             if (!mLocationUpdated) {
                 showProgressDialog("Finding your location");
             }
+
+            Log.d(LOG_TAG, "requesting location updates");
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
         }
         else {
             ActivityCompat.requestPermissions(

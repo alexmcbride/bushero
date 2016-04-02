@@ -10,8 +10,10 @@
         android:src="@drawable/ic_clock"
         android:id="@+id/imageClock"
         android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginRight="4dp"
+        android:layout_marginEnd="4dp"
         android:contentDescription="@string/ic_clock_description"/>
 
     <TextView
@@ -44,7 +46,8 @@
         android:layout_toRightOf="@+id/textTime"
         android:layout_toEndOf="@+id/textTime"
         android:layout_below="@+id/textName"
-        android:layout_marginRight="8dp"/>
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"/>
 
     <TextView
         android:layout_width="wrap_content"
