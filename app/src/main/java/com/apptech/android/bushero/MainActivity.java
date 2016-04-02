@@ -211,6 +211,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             Log.d(LOG_TAG, "requesting location updates");
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
+
+            // if this is first time then show progress dialog.
+            if (!mLocationUpdated) {
+                showProgressDialog("Finding your location");
+            }
         }
         else {
             ActivityCompat.requestPermissions(
@@ -292,10 +297,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(LOG_TAG, "Google API Client suspended.");
+
+        dismissProgressDialog();
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        dismissProgressDialog();
+
         // google play has failed us. :(
         Log.d(LOG_TAG, "Google API Client connection failed.");
         Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
@@ -676,6 +685,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 LayoutInflater inflater = getLayoutInflater();
                 convertView = inflater.inflate(R.layout.list_item_favourite, parent, false);
 
+                // only do this once when the view is inflated.
                 ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
                 buttonDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -693,6 +703,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
             textName.setText(stop.getName());
 
+            // we use tag to store the position so we can retrieve it later.
             ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
             buttonDelete.setTag(position);
 
