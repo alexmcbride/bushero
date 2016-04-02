@@ -145,10 +145,12 @@
 
         <ListView
             android:layout_width="match_parent"
-            android:layout_height="240dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/buttonFavourite"
             android:id="@+id/listFavourites"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -163,10 +165,12 @@
 
         <ListView
             android:layout_width="match_parent"
-            android:layout_height="240dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/textBusStopsTitle"
             android:layout_marginBottom="8dp"
-            android:id="@+id/listNearest"/>
+            android:id="@+id/listNearest"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"/>
 
     </RelativeLayout>
 </android.support.v4.widget.DrawerLayout>

@@ -14,4 +14,5 @@
     <string name="ic_clock_description">Clock</string>
     <string name="snackbar_message">Location Changed</string>
     <string name="snackbar_update">Update?</string>
+    <string name="text_nearest_distance">%dM</string>
 </resources>

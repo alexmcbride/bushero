@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,12 +114,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 FavouriteStop favourite = mFavouritesAdapter.getItem(position);
 
                 // check and see if this stop is already in the cache.
-                BusStop nearest = mNearestBusStops.getStop(favourite.getAtcoCode());
-                if (nearest == null) {
-                    new DownloadFavouriteStopAsyncTask().execute(favourite);
+                boolean found = false;
+                if (mNearestBusStops != null) {
+                    BusStop nearest = mNearestBusStops.getStop(favourite.getAtcoCode());
+                    if (nearest != null) {
+                        updateBusStop(nearest);
+                        found = true;
+                    }
                 }
-                else {
-                    updateBusStop(nearest);
+
+                // not found, download fresh.
+                if (!found) {
+                    new DownloadFavouriteStopAsyncTask().execute(favourite);
                 }
             }
         });
@@ -459,6 +466,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    private void removeFavouriteStop(FavouriteStop stop) {
+        mBusDatabase.removeFavouriteStop(stop);
+        mFavouritesAdapter.remove(stop);
+
+        Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
+    }
+
     private class DownloadBusStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         @Override
         public void onPreExecute() {
@@ -494,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mBusDatabase.addNearestBusStops(result);
             mNearestBusStops = result;
 
-            // reset current position and store ID of nearest stop row so it can be retrieved later.
+            // reset current position
             mCurrentStopPosition = 0;
             mNearestStopId = mNearestBusStops.getId();
 
@@ -655,16 +669,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            FavouriteStop stop = getItem(position);
+            final FavouriteStop stop = getItem(position);
 
             // if a view already exists then reuse it.
             if (convertView == null) {
                 LayoutInflater inflater = getLayoutInflater();
                 convertView = inflater.inflate(R.layout.list_item_favourite, parent, false);
+
+                ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
+                buttonDelete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        removeFavouriteStop(stop);
+                    }
+                });
             }
 
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
-
             textName.setText(stop.getName());
 
             return convertView;
@@ -691,8 +712,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
 
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
+            TextView textDistance = (TextView)convertView.findViewById(R.id.textDistance);
 
             textName.setText(stop.getName());
+            textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
             return convertView;
         }

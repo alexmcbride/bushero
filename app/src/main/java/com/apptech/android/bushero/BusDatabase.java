@@ -411,6 +411,24 @@ public class BusDatabase {
         }
     }
 
+    public void removeFavouriteStop(FavouriteStop stop) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            db.delete(FavouriteStopTable.NAME,
+                    "((" + BusRouteTable.Columns.ID + "=?))",
+                    new String[] { Long.toString(stop.getId()) });
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     public boolean hasFavouriteStop(String atcoCode) {
         return getFavouriteStop(atcoCode) != null;
     }
