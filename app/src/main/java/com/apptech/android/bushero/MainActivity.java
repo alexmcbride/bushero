@@ -116,8 +116,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // check and see if this stop is already in the cache.
                 boolean found = false;
                 if (mNearestBusStops != null) {
-                    BusStop nearest = mNearestBusStops.getStop(favourite.getAtcoCode());
-                    if (nearest != null) {
+                    position = mNearestBusStops.getStopPosition(favourite.getAtcoCode());
+                    if (position > -1) {
+                        BusStop nearest = mNearestBusStops.getStop(position);
+                        mCurrentStopPosition = position;
                         updateBusStop(nearest);
                         found = true;
                     }
@@ -371,10 +373,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void updateBusStop(BusStop busStop) {
+        // if we have a location then we figure out the distance ourselves, otherwise it shows the
+        // incorrect distance when showing a favourite bus stop.
+        int distance = busStop.getDistance();
+        if (mLocationUpdated) {
+            distance = (int)getDistanceSinceLastUpdate(busStop.getLongitude(), busStop.getLatitude());
+        }
+
         // update current bus stop info before loading live buses so user sees at least some
         // activity on the screen.
         mTextName.setText(busStop.getName());
-        mTextDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
+        mTextDistance.setText(getString(R.string.bus_stop_distance, distance));
         mTextBearing.setText(TextHelper.getBearing(busStop.getBearing()));
         mTextLocality.setText(busStop.getLocality());
 

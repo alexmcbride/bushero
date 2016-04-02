@@ -2,13 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
-              android:layout_height="match_parent">
+                android:layout_height="wrap_content">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textName"
-        style="@style/Base.TextAppearance.AppCompat.Medium"/>
+        style="@style/Base.TextAppearance.AppCompat.Small"
+        tools:text="Bus Stop Name"
+         android:layout_marginBottom="8dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -16,7 +18,8 @@
         android:id="@+id/textDistance"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        style="@style/Base.TextAppearance.AppCompat.Medium"
-        tools:ignore="RelativeOverlap"/>
+        style="@style/Base.TextAppearance.AppCompat.Small"
+        tools:ignore="RelativeOverlap"
+        android:layout_marginBottom="8dp"/>
 
 </RelativeLayout>

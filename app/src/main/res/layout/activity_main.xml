@@ -130,7 +130,7 @@
             android:textStyle="bold"
             android:textColor="@color/colorVeryDarkGrey"
             android:id="@+id/textFavouritesTitle"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             tools:ignore="RelativeOverlap"/>
 
         <ImageButton
@@ -140,7 +140,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:id="@+id/buttonFavourite"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             android:background="@null"
             android:onClick="onClickAddFavourite"
             android:contentDescription="@string/add_favourite_content_description"/>
