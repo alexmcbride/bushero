@@ -136,6 +136,23 @@ public class NearestBusStops {
         return mStops.get(index);
     }
 
+    public int getStopPosition(String atcoCode) {
+        for (int i = 0; i < mStops.size(); i++) {
+            if (mStops.get(i).getAtcoCode().equals(atcoCode)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public BusStop getStop(String atcoCode) {
+        int position = getStopPosition(atcoCode);
+        if (position > -1) {
+            return mStops.get(position);
+        }
+        return null;
+    }
+
     public int getStopCount() {
         return mStops.size();
     }

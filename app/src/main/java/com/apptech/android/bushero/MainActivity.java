@@ -112,20 +112,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // get favorite stop from adapter.
                 FavouriteStop favourite = mFavouritesAdapter.getItem(position);
 
-                // check and see if this stop is already in our downloaded stops list.
-                boolean found = false;
-                for (int i = 0; i < mNearestBusStops.getStopCount(); i++) {
-                    BusStop nearest = mNearestBusStops.getStop(i);
-                    if (nearest.getAtcoCode().equals(favourite.getAtcoCode())) {
-                        updateBusStop(nearest);
-                        found = true;
-                        break;
-                    }
-                }
-
-                // it's not, download fresh.
-                if (!found) {
+                // check and see if this stop is already in the cache.
+                BusStop nearest = mNearestBusStops.getStop(favourite.getAtcoCode());
+                if (nearest == null) {
                     new DownloadFavouriteStopAsyncTask().execute(favourite);
+                }
+                else {
+                    updateBusStop(nearest);
                 }
             }
         });
@@ -447,8 +440,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onClickAddFavourite(View view) {
         // add currently viewed bus stop to favourites.
         BusStop nearest = mNearestBusStops.getStop(mCurrentStopPosition);
+
+        // TODO: redo this to take away database call, could just use FavoruitesAdapter?
         if (mBusDatabase.hasFavouriteStop(nearest.getAtcoCode())) {
-            Toast.makeText(MainActivity.this, "Stop already in favourites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Already in favourites", Toast.LENGTH_SHORT).show();
         }
         else {
             FavouriteStop favourite = new FavouriteStop();
@@ -460,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mBusDatabase.addFavouriteStop(favourite);
             mFavouritesAdapter.add(favourite);
 
-            Toast.makeText(MainActivity.this, "Added stop to favourites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Added to favourites", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -590,20 +585,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mNearestStopId = result.getId();
             mBusDatabase.addNearestBusStops(result);
 
-            // make sure to get our actual favourite stop from the list.
-            for (int i = 0; i < result.getStops().size(); i++) {
-                if (result.getStop(i).getAtcoCode().equals(mFavouriteStop.getAtcoCode())) {
-                    mCurrentStopPosition = i;
+            int position = result.getStopPosition(mFavouriteStop.getAtcoCode());
+            if (position > -1) {
+                mCurrentStopPosition = position;
 
-                    BusStop stop = result.getStop(i);
-                    if (stop == null) {
-                        dismissProgressDialog();
-                    }
-                    else {
-                        updateBusStop(stop);
-                    }
-
-                    break;
+                BusStop stop = result.getStop(position);
+                if (stop == null) {
+                    dismissProgressDialog();
+                }
+                else {
+                    updateBusStop(stop);
                 }
             }
         }
