@@ -13,8 +13,8 @@
         style="@style/Base.TextAppearance.AppCompat.Medium"/>
 
     <ImageButton
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:src="@android:drawable/ic_delete"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"

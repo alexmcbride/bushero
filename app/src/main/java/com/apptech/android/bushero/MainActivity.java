@@ -669,7 +669,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            final FavouriteStop stop = getItem(position);
+            FavouriteStop stop = getItem(position);
 
             // if a view already exists then reuse it.
             if (convertView == null) {
@@ -680,13 +680,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 buttonDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        removeFavouriteStop(stop);
+                    int position = (int)v.getTag();
+                    FavouriteStop stop = getItem(position);
+
+                    Log.d(LOG_TAG, "removing favourite stop: " + stop.getName());
+
+                    removeFavouriteStop(stop);
                     }
                 });
             }
 
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
             textName.setText(stop.getName());
+
+            ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
+            buttonDelete.setTag(position);
 
             return convertView;
         }
