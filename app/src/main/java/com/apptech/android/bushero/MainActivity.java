@@ -153,6 +153,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mBusDatabase = new BusDatabase(this);
         mTransportClient = new TransportClient();
 
+        // TODO: update live buses in looper.
+        // TODO: when updating live buses, go through and remove ones not for stop in list of nearest stops
+        // TODO: when adding new nearest bus delete the previous one. keep track of that id.
+
         // check if this is the first time the activity has been created.
         if (savedInstanceState == null) {
             // TODO: find better place to delete the cache???
