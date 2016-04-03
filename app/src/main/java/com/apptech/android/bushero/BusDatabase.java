@@ -118,12 +118,9 @@ public class BusDatabase {
             db.delete(NearestBusStopsTable.NAME, "((id=?))", new String[] { Long.toString(nearest.getId()) });
 
             for (BusStop stop : nearest.getStops()) {
+                // delete bus stops and their buses.
                 db.delete(BusStopTable.NAME, "((id=?))", new String[] { Long.toString(stop.getId()) });
-
-                // delete live buses for this stop
                 db.delete(BusTable.NAME, "((busStopId=?))", new String[]{Long.toString(stop.getId())});
-
-                // delete route?
             }
         }
         finally {
