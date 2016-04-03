@@ -24,30 +24,6 @@ public class BusDatabase {
         mContext = context;
     }
 
-    public void deleteCache() {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            // BusDbHelper takes care of common database tasks so we don't have to.
-            helper = new BusDbHelper(mContext);
-
-            // get a writable SQLite db object from helper.
-            db = helper.getWritableDatabase();
-
-            // execute SQL to clear tables used to store bus cache.
-            db.execSQL("DELETE FROM " + NearestBusStopsTable.NAME + ";");
-            db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
-            db.execSQL("DELETE FROM " + BusTable.NAME + ";");
-            db.execSQL("DELETE FROM " + BusRouteTable.NAME + ";");
-        }
-        finally {
-            // no matter what happens try and free these resources.
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
     public NearestBusStops getNearestBusStops(long id) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -123,6 +99,31 @@ public class BusDatabase {
                 values = getContentValues(stop);
                 long stopId = db.insert(BusStopTable.NAME, null, values);
                 stop.setId(stopId); // set bus stop id.
+            }
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public void deleteNearestStops(NearestBusStops nearest) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            db.delete(NearestBusStopsTable.NAME, "((id=?))", new String[] { Long.toString(nearest.getId()) });
+
+            for (BusStop stop : nearest.getStops()) {
+                db.delete(BusStopTable.NAME, "((id=?))", new String[] { Long.toString(stop.getId()) });
+
+                // delete live buses for this stop
+                db.delete(BusTable.NAME, "((busStopId=?))", new String[]{Long.toString(stop.getId())});
+
+                // delete route?
             }
         }
         finally {

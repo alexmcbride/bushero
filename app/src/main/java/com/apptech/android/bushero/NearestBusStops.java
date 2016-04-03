@@ -133,7 +133,10 @@ public class NearestBusStops {
     }
 
     public BusStop getStop(int index) {
-        return mStops.get(index);
+        if (index > -1) {
+            return mStops.get(index);
+        }
+        return null;
     }
 
     public int getStopPosition(String atcoCode) {
