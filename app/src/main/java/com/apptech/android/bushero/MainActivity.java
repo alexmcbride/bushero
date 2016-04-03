@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private GoogleApiClient mGoogleApi;
     private double mLastLongitude;
     private double mLastLatitude;
-    private boolean mLocationUpdated;
     private FavouritesAdapter mFavouritesAdapter;
 
     @Override
@@ -120,8 +119,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 BusStop stop = mNearestBusStops.getStop(position);
                 if (stop == null) {
                     // no, get fresh stuff.
-                    updateNearestBusStops(
-                            favourite.getAtcoCode(),
+                    new DownloadNearestStopsAsyncTask(favourite.getAtcoCode()).execute(
                             favourite.getLongitude(),
                             favourite.getLatitude());
                 }
@@ -172,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
             mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
-            mLocationUpdated = savedInstanceState.getBoolean(SAVED_LOCATION_UPDATED);
 
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from saved state");
         }
@@ -246,11 +243,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // if we have no nearest bus stops object then we better make one.
         if (mNearestBusStops == null) {
-            updateNearestBusStops(longitude, latitude);
-
-            // keep track of where we were.
-            mLastLongitude = longitude;
-            mLastLatitude = latitude;
+            changeLocation(longitude, latitude);
         }
         else {
             // check to see how far the user has moved since last update.
@@ -263,11 +256,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        updateNearestBusStops(longitude, latitude);
-
-                        // keep track of where we were.
-                        mLastLongitude = longitude;
-                        mLastLatitude = latitude;
+                        changeLocation(longitude, latitude);
 
                         snackbar.dismiss();
                     }
@@ -277,18 +266,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private void updateNearestBusStops(double longitude, double latitude) {
-        // check and see if we are viewing a bus stop right now so it can be restored later.
-        String atcoCode = null;
-        if (mNearestBusStops != null) {
-            atcoCode = mNearestBusStops.getStop(mCurrentStopPosition).getAtcoCode();
-        }
-        updateNearestBusStops(atcoCode, longitude, latitude);
-    }
-
-    private void updateNearestBusStops(String atcoCode, double longitude, double latitude) {
+    private void changeLocation(double longitude, double latitude) {
         // start async background task to update nearest bus stops.
-        new DownloadNearestStopsAsyncTask(atcoCode).execute(longitude, latitude);
+        new DownloadNearestStopsAsyncTask(null).execute(longitude, latitude);
+
+        // keep track of where we were.
+        mLastLongitude = longitude;
+        mLastLatitude = latitude;
     }
 
     private float getDistanceSinceLastUpdate(double longitude, double latitude) {
@@ -380,7 +364,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
-        savedInstanceState.putBoolean(SAVED_LOCATION_UPDATED, mLocationUpdated);
     }
 
     public void onClickNearer(View view) {
