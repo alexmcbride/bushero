@@ -18,6 +18,7 @@ public class BusStop {
     private double mLatitude;
     private int mDistance;
     private String mTime; // this is only set for stops that are on a bus route
+    private long lastUpdated;
 
     public BusStop() {
 
@@ -133,5 +134,13 @@ public class BusStop {
 
     public void setTime(String time) {
         mTime = time;
+    }
+
+    public long getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(long lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }

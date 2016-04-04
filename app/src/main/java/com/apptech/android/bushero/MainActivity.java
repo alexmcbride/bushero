@@ -8,11 +8,14 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,6 +38,7 @@ import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.LoggingPermission;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
@@ -42,12 +46,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
-    private static final String SAVED_LOCATION_UPDATED = "LOCATION_UPDATED";
     private static final String PREFS_NEAREST_STOPS_ID = "NEAREST_STOPS_ID";
     private static final String PREFS_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
+    private static final int UPDATE_CHECK_INTERVAL = 60000; // minute
+    private static final int UPDATE_BUSES_INTERVAL = 300000; // 5 minutes
 
     // widgets
     private TextView mTextName;
@@ -73,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLastLongitude;
     private double mLastLatitude;
     private FavouritesAdapter mFavouritesAdapter;
+    private Handler mUpdateHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,6 +160,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // TODO: update live buses in looper.
         // TODO: when adding new nearest bus delete the previous one. keep track of that id.
 		// TODO: when deleteing nearest bus delete all live buses for it too.
+        // TODO: keep bus stops in db and reuse them as they don't change often.
+        // refresh live bus info
 
         // check if we need to get info from preferences or if we are restoring from instance state.
         long nearestStopsId;
@@ -197,6 +205,47 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
         mFavouritesAdapter = new FavouritesAdapter(this, favourites);
         mListFavourites.setAdapter(mFavouritesAdapter);
+
+        // start update handler, this elapses every period and checks if an update is needed.
+        mUpdateHandler = new Handler();
+        startUpdateTask();
+    }
+
+    private Runnable mUpdateChecker = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(LOG_TAG, "run scheduled update checker");
+
+            try {
+                if (mNearestBusStops != null) {
+                    // check time since last update
+                    BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                    if (busStop != null) {
+                        long now = System.currentTimeMillis();
+                        if ((now - busStop.getLastUpdated()) > UPDATE_BUSES_INTERVAL) {
+                            Log.d(LOG_TAG, "update live buses");
+
+                            // update live buses for this stop.
+                            new DownloadLiveBusesAsyncTask().execute(busStop);
+                        }
+                    }
+                }
+            }
+            finally {
+                // schedule next update.
+                mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
+            }
+        }
+    };
+
+    private void startUpdateTask() {
+        Log.d(LOG_TAG, "starting update timer");
+        mUpdateChecker.run();
+    }
+
+    private void stopUpdateTask() {
+        Log.d(LOG_TAG, "stopping update timer");
+        mUpdateHandler.removeCallbacks(mUpdateChecker);
     }
 
     @Override
@@ -251,8 +300,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "distance:" + distance);
             if (distance > MIN_DISTANCE_METRES) {
                 // ask the user if they would like to change their current bus stop.
-                View view = findViewById(R.id.drawerLayout);
-                final Snackbar snackbar = Snackbar.make(view, R.string.snackbar_message, Snackbar.LENGTH_INDEFINITE);
+                final Snackbar snackbar = Snackbar.make(mLayoutDrawer, R.string.snackbar_message, Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -294,9 +342,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
                 else {
                     Log.d(LOG_TAG, "location permission refused :(");
-                    // no we don't :(
-                    // TODO: make this an alert box so the user can't miss it.
-                    Toast.makeText(MainActivity.this, "App needs location permission", Toast.LENGTH_SHORT).show();
+                    new AlertDialog.Builder(this).
+                            setMessage("This app requires location permission to work").
+                            setTitle("Permission Needed").
+                            show();
                 }
                 break;
         }
@@ -332,6 +381,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.d(LOG_TAG, "Disconnecting from Google API Service");
         mGoogleApi.disconnect();
         super.onStop();
+
+        stopUpdateTask();
 
         // save preferences here. preferences are persisted between sessions.
         if (mNearestBusStops != null) {
@@ -604,6 +655,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(LOG_TAG, "caching live buses in database");
                 mBusDatabase.addLiveBuses(result, mBusStop.getId());
                 mLiveBuses = result; // need this later.
+
+                // remember when we updated.
+                Log.d(LOG_TAG, "updating bus stop last updated.");
+                mBusStop.setLastUpdated(System.currentTimeMillis());
+                mBusDatabase.updateBusStop(mBusStop);
 
                 updateBuses(); // update buses UI
             }

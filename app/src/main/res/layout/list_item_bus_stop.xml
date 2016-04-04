@@ -8,9 +8,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textName"
-        style="@style/Base.TextAppearance.AppCompat.Small"
+        style="@style/Base.TextAppearance.AppCompat.Medium"
         tools:text="Bus Stop Name"
-         android:layout_marginBottom="8dp"/>
+         android:layout_marginBottom="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -18,8 +18,8 @@
         android:id="@+id/textDistance"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        style="@style/Base.TextAppearance.AppCompat.Small"
+        style="@style/Base.TextAppearance.AppCompat.Medium"
         tools:ignore="RelativeOverlap"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="16dp"/>
 
 </RelativeLayout>

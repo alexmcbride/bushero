@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.util.prefs.Preferences;
 
 import com.apptech.android.bushero.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.BusDbSchema.BusStopTable;
@@ -22,6 +24,46 @@ public class BusDatabase {
 
     public BusDatabase(Context context) {
         mContext = context;
+    }
+
+    public int expireRouteCache(int interval) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            Date date = new Date();
+            String[] whereArgs = new String[]{Long.toString(date.getTime() - interval)};
+
+            cursor = db.query(
+                    BusRouteTable.NAME,
+                    new String[]{"id"},
+                    "((" + BusRouteTable.Columns.REQUEST_TIME + " < ?))",
+                    whereArgs,
+                    null, null, null);
+
+            int rows = 0;
+            if (cursor.moveToFirst()) {
+                do {
+                    whereArgs = new String[]{Long.toString(cursor.getLong(cursor.getColumnIndex("id")))};
+
+                    rows += db.delete(BusStopTable.NAME, "((" + BusStopTable.Columns.BUS_ROUTE_ID + "=?))", whereArgs);
+                }
+                while (cursor.moveToNext());
+            }
+
+            rows += db.delete(BusRouteTable.NAME, "((" + BusRouteTable.Columns.REQUEST_TIME + " < ?))", whereArgs);
+
+            return rows;
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
     }
 
     public NearestBusStops getNearestBusStops(long id) {
@@ -115,11 +157,11 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
-            db.delete(NearestBusStopsTable.NAME, "((id=?))", new String[] { Long.toString(nearest.getId()) });
+            db.delete(NearestBusStopsTable.NAME, "((id=?))", new String[]{Long.toString(nearest.getId())});
 
             for (BusStop stop : nearest.getStops()) {
                 // delete bus stops and their buses.
-                db.delete(BusStopTable.NAME, "((id=?))", new String[] { Long.toString(stop.getId()) });
+                db.delete(BusStopTable.NAME, "((id=?))", new String[]{Long.toString(stop.getId())});
                 db.delete(BusTable.NAME, "((busStopId=?))", new String[]{Long.toString(stop.getId())});
             }
         }
@@ -292,6 +334,32 @@ public class BusDatabase {
         }
     }
 
+    public boolean updateBusStop(BusStop stop) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            // we're only updating the time right now.
+            ContentValues values = new ContentValues();
+            values.put(BusStopTable.Columns.LAST_UPDATED, stop.getLastUpdated());
+
+            int rows = db.update(BusStopTable.NAME,
+                    values,
+                    "((" + BusStopTable.Columns.ID + "=?))",
+                    new String[] { Long.toString(stop.getId()) });
+
+            return rows > 0;
+        }
+        finally
+        {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+}
+
     public Bus getBus(long id) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -451,7 +519,7 @@ public class BusDatabase {
         ContentValues values = new ContentValues();
         values.put(BusRouteTable.Columns.BUS_ID, route.getBusId());
         values.put(BusRouteTable.Columns.OPERATOR, route.getOperator());
-        values.put(BusRouteTable.Columns.REQUEST_TIME, route.getRequestTime());
+        values.put(BusRouteTable.Columns.REQUEST_TIME, route.getRequestTime().getTime());
         values.put(BusRouteTable.Columns.LINE, route.getLine());
         values.put(BusRouteTable.Columns.ORIGIN_ATCOCODE, route.getOriginAtcoCode());
         return values;
@@ -472,6 +540,7 @@ public class BusDatabase {
         values.put(BusStopTable.Columns.LATITUDE, stop.getLatitude());
         values.put(BusStopTable.Columns.DISTANCE, stop.getDistance());
         values.put(BusStopTable.Columns.TIME, stop.getTime());
+        values.put(BusStopTable.Columns.LAST_UPDATED, stop.getLastUpdated());
         return values;
     }
 

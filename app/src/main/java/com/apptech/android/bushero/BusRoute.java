@@ -1,6 +1,7 @@
 package com.apptech.android.bushero;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -9,7 +10,7 @@ import java.util.List;
 public class BusRoute {
     private long mId;
     private long mBusId; // the ID of the bus record used to generate this bus route.
-    private String mRequestTime;
+    private Date mRequestTime;
     private String mOperator;
     private String mLine;
     private String mOriginAtcoCode;
@@ -35,11 +36,11 @@ public class BusRoute {
         mBusId = busId;
     }
 
-    public String getRequestTime() {
+    public Date getRequestTime() {
         return mRequestTime;
     }
 
-    public void setRequestTime(String requestTime) {
+    public void setRequestTime(Date requestTime) {
         mRequestTime = requestTime;
     }
 

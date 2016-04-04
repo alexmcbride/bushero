@@ -23,6 +23,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
     private static final String KEY_ATCOCODE = "com.apptech.android.bushero.ATCOCODE";
     private static final String SAVED_BUS_ID = "BUS_ID";
     private static final String SAVED_ATCOCODE = "ATCOCODE";
+    private static final int ROUTE_EXPIRE_INTERVAL = 1000 * 60 * 30; // 30 mins
 
     private ListView mListBusStops;
     private ProgressDialog mProgressDialog;
@@ -58,6 +59,12 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
 
         // get bus and route from database.
         mBusDatabase = new BusDatabase(this);
+
+        // we remove old route information that's older than 30 minutes.
+        Log.d(LOG_TAG, "expiring old routes");
+        int rows = mBusDatabase.expireRouteCache(ROUTE_EXPIRE_INTERVAL);
+        Log.d(LOG_TAG, rows + " rows deleted");
+
         mBus = mBusDatabase.getBus(busId);
         mBusRoute = mBusDatabase.getBusRoute(busId);
 

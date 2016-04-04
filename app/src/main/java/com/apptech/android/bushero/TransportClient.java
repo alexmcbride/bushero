@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TransportClient {
@@ -294,7 +295,8 @@ public class TransportClient {
 
                 switch (name) {
                     case "request_time":
-                        route.setRequestTime(reader.nextString());
+                        reader.skipValue();
+                        route.setRequestTime(new Date());
                         break;
                     case "operator":
                         route.setOperator(reader.nextString());

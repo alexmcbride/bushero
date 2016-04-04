@@ -9,6 +9,8 @@ import com.apptech.android.bushero.BusDbSchema.BusTable;
 import com.apptech.android.bushero.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
 
+import java.util.Date;
+
 
 /**
  * Custom DB cursor that we've populated with our own methods. These methods take the current cursor
@@ -39,7 +41,7 @@ public class BusCursorWrapper extends CursorWrapper {
         BusRoute route = new BusRoute();
         route.setId(getLong(getColumnIndex(BusRouteTable.Columns.ID)));
         route.setBusId(getLong(getColumnIndex(BusRouteTable.Columns.BUS_ID)));
-        route.setRequestTime(getString(getColumnIndex(BusRouteTable.Columns.REQUEST_TIME)));
+        route.setRequestTime(new Date(getLong(getColumnIndex(BusRouteTable.Columns.REQUEST_TIME))));
         route.setOperator(getString(getColumnIndex(BusRouteTable.Columns.OPERATOR)));
         route.setLine(getString(getColumnIndex(BusRouteTable.Columns.LINE)));
         route.setOriginAtcoCode(getString(getColumnIndex(BusRouteTable.Columns.ORIGIN_ATCOCODE)));
@@ -62,6 +64,7 @@ public class BusCursorWrapper extends CursorWrapper {
         stop.setLatitude(getDouble(getColumnIndex(BusStopTable.Columns.LATITUDE)));
         stop.setDistance(getInt(getColumnIndex(BusStopTable.Columns.DISTANCE)));
         stop.setTime(getString(getColumnIndex(BusStopTable.Columns.TIME)));
+        stop.setLastUpdated(getLong(getColumnIndex(BusStopTable.Columns.LAST_UPDATED)));
         return stop;
     }
 

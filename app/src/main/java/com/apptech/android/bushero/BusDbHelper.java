@@ -41,7 +41,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + BusRouteTable.NAME + " (" +
                 BusRouteTable.Columns.ID + " INTEGER PRIMARY KEY," +
                 BusRouteTable.Columns.BUS_ID + " INTEGER," +
-                BusRouteTable.Columns.REQUEST_TIME + " TEXT," +
+                BusRouteTable.Columns.REQUEST_TIME + " INTEGER," +
                 BusRouteTable.Columns.OPERATOR + " TEXT," +
                 BusRouteTable.Columns.LINE + " TEXT," +
                 BusRouteTable.Columns.ORIGIN_ATCOCODE + " TEXT" +
@@ -62,6 +62,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusStopTable.Columns.LATITUDE + " REAL," +
                 BusStopTable.Columns.DISTANCE + " INTEGER," +
                 BusStopTable.Columns.TIME + " INTEGER," +
+                BusStopTable.Columns.LAST_UPDATED + " INTEGER," +
                 "FOREIGN KEY(" + BusStopTable.Columns.NEAREST_BUS_STOPS_ID + ") REFERENCES " + NearestBusStopsTable.NAME + "(" + NearestBusStopsTable.Columns.ID + ")" +
                 "FOREIGN KEY(" + BusStopTable.Columns.BUS_ROUTE_ID + ") REFERENCES " + BusRouteTable.NAME + "(" + BusRouteTable.Columns.ID + ")" +
                 ");");
