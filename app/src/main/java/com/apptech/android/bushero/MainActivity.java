@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -37,8 +36,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-import java.util.logging.LoggingPermission;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
@@ -51,8 +51,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
-    private static final int UPDATE_CHECK_INTERVAL = 60000; // minute
-    private static final int UPDATE_BUSES_INTERVAL = 300000; // 5 minutes
+    private static final int UPDATE_CHECK_INTERVAL = 10000; // ten seconds.
 
     // widgets
     private TextView mTextName;
@@ -217,22 +216,41 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "run scheduled update checker");
 
             try {
-                if (mNearestBusStops != null) {
-                    // check time since last update
-                    BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-                    if (busStop != null) {
-                        long now = System.currentTimeMillis();
-                        if ((now - busStop.getLastUpdated()) > UPDATE_BUSES_INTERVAL) {
-                            Log.d(LOG_TAG, "update live buses");
+                if (mNearestBusStops == null) {
+                    return;
+                }
 
-                            // update live buses for this stop.
+                // check and see if we have a bus stop.
+                final BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                if (busStop == null) {
+                    return;
+                }
+
+                // check and see if we have a bus.
+                Bus bus = mLiveBuses.getBus(0);
+                if (bus == null) {
+                    return;
+                }
+
+                // check whether a bus is due.
+                long departureTime = bus.getDepartureTime();
+                long now = System.currentTimeMillis();
+                Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now);
+                if (now > departureTime) {
+                    Log.d(LOG_TAG, "update live buses");
+
+                    // ask user if they want to reload live bus info.
+                    Snackbar snackbar = Snackbar.make(mLayoutDrawer, "New Live Bus Info", Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setAction("Update?", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
                             new DownloadLiveBusesAsyncTask().execute(busStop);
                         }
-                    }
+                    });
+                    snackbar.show();
                 }
             }
             finally {
-                // schedule next update.
                 mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
             }
         }

@@ -1,5 +1,12 @@
 package com.apptech.android.bushero;
 
+import android.util.Log;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 /**
  * Class to represent a bus.
  */
@@ -115,5 +122,30 @@ public class Bus {
 
     public void setDate(String date) {
         mDate = date;
+    }
+
+    public long getDepartureTime() {
+        // convert time string hh:mm into milliseconds.
+        String time = getBestDepartureEstimate();
+
+        int index = time.indexOf(":");
+        if (index == -1) {
+            return -1;
+        }
+
+        // get hours and minutes from string.
+        String hoursStr = time.substring(0, index);
+        String minutesStr = time.substring(index + 1);
+        int hours = Integer.parseInt(hoursStr);
+        int minutes = Integer.parseInt(minutesStr);
+
+        // create calendar object to get the time from.
+        Calendar date = GregorianCalendar.getInstance();
+        date.set(Calendar.HOUR_OF_DAY, hours);
+        date.set(Calendar.MINUTE, minutes);
+        date.set(Calendar.SECOND, 0);
+        date.set(Calendar.MILLISECOND, 0);
+
+        return date.getTimeInMillis();
     }
 }

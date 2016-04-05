@@ -22,7 +22,10 @@ public class LiveBuses {
     }
 
     public Bus getBus(int index) {
-        return mBuses.get(index);
+        if (index < mBuses.size()) {
+            return mBuses.get(index);
+        }
+        return null;
     }
 
     public int getBusesCount() {
