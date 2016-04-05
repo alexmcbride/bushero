@@ -46,8 +46,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
-    private static final String PREFS_NEAREST_STOPS_ID = "NEAREST_STOPS_ID";
-    private static final String PREFS_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
@@ -78,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLastLatitude;
     private FavouritesAdapter mFavouritesAdapter;
     private Handler mUpdateHandler;
+    private boolean mIsUpdating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,10 +165,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         long nearestStopsId;
         if (savedInstanceState == null) {
             SharedPreferences preferences = getPreferences(0);
-            nearestStopsId = preferences.getLong(PREFS_NEAREST_STOPS_ID, -1);
-            mCurrentStopPosition = preferences.getInt(PREFS_CURRENT_STOP_POSITION, 0);
+            nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, -1);
+            mCurrentStopPosition = preferences.getInt(SAVED_CURRENT_STOP_POSITION, 0);
 
-            Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from preferences");
+            // workaround for fact that preferences doesn't support double for some reason.
+            mLastLongitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LONGITUDE, 0));
+            mLastLatitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LATITUDE, 0));
         }
         else {
             Log.d(LOG_TAG, "getting saved state");
@@ -216,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "run scheduled update checker");
 
             try {
+                // see of we have any nearest buses.
                 if (mNearestBusStops == null) {
                     return;
                 }
@@ -234,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 // check whether a bus is due.
                 long departureTime = bus.getDepartureTime();
+                departureTime += (60 * 1000); // we add a minute so doesn't update until bus due time is past.
                 long now = System.currentTimeMillis();
                 Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now);
                 if (now > departureTime) {
@@ -251,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
             finally {
+                // TODO: handler.sendMessageAtTime()????
                 mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
             }
         }
@@ -258,12 +262,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void startUpdateTask() {
         Log.d(LOG_TAG, "starting update timer");
-        mUpdateChecker.run();
+        if (!mIsUpdating) {
+            mIsUpdating = true;
+            mUpdateChecker.run();
+        }
     }
 
     private void stopUpdateTask() {
         Log.d(LOG_TAG, "stopping update timer");
-        mUpdateHandler.removeCallbacks(mUpdateChecker);
+        if (mIsUpdating) {
+            mUpdateHandler.removeCallbacks(mUpdateChecker);
+            mIsUpdating = false;
+        }
     }
 
     @Override
@@ -387,19 +397,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onStart() {
+        super.onStart();
+
         // connect to google play services api on start
         Log.d(LOG_TAG, "Connecting to Google API Service");
         mGoogleApi.connect();
-        super.onStart();
+        stopUpdateTask();
     }
 
     @Override
     protected void onStop() {
+        super.onStop();
+
         // disconnect from google play services api on stop.
         Log.d(LOG_TAG, "Disconnecting from Google API Service");
         mGoogleApi.disconnect();
-        super.onStop();
 
+        // stop task update thing.
         stopUpdateTask();
 
         // save preferences here. preferences are persisted between sessions.
@@ -408,8 +422,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             SharedPreferences preference = getPreferences(0);
             SharedPreferences.Editor editor = preference.edit();
-            editor.putLong(PREFS_NEAREST_STOPS_ID, mNearestBusStops.getId());
-            editor.putInt(PREFS_CURRENT_STOP_POSITION, mCurrentStopPosition);
+            editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
+            editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+
+            // workaround for fact that preferences doesn't support double.
+            editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
+            editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
+
             editor.apply();
         }
     }
@@ -423,7 +442,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //        Log.d(LOG_TAG, "stopping location updates");
 //        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApi, this);
 
+        stopUpdateTask();
+
         super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        startUpdateTask();
+
+        super.onResume();
     }
 
     @Override
