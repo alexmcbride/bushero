@@ -234,6 +234,26 @@ public class BusDatabase {
         }
     }
 
+    public boolean removeLiveBuses(long busStopId) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            int rows = db.delete(BusTable.NAME,
+                    "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
+                    new String[]{Long.toString(busStopId)});
+
+            return rows > 0;
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     public BusRoute getBusRoute(long busId) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;

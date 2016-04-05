@@ -237,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // check whether a bus is due.
                 long departureTime = bus.getDepartureTime();
                 // TODO: doesn't work, maybe check time isn't same minute?
+                // remove old live bus info?
                 departureTime += (60 * 1000); // we add a minute so doesn't update until bus due time is past.
                 long now = System.currentTimeMillis();
                 Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now);
@@ -248,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     snackbar.setAction("Update?", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            new DownloadLiveBusesAsyncTask().execute(busStop);
+                        new DownloadLiveBusesAsyncTask().execute(busStop);
                         }
                     });
                     snackbar.show();
@@ -698,6 +699,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (result == null) {
                     return;
                 }
+
+                // remove current buses for this stop.
+                Log.d(LOG_TAG, "removing old live buses from database");
+                BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                mBusDatabase.removeLiveBuses(busStop.getId());
 
                 // add newly downloaded buses to database
                 Log.d(LOG_TAG, "caching live buses in database");
