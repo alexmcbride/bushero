@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // if we have a nearest stop id then restore it from the database.
-        if (nearestStopsId > -1) {
+        if (nearestStopsId > 0) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
 
@@ -236,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 // check whether a bus is due.
                 long departureTime = bus.getDepartureTime();
+                // TODO: doesn't work, maybe check time isn't same minute?
                 departureTime += (60 * 1000); // we add a minute so doesn't update until bus due time is past.
                 long now = System.currentTimeMillis();
                 Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now);
@@ -458,6 +459,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // save state data so activity can be recreated.
         Log.d(LOG_TAG, "saving instance state");
+        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? 0 : mNearestBusStops.getId());
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
