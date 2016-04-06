@@ -73,6 +73,7 @@ public class BusDbSchema {
             public static final String BEST_DEPARTURE_ESTIMATE = "bestDepartureEstimate";
             public static final String SOURCE = "source";
             public static final String DATE = "date";
+            public static final String DEPARTURE_TIME = "departureTime";
         }
     }
 

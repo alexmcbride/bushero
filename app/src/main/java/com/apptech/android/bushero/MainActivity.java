@@ -35,6 +35,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, LocationListener {
@@ -294,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             try {
                 // see of we have any nearest buses.
-                if (mNearestBusStops == null) {
+                if (mNearestBusStops == null || mLiveBuses == null) {
                     return;
                 }
 
@@ -316,7 +318,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // remove old live bus info?
                 departureTime += (60 * 1000); // we add a minute so doesn't update until bus due time is past.
                 long now = System.currentTimeMillis();
-                Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now);
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm");
+                Log.d(LOG_TAG, "now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
+
+//                Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now + " diff: " + (now - departureTime));
+
                 if (now > departureTime) {
                     Log.d(LOG_TAG, "update live buses");
 

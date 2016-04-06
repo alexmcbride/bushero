@@ -80,6 +80,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusTable.Columns.BEST_DEPARTURE_ESTIMATE + " TEXT," +
                 BusTable.Columns.SOURCE + " TEXT," +
                 BusTable.Columns.DATE + " TEXT," +
+                BusTable.Columns.DEPARTURE_TIME + " INTEGER," +
                 "FOREIGN KEY(" + BusTable.Columns.BUS_STOP_ID + ") REFERENCES " + BusStopTable.NAME + "(" + BusStopTable.Columns.ID + ")" +
                 ");");
 

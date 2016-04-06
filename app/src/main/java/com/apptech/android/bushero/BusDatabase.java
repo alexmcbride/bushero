@@ -577,6 +577,7 @@ public class BusDatabase {
         values.put(BusTable.Columns.BEST_DEPARTURE_ESTIMATE, bus.getBestDepartureEstimate());
         values.put(BusTable.Columns.SOURCE, bus.getSource());
         values.put(BusTable.Columns.DATE, bus.getDate());
+        values.put(BusTable.Columns.DEPARTURE_TIME, bus.getDepartureTime());
         return values;
     }
 
