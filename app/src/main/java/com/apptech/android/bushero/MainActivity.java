@@ -29,18 +29,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, LocationListener {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
@@ -75,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLastLongitude;
     private double mLastLatitude;
     private FavouritesAdapter mFavouritesAdapter;
-    private Handler mUpdateHandler;
+    private Handler mLiveUpdateHandler;
     private boolean mIsUpdating;
 
     @Override
@@ -165,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         long nearestStopsId;
         if (savedInstanceState == null) {
             SharedPreferences preferences = getPreferences(0);
-            nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, -1);
+            nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, 0);
             mCurrentStopPosition = preferences.getInt(SAVED_CURRENT_STOP_POSITION, 0);
 
             // workaround for fact that preferences doesn't support double for some reason.
@@ -195,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // initialise google play services API to access location GPS data
         mGoogleApi = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
 
@@ -207,14 +203,94 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mListFavourites.setAdapter(mFavouritesAdapter);
 
         // start update handler, this elapses every period and checks if an update is needed.
-        mUpdateHandler = new Handler();
-        startUpdateTask();
+        mLiveUpdateHandler = new Handler();
+        startLiveUpdateTask();
     }
 
-    private Runnable mUpdateChecker = new Runnable() {
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // connect to google play services api on start
+        Log.d(LOG_TAG, "Connecting to Google API Service");
+        mGoogleApi.connect();
+        startLiveUpdateTask();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // disconnect from google play services api on stop.
+        Log.d(LOG_TAG, "Disconnecting from Google API Service");
+        mGoogleApi.disconnect();
+
+        // stop task update thing.
+        stopLiveUpdateTask();
+
+        // save preferences here. preferences are persisted between sessions.
+        if (mNearestBusStops != null) {
+            Log.d(LOG_TAG, "saving nearest stops id (" + mNearestBusStops.getId() + ") to preferences");
+
+            SharedPreferences preference = getPreferences(0);
+            SharedPreferences.Editor editor = preference.edit();
+            editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
+            editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+
+            // workaround for fact that preferences doesn't support double.
+            editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
+            editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
+
+            editor.apply();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // stop showing dialog. this helps if user rotates app when asynctask is running
+        dismissProgressDialog();
+
+        stopLiveUpdateTask();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startLiveUpdateTask();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // save state data so activity can be recreated.
+        Log.d(LOG_TAG, "saving instance state");
+        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? 0 : mNearestBusStops.getId());
+        savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+        savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
+        savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
+    }
+
+    private void startLiveUpdateTask() {
+        if (!mIsUpdating) {
+            Log.d(LOG_TAG, "starting update timer");
+            mIsUpdating = true;
+            mLiveUpdateChecker.run();
+        }
+    }
+
+    private void stopLiveUpdateTask() {
+        if (mIsUpdating) {
+            Log.d(LOG_TAG, "stopping update timer");
+            mLiveUpdateHandler.removeCallbacks(mLiveUpdateChecker);
+            mIsUpdating = false;
+        }
+    }
+
+    private Runnable mLiveUpdateChecker = new Runnable() {
         @Override
         public void run() {
-            Log.d(LOG_TAG, "run scheduled update checker");
+            Log.d(LOG_TAG, "running scheduled update checker");
 
             try {
                 // see of we have any nearest buses.
@@ -257,26 +333,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             finally {
                 // TODO: handler.sendMessageAtTime()????
-                mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
+                // schedule next run
+                mLiveUpdateHandler.postDelayed(mLiveUpdateChecker, UPDATE_CHECK_INTERVAL);
             }
         }
     };
-
-    private void startUpdateTask() {
-        Log.d(LOG_TAG, "starting update timer");
-        if (!mIsUpdating) {
-            mIsUpdating = true;
-            mUpdateChecker.run();
-        }
-    }
-
-    private void stopUpdateTask() {
-        Log.d(LOG_TAG, "stopping update timer");
-        if (mIsUpdating) {
-            mUpdateHandler.removeCallbacks(mUpdateChecker);
-            mIsUpdating = false;
-        }
-    }
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -386,84 +447,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.d(LOG_TAG, "Google API Client suspended.");
 
         dismissProgressDialog();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        dismissProgressDialog();
-
-        // google play has failed us. :(
-        Log.d(LOG_TAG, "Google API Client connection failed.");
-        Toast.makeText(MainActivity.this, "Could not connect to Google Play Services.", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // connect to google play services api on start
-        Log.d(LOG_TAG, "Connecting to Google API Service");
-        mGoogleApi.connect();
-        stopUpdateTask();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        // disconnect from google play services api on stop.
-        Log.d(LOG_TAG, "Disconnecting from Google API Service");
-        mGoogleApi.disconnect();
-
-        // stop task update thing.
-        stopUpdateTask();
-
-        // save preferences here. preferences are persisted between sessions.
-        if (mNearestBusStops != null) {
-            Log.d(LOG_TAG, "saving nearest stops id (" + mNearestBusStops.getId() + ") to preferences");
-
-            SharedPreferences preference = getPreferences(0);
-            SharedPreferences.Editor editor = preference.edit();
-            editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
-            editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
-
-            // workaround for fact that preferences doesn't support double.
-            editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
-            editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
-
-            editor.apply();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        // stop showing dialog. this helps if user rotates app when asynctask is running
-        dismissProgressDialog();
-
-        // stop getting updates when paused, wastes battery life.
-//        Log.d(LOG_TAG, "stopping location updates");
-//        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApi, this);
-
-        stopUpdateTask();
-
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        startUpdateTask();
-
-        super.onResume();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        // save state data so activity can be recreated.
-        Log.d(LOG_TAG, "saving instance state");
-        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? 0 : mNearestBusStops.getId());
-        savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
-        savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
-        savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
     }
 
     public void onClickNearer(View view) {

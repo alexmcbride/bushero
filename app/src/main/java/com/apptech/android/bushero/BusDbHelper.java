@@ -35,7 +35,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 NearestBusStopsTable.Columns.PAGE + " INTEGER," +
                 NearestBusStopsTable.Columns.RETURNED_PER_PAGE + " INTEGER," +
                 NearestBusStopsTable.Columns.TOTAL + " INTEGER," +
-                NearestBusStopsTable.Columns.REQUEST_TIME + " INTEGER" +
+                NearestBusStopsTable.Columns.REQUEST_TIME + " TEXT" +
                 ");");
 
         db.execSQL("CREATE TABLE " + BusRouteTable.NAME + " (" +

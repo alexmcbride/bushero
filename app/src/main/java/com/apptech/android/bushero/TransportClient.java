@@ -162,7 +162,7 @@ public class TransportClient {
     }
 
     public LiveBuses getLiveBuses(String atcoCode) throws IOException {
-        URL url = getLiveBusesUrl(atcoCode, 20);
+        URL url = getLiveBusesUrl(atcoCode, 10);
         URLConnection connection = url.openConnection();
         connection.connect();
 
