@@ -75,7 +75,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLastLatitude;
     private FavouritesAdapter mFavouritesAdapter;
     private Handler mLiveUpdateHandler;
-    private boolean mIsUpdating;
+    private boolean mIsLiveUpdating;
+    private boolean mIsChangingLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,18 +275,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void startLiveUpdateTask() {
-        if (!mIsUpdating) {
+        if (!mIsLiveUpdating) {
             Log.d(LOG_TAG, "starting update timer");
-            mIsUpdating = true;
+            mIsLiveUpdating = true;
             mLiveUpdateChecker.run();
         }
     }
 
     private void stopLiveUpdateTask() {
-        if (mIsUpdating) {
+        if (mIsLiveUpdating) {
             Log.d(LOG_TAG, "stopping update timer");
             mLiveUpdateHandler.removeCallbacks(mLiveUpdateChecker);
-            mIsUpdating = false;
+            mIsLiveUpdating = false;
         }
     }
 
@@ -295,8 +296,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "running scheduled update checker");
 
             try {
-                // see of we have any nearest buses.
-                if (mNearestBusStops == null || mLiveBuses == null) {
+                // check if we can perform an update.
+                if (mIsChangingLocation || mNearestBusStops == null || mLiveBuses == null) {
                     return;
                 }
 
@@ -327,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Log.d(LOG_TAG, "update live buses");
 
                     // ask user if they want to reload live bus info.
-                    Snackbar snackbar = Snackbar.make(mLayoutDrawer, "New Live Bus Info", Snackbar.LENGTH_INDEFINITE);
+                    Snackbar snackbar = Snackbar.make(mLayoutDrawer, "New Live Bus Info", Snackbar.LENGTH_LONG);
                     snackbar.setAction("Update?", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -603,6 +604,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         public void onPreExecute() {
             // show loading dialog. this isn't hidden until the end of DownloadLiveBusesAsyncTask.
+            mIsChangingLocation = true;
             showProgressDialog("Finding nearest bus stop");
         }
 
@@ -657,6 +659,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             else {
                 updateBusStop(stop);
             }
+
+            mIsChangingLocation = false;
         }
     }
 
