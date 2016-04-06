@@ -155,12 +155,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mBusDatabase = new BusDatabase(this);
         mTransportClient = new TransportClient();
 
-        // TODO: update live buses in looper.
-        // TODO: when adding new nearest bus delete the previous one. keep track of that id.
-		// TODO: when deleteing nearest bus delete all live buses for it too.
-        // TODO: keep bus stops in db and reuse them as they don't change often.
-        // refresh live bus info
-
         // check if we need to get info from preferences or if we are restoring from instance state.
         long nearestStopsId;
         if (savedInstanceState == null) {
@@ -315,19 +309,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 // check whether a bus is due.
                 long departureTime = bus.getDepartureTime();
-                // TODO: doesn't work, maybe check time isn't same minute?
-                // remove old live bus info?
                 departureTime += (60 * 1000); // we add a minute so doesn't update until bus due time is past.
                 long now = System.currentTimeMillis();
+
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm");
                 Log.d(LOG_TAG, "now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
-
-//                Log.d(LOG_TAG, "departure: " + departureTime + " now: " + now + " diff: " + (now - departureTime));
 
                 if (now > departureTime) {
                     Log.d(LOG_TAG, "update live buses");
 
-                    // ask user if they want to reload live bus info.
+                    // ask user if they want to load live bus info.
                     Snackbar snackbar = Snackbar.make(mLayoutDrawer, "New Live Bus Info", Snackbar.LENGTH_LONG);
                     snackbar.setAction("Update?", new View.OnClickListener() {
                         @Override
@@ -376,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // request permission to use location from user. This is answered in the method
             // onRequestPermissionsResult.
             ActivityCompat.requestPermissions(
-                    MainActivity.this,
+                    this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_PERMISSION_FINE_LOCATION);
         }
@@ -403,8 +394,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     @Override
                     public void onClick(View v) {
                         changeLocation(longitude, latitude);
-
-                        snackbar.dismiss();
                     }
                 });
                 snackbar.show();
@@ -568,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // TODO: redo this to take away database call, could just use FavoruitesAdapter?
         // check if stop already in favourites.
         if (mBusDatabase.hasFavouriteStop(nearest.getAtcoCode())) {
-            Toast.makeText(MainActivity.this, "Already in favourites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Already in favourites", Toast.LENGTH_SHORT).show();
         }
         else {
             // create new favourite object.
@@ -582,7 +571,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mBusDatabase.addFavouriteStop(favourite);
             mFavouritesAdapter.add(favourite);
 
-            Toast.makeText(MainActivity.this, "Added to favourites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Added to favourites", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -591,7 +580,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mBusDatabase.removeFavouriteStop(stop);
         mFavouritesAdapter.remove(stop);
 
-        Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
     }
 
     private class DownloadNearestStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
