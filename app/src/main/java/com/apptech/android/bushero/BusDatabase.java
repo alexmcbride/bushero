@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
-import java.util.prefs.Preferences;
 
 import com.apptech.android.bushero.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.BusDbSchema.BusStopTable;
@@ -354,32 +353,6 @@ public class BusDatabase {
         }
     }
 
-    public boolean updateBusStop(BusStop stop) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            // we're only updating the time right now.
-            ContentValues values = new ContentValues();
-            values.put(BusStopTable.Columns.LAST_UPDATED, stop.getLastUpdated());
-
-            int rows = db.update(BusStopTable.NAME,
-                    values,
-                    "((" + BusStopTable.Columns.ID + "=?))",
-                    new String[] { Long.toString(stop.getId()) });
-
-            return rows > 0;
-        }
-        finally
-        {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-}
-
     public Bus getBus(long id) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -560,7 +533,7 @@ public class BusDatabase {
         values.put(BusStopTable.Columns.LATITUDE, stop.getLatitude());
         values.put(BusStopTable.Columns.DISTANCE, stop.getDistance());
         values.put(BusStopTable.Columns.TIME, stop.getTime());
-        values.put(BusStopTable.Columns.LAST_UPDATED, stop.getLastUpdated());
+//        values.put(BusStopTable.Columns.LAST_UPDATED, stop.getLastUpdated());
         return values;
     }
 

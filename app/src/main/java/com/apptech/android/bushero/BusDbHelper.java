@@ -62,7 +62,6 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusStopTable.Columns.LATITUDE + " REAL," +
                 BusStopTable.Columns.DISTANCE + " INTEGER," +
                 BusStopTable.Columns.TIME + " INTEGER," +
-                BusStopTable.Columns.LAST_UPDATED + " INTEGER," +
                 "FOREIGN KEY(" + BusStopTable.Columns.NEAREST_BUS_STOPS_ID + ") REFERENCES " + NearestBusStopsTable.NAME + "(" + NearestBusStopsTable.Columns.ID + ")" +
                 "FOREIGN KEY(" + BusStopTable.Columns.BUS_ROUTE_ID + ") REFERENCES " + BusRouteTable.NAME + "(" + BusRouteTable.Columns.ID + ")" +
                 ");");

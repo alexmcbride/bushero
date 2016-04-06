@@ -17,12 +17,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.StringReader;
-
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String LOG_TAG = "MapActivity";
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
-    private static final float MAP_ZOOM_LEVEL = 18; // higher is closer
+    private static final float MAP_ZOOM_LEVEL = 18; // higher is closer to ground
 
     private GoogleMap mMap;
     private BusStop mBusStop;

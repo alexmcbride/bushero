@@ -64,7 +64,6 @@ public class BusCursorWrapper extends CursorWrapper {
         stop.setLatitude(getDouble(getColumnIndex(BusStopTable.Columns.LATITUDE)));
         stop.setDistance(getInt(getColumnIndex(BusStopTable.Columns.DISTANCE)));
         stop.setTime(getString(getColumnIndex(BusStopTable.Columns.TIME)));
-        stop.setLastUpdated(getLong(getColumnIndex(BusStopTable.Columns.LAST_UPDATED)));
         return stop;
     }
 

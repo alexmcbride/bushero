@@ -57,7 +57,6 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             mAtcoCode = savedInstanceState.getString(SAVED_ATCOCODE);
         }
 
-        // get bus and route from database.
         mBusDatabase = new BusDatabase(this);
 
         // we remove old route information that's older than 30 minutes.
@@ -65,6 +64,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         int rows = mBusDatabase.expireRouteCache(ROUTE_EXPIRE_INTERVAL);
         Log.d(LOG_TAG, rows + " rows deleted");
 
+        // get bus and route from db.
         mBus = mBusDatabase.getBus(busId);
         mBusRoute = mBusDatabase.getBusRoute(busId);
 

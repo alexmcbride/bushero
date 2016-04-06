@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Handler mLiveUpdateHandler;
     private boolean mIsLiveUpdating;
     private boolean mIsChangingLocation;
+    private NearestStopsAdapter mNearestStopsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,8 +194,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
 
         // setup favourites
-        // TODO: move to drawer open event?
-        // TODO: if no location found then show favourite bus stop?
         List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
         mFavouritesAdapter = new FavouritesAdapter(this, favourites);
         mListFavourites.setAdapter(mFavouritesAdapter);
@@ -388,6 +387,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             float distance = getDistanceSinceLastUpdate(longitude, latitude);
             Log.d(LOG_TAG, "distance:" + distance);
             if (distance > MIN_DISTANCE_METRES) {
+                mIsChangingLocation = true;
+
                 // ask the user if they would like to change their current bus stop.
                 final Snackbar snackbar = Snackbar.make(mLayoutDrawer, R.string.snackbar_message, Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.snackbar_update, new View.OnClickListener() {
@@ -485,8 +486,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // update nearest bus stops list in the navigation drawer.
-        NearestStopsAdapter adapter = new NearestStopsAdapter(this, mNearestBusStops.getStops());
-        mListNearest.setAdapter(adapter);
+        if (mNearestStopsAdapter == null) {
+            mNearestStopsAdapter = new NearestStopsAdapter(this, mNearestBusStops.getStops());
+            mListNearest.setAdapter(mNearestStopsAdapter);
+        }
+        else {
+            mNearestStopsAdapter.clear();
+            mNearestStopsAdapter.addAll(mNearestBusStops.getStops());
+        }
     }
 
     private void updateBuses() {
@@ -593,7 +600,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         public void onPreExecute() {
             // show loading dialog. this isn't hidden until the end of DownloadLiveBusesAsyncTask.
-            mIsChangingLocation = true;
             showProgressDialog("Finding nearest bus stop");
         }
 
@@ -691,11 +697,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(LOG_TAG, "caching live buses in database");
                 mBusDatabase.addLiveBuses(result, mBusStop.getId());
                 mLiveBuses = result; // need this later.
-
-                // remember when we updated.
-                Log.d(LOG_TAG, "updating bus stop last updated.");
-                mBusStop.setLastUpdated(System.currentTimeMillis());
-                mBusDatabase.updateBusStop(mBusStop);
 
                 updateBuses(); // update buses UI
             }

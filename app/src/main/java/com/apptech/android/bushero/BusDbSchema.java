@@ -53,7 +53,6 @@ public class BusDbSchema {
             public static final String LATITUDE = "latitude";
             public static final String DISTANCE = "distance";
             public static final String TIME = "time"; // only set if part of bus route
-            public static final String LAST_UPDATED = "lastUpdated";
         }
     }
 
