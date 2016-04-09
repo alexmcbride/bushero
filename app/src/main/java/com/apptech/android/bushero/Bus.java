@@ -107,15 +107,12 @@ public class Bus {
 
     public void setBestDepartureEstimate(String bestDepartureEstimate) {
         mBestDepartureEstimate = bestDepartureEstimate;
-
-        // get the long for when this bus is due to leave.
-        updateDepartureTime();
     }
 
     /*
-     * this converts the current departure time (e.g. hh:mm) into a timestamp we can actually use.
+     * This converts the current departure time (e.g. hh:mm) into a timestamp we can actually use.
      */
-    private void updateDepartureTime() {
+    public void updateDepartureTime() {
         String time = getBestDepartureEstimate();
 
         int index = time.indexOf(":");

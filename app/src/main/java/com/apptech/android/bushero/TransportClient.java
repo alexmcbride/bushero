@@ -256,6 +256,9 @@ public class TransportClient {
                         break;
                     case "best_departure_estimate":
                         bus.setBestDepartureEstimate(reader.nextString());
+
+                        // Once we've got the time, update the bus objects internal time long.
+                        bus.updateDepartureTime();
                         break;
                     case "expected_departure_time":
                         bus.setExpectedDepartureTime(reader.nextString());
