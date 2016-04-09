@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
+    private static final int UPDATE_CHECK_INTERVAL = 5000; // ms.
 
     // widgets
     private TextView mTextName;
