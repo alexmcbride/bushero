@@ -17,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -178,14 +179,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from saved state");
         }
 
+        // TODO: update bus stops to use atcocode when updating, this will mean that the stop is reused.
+        // update updating live buses remove passed stops from db.
+        // then set flag on stop for favourite stop
+        // TODO: when going back and forward through stops if go to stop check update time.
+
         // if we have a nearest stop id then restore it from the database.
         if (nearestStopsId > 0) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
 
             // lets restore the currently viewed stop while we're at it.
-            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-            updateBusStop(busStop);
+            if (mNearestBusStops != null) {
+                BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                updateBusStop(busStop);
+            }
         }
 
         // initialise google play services API to access location GPS data
@@ -225,21 +233,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // stop task update thing.
         stopLiveUpdateTask();
 
-        // save preferences here. preferences are persisted between sessions.
-        if (mNearestBusStops != null) {
-            Log.d(LOG_TAG, "saving nearest stops id (" + mNearestBusStops.getId() + ") to preferences");
-
-            SharedPreferences preference = getPreferences(0);
-            SharedPreferences.Editor editor = preference.edit();
-            editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
-            editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
-
-            // workaround for fact that preferences doesn't support double.
-            editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
-            editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
-
-            editor.apply();
-        }
+        savePreferences();
     }
 
     @Override
@@ -256,6 +250,30 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onResume() {
         super.onResume();
         startLiveUpdateTask();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        savePreferences();
+    }
+
+    private void savePreferences() {
+        // save preferences here. preferences are persisted between sessions.
+        if (mNearestBusStops != null) {
+            Log.d(LOG_TAG, "saving nearest stops id (" + mNearestBusStops.getId() + ") to preferences");
+
+            SharedPreferences preference = getPreferences(0);
+            SharedPreferences.Editor editor = preference.edit();
+            editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
+            editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+
+            // workaround for fact that preferences doesn't support double.
+            editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
+            editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
+
+            editor.apply();
+        }
     }
 
     @Override
@@ -319,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Log.d(LOG_TAG, "update live buses");
 
                     // ask user if they want to load live bus info.
-                    Snackbar snackbar = Snackbar.make(mLayoutDrawer, "New Live Bus Info", Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(mLayoutDrawer, "New Live Bus Info", Snackbar.LENGTH_INDEFINITE);
                     snackbar.setAction("Update?", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {

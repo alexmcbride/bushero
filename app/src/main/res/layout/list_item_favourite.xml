@@ -10,14 +10,14 @@
         android:layout_height="wrap_content"
         android:id="@+id/textName"
         tools:text="Favourite Bus Stop Name"
-        style="@style/Base.TextAppearance.AppCompat.Medium"
+        style="@style/Base.TextAppearance.AppCompat.Small"
         tools:ignore="RelativeOverlap"
         android:layout_marginBottom="16dp"/>
 
     <ImageButton
         android:layout_width="16dp"
         android:layout_height="16dp"
-        android:src="@android:drawable/ic_delete"
+        android:src="@drawable/ic_delete"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:background="@null"

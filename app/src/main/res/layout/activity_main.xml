@@ -16,16 +16,15 @@
             android:layout_height="wrap_content"
             android:background="@color/colorLightBlue"
             android:id="@+id/relativeMain"
-            android:padding="8dp"
-            android:onClick="onClickShowMap">
+            android:onClick="onClickShowMap"
+            android:padding="8dp">
             <ImageView
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_timetable"
                 android:contentDescription="@string/app_name"
                 android:id="@+id/imageTimetable"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"/>
+                android:layout_marginRight="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -47,8 +46,7 @@
                 android:layout_toRightOf="@+id/imageTimetable"
                 android:layout_toEndOf="@+id/imageTimetable"
                 android:textColor="@color/colorVeryLightGrey"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"/>
+                android:layout_marginRight="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -59,8 +57,7 @@
                 android:layout_toRightOf="@+id/textDistance"
                 android:layout_toEndOf="@+id/textDistance"
                 android:textColor="@color/colorVeryLightGrey"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"/>
+                android:layout_marginRight="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -86,11 +83,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:paddingBottom="8dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="0dp"
-            android:id="@+id/relativeButtons">
+            android:id="@+id/relativeButtons"
+            android:padding="8dp">
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="28dp"
@@ -112,6 +106,7 @@
                 tools:ignore="RelativeOverlap"
                 android:onClick="onClickFurther"/>
         </RelativeLayout>
+
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -134,8 +129,8 @@
             tools:ignore="RelativeOverlap"/>
 
         <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/ic_star"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"

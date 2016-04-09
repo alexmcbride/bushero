@@ -5,15 +5,15 @@
               xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:src="@drawable/ic_clock"
         android:id="@+id/imageClock"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         android:contentDescription="@string/ic_clock_description"/>
 
     <TextView
