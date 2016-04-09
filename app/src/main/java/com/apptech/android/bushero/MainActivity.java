@@ -17,7 +17,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
-    private static final int UPDATE_CHECK_INTERVAL = 10000; // ten seconds.
 
     // widgets
     private TextView mTextName;
@@ -183,6 +181,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // update updating live buses remove passed stops from db.
         // then set flag on stop for favourite stop
         // TODO: when going back and forward through stops if go to stop check update time.
+        // TODO: BUG - when you change date/time or timezone in android settings timings bug out.
+        // TODO: BUG - because saved milliseconds for times are now in the future.
 
         // if we have a nearest stop id then restore it from the database.
         if (nearestStopsId > 0) {
