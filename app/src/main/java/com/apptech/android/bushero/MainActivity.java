@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int MIN_DISTANCE_METRES = 30;
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
 
-    // widgets
+    // Widgets
     private TextView mTextName;
     private TextView mTextDistance;
     private TextView mTextBearing;
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private DrawerLayout mLayoutDrawer;
     private RelativeLayout mRelativeDrawer;
 
-    // variables
+    // Variables
     private BusDatabase mBusDatabase;
     private TransportClient mTransportClient;
     private GoogleApiClient mGoogleApi;
@@ -348,10 +348,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
 
                 // Check so see if a bus is due.
-                long departureTime = bus.getDepartureTime();
-                // We add a minute so doesn't update until bus due time is past. This just makes
-                // everything work much better.
-                departureTime += (60 * 1000);
+                long departureTime = adjustBusDepartureTime(bus.getDepartureTime());
                 long now = System.currentTimeMillis(); // Current system time.
 
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm");
@@ -379,6 +376,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
     };
+
+    private static long adjustBusDepartureTime(long time) {
+        // We add a minute so doesn't update until bus due time is past. This just makes
+        // everything work much better.
+        return time + (60 * 1000);
+    }
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -493,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // Could not connect to Google Play API Services for some reason.
         Log.d(LOG_TAG, "Google API Client connection failed.");
         new AlertDialog.Builder(this)
@@ -541,7 +544,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
                 // Check if the next buses due time is in the past - if so then we need to update.
-                if (bus.getDepartureTime() < System.currentTimeMillis()) {
+                long departureTime = adjustBusDepartureTime(bus.getDepartureTime());
+                long now = System.currentTimeMillis();
+                if (departureTime < now) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
                     new DownloadLiveBusesAsyncTask().execute(busStop);
                 }
