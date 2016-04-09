@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE_METRES = 30;
-    private static final int UPDATE_CHECK_INTERVAL = 5000; // ms.
+    private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
 
     // widgets
     private TextView mTextName;
@@ -519,7 +519,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
                 if (bus.getDepartureTime() < System.currentTimeMillis()) {
-                    Log.d(LOG_TAG, "live buses from the db is out of date, getting fresh info.");
+                    Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + "), getting fresh info.");
                     new DownloadLiveBusesAsyncTask().execute(busStop);
                 }
                 else {
