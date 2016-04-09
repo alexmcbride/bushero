@@ -64,24 +64,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ListView mListFavourites;
     private ListView mListNearest;
     private DrawerLayout mLayoutDrawer;
+    private RelativeLayout mRelativeDrawer;
 
     // variables
     private BusDatabase mBusDatabase;
     private TransportClient mTransportClient;
-    private BusAdapter mBusAdapter;
+    private GoogleApiClient mGoogleApi;
     private NearestBusStops mNearestBusStops;
     private LiveBuses mLiveBuses;
+    private BusAdapter mBusAdapter;
+    private FavouritesAdapter mFavouritesAdapter;
+    private NearestStopsAdapter mNearestStopsAdapter;
+    private Handler mUpdateHandler;
     private int mCurrentStopPosition;
-    private GoogleApiClient mGoogleApi;
     private double mLastLongitude;
     private double mLastLatitude;
-    private FavouritesAdapter mFavouritesAdapter;
-    private Handler mLiveUpdateHandler;
     private boolean mIsUpdating;
     private boolean mIsChangingLocation;
     private boolean mIsUpdatingLiveBuses;
-    private NearestStopsAdapter mNearestStopsAdapter;
-    private RelativeLayout mRelativeDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mListFavourites.setAdapter(mFavouritesAdapter);
 
         // start update handler, this elapses every period and checks if an update is needed.
-        mLiveUpdateHandler = new Handler();
+        mUpdateHandler = new Handler();
         startLiveUpdateTask();
     }
 
@@ -295,19 +295,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (!mIsUpdating) {
             Log.d(LOG_TAG, "starting update timer");
             mIsUpdating = true;
-            mLiveUpdateChecker.run();
+            mUpdateChecker.run();
         }
     }
 
     private void stopLiveUpdateTask() {
         if (mIsUpdating) {
             Log.d(LOG_TAG, "stopping update timer");
-            mLiveUpdateHandler.removeCallbacks(mLiveUpdateChecker);
+            mUpdateHandler.removeCallbacks(mUpdateChecker);
             mIsUpdating = false;
         }
     }
 
-    private Runnable mLiveUpdateChecker = new Runnable() {
+    private Runnable mUpdateChecker = new Runnable() {
         @Override
         public void run() {
             Log.d(LOG_TAG, "running scheduled update checker");
@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             finally {
                 // TODO: handler.sendMessageAtTime()????
                 // schedule next run
-                mLiveUpdateHandler.postDelayed(mLiveUpdateChecker, UPDATE_CHECK_INTERVAL);
+                mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
             }
         }
     };
