@@ -26,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean mIsLiveUpdating;
     private boolean mIsChangingLocation;
     private NearestStopsAdapter mNearestStopsAdapter;
+    private RelativeLayout mRelativeDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mButtonNearer = (Button) findViewById(R.id.buttonNearer);
         mButtonFurther = (Button) findViewById(R.id.buttonFurther);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
+        mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
 
         // handle main bus list.
         mListBuses = (ListView) findViewById(R.id.listBuses);
@@ -559,7 +562,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void onClickShowMap(View view) {
         // launch map activity for currently displayed bus stop.
-        if (mNearestBusStops != null) {
+        if (!mLayoutDrawer.isDrawerOpen(mRelativeDrawer) &&  mNearestBusStops != null) {
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
             if (busStop != null) {
                 Intent intent = MapActivity.newIntent(this, busStop.getId());

@@ -112,7 +112,7 @@
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="320dp"
                     android:layout_height="match_parent"
-                    android:id="@+id/leftDrawer"
+                    android:id="@+id/relativeDrawer"
                     android:layout_gravity="start"
                     android:background="@color/colorVeryLightGrey"
                     android:padding="8dp">
