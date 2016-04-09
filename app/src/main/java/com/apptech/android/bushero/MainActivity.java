@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         long nearestStopsId;
         if (savedInstanceState == null) {
             SharedPreferences preferences = getPreferences(0);
-            nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, 0);
+            nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, -1);
             mCurrentStopPosition = preferences.getInt(SAVED_CURRENT_STOP_POSITION, 0);
 
             // workaround for fact that preferences doesn't support double for some reason.
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         else {
             Log.d(LOG_TAG, "getting saved state");
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
-            nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID);
+            nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID, -1);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
             mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
 
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // TODO: BUG - because saved milliseconds for times are now in the future.
 
         // if we have a nearest stop id then restore it from the database.
-        if (nearestStopsId > 0) {
+        if (nearestStopsId > -1) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
 
