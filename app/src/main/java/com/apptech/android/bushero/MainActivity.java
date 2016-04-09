@@ -77,8 +77,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLastLatitude;
     private FavouritesAdapter mFavouritesAdapter;
     private Handler mLiveUpdateHandler;
-    private boolean mIsLiveUpdating;
+    private boolean mIsUpdating;
     private boolean mIsChangingLocation;
+    private boolean mIsUpdatingLiveBuses;
     private NearestStopsAdapter mNearestStopsAdapter;
     private RelativeLayout mRelativeDrawer;
 
@@ -291,18 +292,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void startLiveUpdateTask() {
-        if (!mIsLiveUpdating) {
+        if (!mIsUpdating) {
             Log.d(LOG_TAG, "starting update timer");
-            mIsLiveUpdating = true;
+            mIsUpdating = true;
             mLiveUpdateChecker.run();
         }
     }
 
     private void stopLiveUpdateTask() {
-        if (mIsLiveUpdating) {
+        if (mIsUpdating) {
             Log.d(LOG_TAG, "stopping update timer");
             mLiveUpdateHandler.removeCallbacks(mLiveUpdateChecker);
-            mIsLiveUpdating = false;
+            mIsUpdating = false;
         }
     }
 
@@ -313,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             try {
                 // check if we can perform an update.
-                if (mIsChangingLocation || mNearestBusStops == null || mLiveBuses == null) {
+                if (mIsChangingLocation || mIsUpdatingLiveBuses || mNearestBusStops == null || mLiveBuses == null) {
                     return;
                 }
 
@@ -514,7 +515,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             new DownloadLiveBusesAsyncTask().execute(busStop);
         }
         else {
-            updateBuses();
+            // if live buses from DB check if there is anything new to download for this instance.
+            Bus bus = mLiveBuses.getBus(0);
+            if (bus != null) {
+                if (bus.getDepartureTime() < System.currentTimeMillis()) {
+                    Log.d(LOG_TAG, "live buses from the db is out of date, getting fresh info.");
+                    new DownloadLiveBusesAsyncTask().execute(busStop);
+                }
+                else {
+                    updateBuses();
+                }
+            }
         }
 
         // update nearest bus stops list in the navigation drawer.
@@ -696,6 +707,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         public void onPreExecute() {
+            mIsUpdatingLiveBuses = true;
             showProgressDialog("Loading live buses");
         }
 
@@ -734,6 +746,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             finally {
                 dismissProgressDialog();
+                mIsUpdatingLiveBuses = false;
             }
         }
     }
