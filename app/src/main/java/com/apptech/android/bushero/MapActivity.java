@@ -2,6 +2,7 @@ package com.apptech.android.bushero;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private static final String LOG_TAG = "MapActivity";
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
     private static final float MAP_ZOOM_LEVEL = 18; // higher is closer to ground
+    private static final float MAX_DISTANCE_METRES = 30; // distance after which YOU marker is shown.
 
     private GoogleMap mMap;
     private BusStop mBusStop;
@@ -65,9 +67,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // Add marker for your current position if we have it.
         if (mNearestBusStops != null) {
-            BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-            LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
-            mMap.addMarker(new MarkerOptions().position(currentLocation).icon(icon).title("You"));
+
+            float[] results = new float[1];
+            Location.distanceBetween(mNearestBusStops.getSearchLongitude(),
+                    mNearestBusStops.getSearchLatitude(),
+                    longitude,
+                    latitude,
+                    results);
+
+            if (results[0] > MAX_DISTANCE_METRES) {
+                BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+                LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
+                mMap.addMarker(new MarkerOptions().position(currentLocation).icon(icon).title("You"));
+            }
         }
 
         // Add marker to map, move camera to that location and zoom.
