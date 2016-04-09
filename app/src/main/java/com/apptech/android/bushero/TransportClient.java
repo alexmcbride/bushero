@@ -12,7 +12,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class TransportClient {
@@ -257,8 +259,8 @@ public class TransportClient {
                     case "best_departure_estimate":
                         bus.setBestDepartureEstimate(reader.nextString());
 
-                        // Once we've got the time, update the bus objects internal time long.
-                        bus.updateDepartureTime();
+                        // Once we've got the time, update the bus objects departure time.
+                        updateBusDepartureTime(bus);
                         break;
                     case "expected_departure_time":
                         bus.setExpectedDepartureTime(reader.nextString());
@@ -271,6 +273,42 @@ public class TransportClient {
         }
 
         reader.endArray();
+    }
+
+    // We convert the Transport API "hh:mm" time into a timestamp we can actually used.
+    private static void updateBusDepartureTime(Bus bus) {
+        String time = bus.getBestDepartureEstimate();
+
+        int index = time.indexOf(":");
+        if (index == -1) {
+            return;
+        }
+
+        // get hours and minutes from string.
+        String hoursStr = time.substring(0, index);
+        String minutesStr = time.substring(index + 1);
+        int hours = Integer.parseInt(hoursStr);
+        int minutes = Integer.parseInt(minutesStr);
+        int totalMinutes = (hours * 60) + minutes;
+
+        Calendar now = GregorianCalendar.getInstance();
+        int nowHours = now.get(Calendar.HOUR_OF_DAY);
+        int nowMinutes = now.get(Calendar.MINUTE);
+        int nowTotalMinutes = (nowHours * 60) + nowMinutes;
+
+        // if time is in the past increment day by one.
+        if (totalMinutes < nowTotalMinutes) {
+            int nowDay = now.get(Calendar.DAY_OF_MONTH);
+            now.set(Calendar.DAY_OF_MONTH, nowDay + 1);
+        }
+
+        // set this current time of this departure.
+        now.set(Calendar.HOUR_OF_DAY, hours);
+        now.set(Calendar.MINUTE, minutes);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
+
+        bus.setDepartureTime(now.getTimeInMillis());
     }
 
     public BusRoute getBusRoute(String operator, String line, String direction, String atcoCode, String date, String time) throws IOException {
