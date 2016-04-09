@@ -50,8 +50,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
-    private static final int MIN_DISTANCE_METRES = 30;
+    private static final int MIN_DISTANCE = 30; // metres
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
+    private static final int DEPARTURE_TIME_ADJUSTMENT = 60 * 1000; // Add a second to bus times.
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     // Variables
     private BusDatabase mBusDatabase;
     private TransportClient mTransportClient;
-    private GoogleApiClient mGoogleApi;
+    private GoogleApiClient mGoogleApiClient;
     private NearestBusStops mNearestBusStops;
     private LiveBuses mLiveBuses;
     private BusAdapter mBusAdapter;
@@ -174,9 +175,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Workaround for fact that preferences doesn't support double for some reason.
             mLastLongitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LONGITUDE, 0));
             mLastLatitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LATITUDE, 0));
+
+            Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from preferences");
         }
         else {
-            Log.d(LOG_TAG, "getting saved state");
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
             nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID, -1);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
@@ -205,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Initialise google play services API to access location GPS data.
-        mGoogleApi = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
@@ -228,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Connect to google play services api on start. Once connected the onConnected method is
         // called.
         Log.d(LOG_TAG, "Connecting to Google API Service");
-        mGoogleApi.connect();
+        mGoogleApiClient.connect();
 
         // Start checking to see if live bus updates are available.
         startUpdateTask();
@@ -240,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // Disconnect from google play services API on stop.
         Log.d(LOG_TAG, "Disconnecting from Google API Service");
-        mGoogleApi.disconnect();
+        mGoogleApiClient.disconnect();
 
         // Stop checking for live bus updates.
         stopUpdateTask();
@@ -349,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
 
                 // Check so see if a bus is due.
-                long departureTime = adjustBusDepartureTime(bus.getDepartureTime());
+                long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
                 long now = System.currentTimeMillis(); // Current system time.
 
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
@@ -378,12 +380,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     };
 
-    private static long adjustBusDepartureTime(long time) {
-        // We add a minute so doesn't update until bus due time is past. This just makes
-        // everything work much better.
-        return time + (60 * 1000);
-    }
-
     @Override
     public void onConnected(Bundle bundle) {
         // Once connected to google play services start receiving location updates.
@@ -408,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             request.setInterval(LOCATION_UPDATE_INTERVAL);
             request.setFastestInterval(LOCATION_UPDATE_INTERVAL);
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApi, request, this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
         }
         else {
             // Request permission to use location from user. This is answered in the method
@@ -434,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Check to see how far the user has moved since last update.
             float distance = getDistanceSinceLastUpdate(longitude, latitude);
             Log.d(LOG_TAG, "distance:" + distance);
-            if (distance > MIN_DISTANCE_METRES) {
+            if (distance > MIN_DISTANCE) {
                 // Let rest of app know we are changing locations. This is cleared in the
                 // DownloadNearestStopsAsyncTask.
                 mIsChangingLocation = true;
@@ -545,7 +541,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
                 // Check if the next buses due time is in the past - if so then we need to update.
-                long departureTime = adjustBusDepartureTime(bus.getDepartureTime());
+                long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
                 long now = System.currentTimeMillis();
                 if (departureTime < now) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");

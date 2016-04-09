@@ -275,6 +275,7 @@ public class TransportClient {
         reader.endArray();
     }
 
+    // TODO: just get rid of all the different time properties and just use this one???
     // We convert the Transport API "hh:mm" time into a timestamp we can actually used.
     private static void updateBusDepartureTime(Bus bus) {
         String time = bus.getBestDepartureEstimate();
