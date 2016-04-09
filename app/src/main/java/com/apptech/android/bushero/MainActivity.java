@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
@@ -53,18 +54,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
 
     // Widgets
+    private DrawerLayout mLayoutDrawer;
+    private RelativeLayout mRelativeDrawer;
     private TextView mTextName;
     private TextView mTextDistance;
     private TextView mTextBearing;
     private TextView mTextLocality;
     private ListView mListBuses;
+    private ListView mListNearest;
+    private ListView mListFavourites;
     private Button mButtonNearer;
     private Button mButtonFurther;
     private ProgressDialog mProgressDialog;
-    private ListView mListFavourites;
-    private ListView mListNearest;
-    private DrawerLayout mLayoutDrawer;
-    private RelativeLayout mRelativeDrawer;
 
     // Variables
     private BusDatabase mBusDatabase;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
-        mListFavourites = (ListView)findViewById(R.id.listFavourites);
+        mListFavourites = (ListView) findViewById(R.id.listFavourites);
         mListNearest = (ListView)findViewById(R.id.listNearest);
 
         // Handle listview item onclick events.
@@ -351,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 long departureTime = adjustBusDepartureTime(bus.getDepartureTime());
                 long now = System.currentTimeMillis(); // Current system time.
 
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm");
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
                 Log.d(LOG_TAG, "now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
 
                 // Check departure time was in the past.
@@ -679,8 +680,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected NearestBusStops doInBackground(Double[] params) {
            try {
-               double longitude = (double)params[0];
-               double latitude = (double)params[1];
+               double longitude = params[0];
+               double latitude = params[1];
 
                 // Get nearest stops from Transport API.
                 Log.d(LOG_TAG, "fetching nearest bus stops");
