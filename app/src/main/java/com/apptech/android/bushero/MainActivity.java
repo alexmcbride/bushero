@@ -629,12 +629,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void onClickAddFavourite(View view) {
-        // Add currently viewed bus stop to favourites.
+        // Get currently viewed bus stop.
         BusStop nearest = mNearestBusStops.getStop(mCurrentStopPosition);
 
-        // TODO: redo this to take away database call, could just use FavoruitesAdapter?
         // check if stop already in favourites.
-        if (mBusDatabase.hasFavouriteStop(nearest.getAtcoCode())) {
+        if (mFavouritesAdapter.hasFavouriteStop(nearest.getAtcoCode())) {
             Toast.makeText(this, "Already in favourites", Toast.LENGTH_SHORT).show();
         }
         else {
@@ -870,6 +869,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             buttonDelete.setTag(position);
 
             return convertView;
+        }
+
+        public boolean hasFavouriteStop(String atcoCode) {
+            for (int i = 0; i < getCount(); i++) {
+                if (getItem(i).getAtcoCode().equals(atcoCode)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
