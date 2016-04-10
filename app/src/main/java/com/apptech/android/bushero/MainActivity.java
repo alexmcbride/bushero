@@ -378,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         long now = System.currentTimeMillis(); // Current system time.
 
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
-        Log.d(LOG_TAG, "now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
+        Log.d(LOG_TAG, "Bus expired - now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
 
         // Check departure time was in the past.
         return now > departureTime;

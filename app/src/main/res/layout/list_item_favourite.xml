@@ -11,6 +11,7 @@
         android:id="@+id/textName"
         tools:text="Favourite Bus Stop Name"
         style="@style/Base.TextAppearance.AppCompat.Small"
+        android:textColor="@color/colorVeryDarkGrey"
         tools:ignore="RelativeOverlap"
         android:layout_marginBottom="16dp"/>
 
