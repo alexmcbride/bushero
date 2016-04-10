@@ -350,15 +350,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     return;
                 }
 
-                // Check so see if a bus is due.
-                long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
-                long now = System.currentTimeMillis(); // Current system time.
-
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
-                Log.d(LOG_TAG, "now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
-
                 // Check departure time was in the past.
-                if (now > departureTime) {
+                if (isBusDepartureDue(bus)) {
                     Log.d(LOG_TAG, "update live buses");
 
                     // Ask user if they want to update live bus info.
@@ -379,6 +372,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
     };
+
+    private boolean isBusDepartureDue(Bus bus) {
+        long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
+        long now = System.currentTimeMillis(); // Current system time.
+
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
+        Log.d(LOG_TAG, "now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
+
+        // Check departure time was in the past.
+        return now > departureTime;
+    }
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -540,10 +544,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Check we have a bus stop already in our live buses.
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
-                // Check if the next buses due time is in the past - if so then we need to update.
-                long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
-                long now = System.currentTimeMillis();
-                if (departureTime < now) {
+                if (isBusDepartureDue(bus)) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
                     new DownloadLiveBusesAsyncTask().execute(busStop);
                 }
