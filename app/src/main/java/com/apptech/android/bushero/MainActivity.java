@@ -508,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void onClickNearer(View view) {
         // Move to previous bus stop in list.
-        if (mCurrentStopPosition > 0) {
+        if (mNearestBusStops != null && mCurrentStopPosition > 0) {
             mCurrentStopPosition--;
 
             BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
@@ -630,19 +630,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void onClickAddFavourite(View view) {
         // Get currently viewed bus stop.
-        BusStop nearest = mNearestBusStops.getStop(mCurrentStopPosition);
+        BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
 
         // check if stop already in favourites.
-        if (mFavouritesAdapter.hasFavouriteStop(nearest.getAtcoCode())) {
+        if (mFavouritesAdapter.hasFavouriteStop(busStop.getAtcoCode())) {
             Toast.makeText(this, "Already in favourites", Toast.LENGTH_SHORT).show();
         }
         else {
             // Create new favourite object.
             FavouriteStop favourite = new FavouriteStop();
-            favourite.setAtcoCode(nearest.getAtcoCode());
-            favourite.setLongitude(nearest.getLongitude());
-            favourite.setLatitude(nearest.getLatitude());
-            favourite.setName(nearest.getName());
+            favourite.setAtcoCode(busStop.getAtcoCode());
+            favourite.setLongitude(busStop.getLongitude());
+            favourite.setLatitude(busStop.getLatitude());
+            favourite.setName(busStop.getName());
 
             // Add to database and current favourites list.
             mBusDatabase.addFavouriteStop(favourite);
@@ -653,6 +653,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void removeFavouriteStop(FavouriteStop stop) {
+        // TODO: add yes/no dialog.
         // Remove from database and adapter.
         mBusDatabase.removeFavouriteStop(stop);
         mFavouritesAdapter.remove(stop);
