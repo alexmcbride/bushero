@@ -378,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         long now = System.currentTimeMillis(); // Current system time.
 
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
-        Log.d(LOG_TAG, "Bus expired - now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
+        Log.d(LOG_TAG, "Checking bus expired - now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
 
         // Check departure time was in the past.
         return now > departureTime;
@@ -696,42 +696,46 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return;
             }
 
-            // Delete current stop and its buses.
-            if (mNearestBusStops != null) {
-                Log.d(LOG_TAG, "deleting nearest stops and live buses from cache");
-                mBusDatabase.deleteNearestStops(mNearestBusStops);
-            }
+            try {
+                // Delete current stop and its buses.
+                if (mNearestBusStops != null) {
+                    Log.d(LOG_TAG, "deleting nearest stops and live buses from cache");
+                    mBusDatabase.deleteNearestStops(mNearestBusStops);
+                }
 
-            // Save nearest stops in database.
-            mBusDatabase.addNearestBusStops(result);
-            mNearestBusStops = result;
+                // Save nearest stops in database.
+                mBusDatabase.addNearestBusStops(result);
+                mNearestBusStops = result;
 
-            // Reset current position. If we have an existing stop then reselect it, otherwise
-            // just select the first stop.
-            if (mAtcoCode == null) {
-                mCurrentStopPosition = 0;
-            }
-            else {
-                mCurrentStopPosition = mNearestBusStops.getStopPosition(mAtcoCode);
-            }
+                // Reset current position. If we have an existing stop then reselect it, otherwise
+                // just select the first stop.
+                if (mAtcoCode == null) {
+                    mCurrentStopPosition = 0;
+                }
+                else {
+                    mCurrentStopPosition = mNearestBusStops.getStopPosition(mAtcoCode);
+                }
 
-            Log.d(LOG_TAG, "cached nearest stops (" + mNearestBusStops.getId() + ") in database");
+                Log.d(LOG_TAG, "cached nearest stops (" + mNearestBusStops.getId() + ") in database");
 
-            // Get nearest bus stop if there are any stops returned.
-            // TODO: reselect previously selected
-            BusStop stop = result.getStop(mCurrentStopPosition);
-            if (stop == null) {
-                // If there are no stops no other action will be performed, so hide the process
-                // dialog here.
-                dismissProgressDialog();
-            }
-            else {
-                // Update the activity for this bus stop.
-                updateBusStop(stop);
-            }
+                // Get nearest bus stop if there are any stops returned.
+                // TODO: reselect previously selected
+                BusStop stop = result.getStop(mCurrentStopPosition);
+                if (stop == null) {
+                    // If there are no stops no other action will be performed, so hide the process
+                    // dialog here.
+                    dismissProgressDialog();
+                }
+                else {
+                    // Update the activity for this bus stop.
+                    updateBusStop(stop);
+                }
 
-            // No longer updating.
-            mIsChangingLocation = false;
+            }
+            finally {
+                // No longer updating.
+                mIsChangingLocation = false;
+            }
         }
     }
 
@@ -781,8 +785,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             finally {
                 // Dismiss progress dialog and set flag as not updating.
-                dismissProgressDialog();
                 mIsUpdatingLiveBuses = false;
+                dismissProgressDialog();
             }
         }
     }

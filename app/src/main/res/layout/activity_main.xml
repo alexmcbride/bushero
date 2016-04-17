@@ -125,7 +125,7 @@
             android:textStyle="bold"
             android:textColor="@color/colorVeryDarkGrey"
             android:id="@+id/textFavouritesTitle"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             tools:ignore="RelativeOverlap"/>
 
         <ImageButton
