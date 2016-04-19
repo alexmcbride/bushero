@@ -93,6 +93,10 @@ public class BusCursorWrapper extends CursorWrapper {
         stop.setId(getLong(getColumnIndex(FavouriteStopTable.Columns.ID)));
         stop.setAtcoCode(getString(getColumnIndex(FavouriteStopTable.Columns.ATCOCODE)));
         stop.setName(getString(getColumnIndex(FavouriteStopTable.Columns.NAME)));
+        stop.setMode(getString(getColumnIndex(FavouriteStopTable.Columns.MODE)));
+        stop.setBearing(getString(getColumnIndex(FavouriteStopTable.Columns.BEARING)));
+        stop.setLocality(getString(getColumnIndex(FavouriteStopTable.Columns.LOCALITY)));
+        stop.setIndicator(getString(getColumnIndex(FavouriteStopTable.Columns.INDICATOR)));
         stop.setLongitude(getDouble(getColumnIndex(FavouriteStopTable.Columns.LONGITUDE)));
         stop.setLatitude(getDouble(getColumnIndex(FavouriteStopTable.Columns.LATITUDE)));
         return stop;

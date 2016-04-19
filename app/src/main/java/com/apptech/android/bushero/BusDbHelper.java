@@ -87,6 +87,10 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 FavouriteStopTable.Columns.ID + " INTEGER PRIMARY KEY," +
                 FavouriteStopTable.Columns.ATCOCODE + " TEXT," +
                 FavouriteStopTable.Columns.NAME + " TEXT," +
+                FavouriteStopTable.Columns.MODE + " TEXT," +
+                FavouriteStopTable.Columns.BEARING + " TEXT," +
+                FavouriteStopTable.Columns.LOCALITY + " TEXT," +
+                FavouriteStopTable.Columns.INDICATOR + " TEXT," +
                 FavouriteStopTable.Columns.LONGITUDE + " REAL," +
                 FavouriteStopTable.Columns.LATITUDE + " REAL" +
                 ");");

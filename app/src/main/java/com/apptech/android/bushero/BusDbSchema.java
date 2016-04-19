@@ -83,6 +83,10 @@ public class BusDbSchema {
             public static final String ID = "id";
             public static final String ATCOCODE = "atcoCode";
             public static final String NAME = "name";
+            public static final String MODE = "mode";
+            public static final String BEARING = "bearing";
+            public static final String LOCALITY = "locality";
+            public static final String INDICATOR = "indicator";
             public static final String LONGITUDE = "longitude";
             public static final String LATITUDE = "latitude";
         }

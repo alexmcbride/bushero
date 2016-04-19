@@ -18,7 +18,6 @@ public class BusStop {
     private double mLatitude;
     private int mDistance;
     private String mTime; // this is only set for stops that are on a bus route
-    private long mLastUpdated;
 
     public BusStop() {
 

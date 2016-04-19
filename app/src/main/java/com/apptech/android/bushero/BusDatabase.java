@@ -209,6 +209,10 @@ public class BusDatabase {
     }
 
     public LiveBuses getLiveBuses(long busStopId) {
+        if (busStopId == 0) {
+            return null;
+        }
+
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -571,7 +575,6 @@ public class BusDatabase {
         values.put(BusStopTable.Columns.LATITUDE, stop.getLatitude());
         values.put(BusStopTable.Columns.DISTANCE, stop.getDistance());
         values.put(BusStopTable.Columns.TIME, stop.getTime());
-//        values.put(BusStopTable.Columns.LAST_UPDATED, stop.getLastUpdated());
         return values;
     }
 
@@ -596,6 +599,10 @@ public class BusDatabase {
         ContentValues values = new ContentValues();
         values.put(FavouriteStopTable.Columns.ATCOCODE, stop.getAtcoCode());
         values.put(FavouriteStopTable.Columns.NAME, stop.getName());
+        values.put(FavouriteStopTable.Columns.MODE, stop.getMode());
+        values.put(FavouriteStopTable.Columns.BEARING, stop.getBearing());
+        values.put(FavouriteStopTable.Columns.LOCALITY, stop.getLocality());
+        values.put(FavouriteStopTable.Columns.INDICATOR, stop.getIndicator());
         values.put(FavouriteStopTable.Columns.LONGITUDE, stop.getLongitude());
         values.put(FavouriteStopTable.Columns.LATITUDE, stop.getLatitude());
         return values;
