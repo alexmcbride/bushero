@@ -106,7 +106,6 @@
                 tools:ignore="RelativeOverlap"
                 android:onClick="onClickFurther"/>
         </RelativeLayout>
-
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"

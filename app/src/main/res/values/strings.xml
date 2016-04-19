@@ -22,4 +22,8 @@
     <string name="button_remove_favourite">Remove Favourite</string>
     <string name="snackbar_live_message">New Live Bus Info</string>
     <string name="snackbar_live_update">Update?</string>
+    <string name="progress_finding_location">Finding your location</string>
+    <string name="progress_finding_nearest_stop">Finding nearest bus stop</string>
+    <string name="progress_finding_live_buses">Loading live buses</string>
+    <string name="progress_title">Loading</string>
 </resources>

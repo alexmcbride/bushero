@@ -188,9 +188,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // TODO: update bus stops to use atcocode when updating, this will mean that the stop is reused.
-        // update updating live buses remove passed stops from db.
-        // then set flag on stop for favourite stop
-        // TODO: when going back and forward through stops if go to stop check update time.
+        // update updating live buses remove passed stops from db. then set flag on stop for favourite stop
         // TODO: BUG - when you change date/time or timezone in android settings timings bug out.
         // TODO: BUG - because saved milliseconds for times are now in the future.
 
@@ -207,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Initialise google play services API to access location GPS data.
+        // Once connected to google player services the method onConnected(Bundle) is called.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
@@ -399,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // If this is first time then show progress dialog. Other location updates happen in the
             // background so we don't need to show a progress dialog for them.
             if (mNearestBusStops == null) {
-                showProgressDialog("Finding your location");
+                showProgressDialog(R.string.progress_finding_location);
             }
 
             // Request location updates.
@@ -610,13 +609,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private void showProgressDialog(String message) {
+    private void showProgressDialog(int resid) {
         // Show progess dialog if it doesn't exist, if it does then change the message.
         if (mProgressDialog == null) {
-            mProgressDialog = ProgressDialog.show(this, "Loading", message, true);
+            mProgressDialog = ProgressDialog.show(this, getString(R.string.progress_title), getString(resid), true);
         }
         else if (mProgressDialog.isShowing()){
-            mProgressDialog.setMessage(message);
+            mProgressDialog.setMessage(getString(resid));
         }
     }
 
@@ -671,7 +670,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         public void onPreExecute() {
             // Show loading dialog. this isn't hidden until the end of DownloadLiveBusesAsyncTask.
-            showProgressDialog("Finding nearest bus stop");
+            showProgressDialog(R.string.progress_finding_nearest_stop);
         }
 
         @Override
@@ -746,7 +745,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public void onPreExecute() {
             // Let app know we are updating the live buses, so no one else tries to.
             mIsUpdatingLiveBuses = true;
-            showProgressDialog("Loading live buses");
+            showProgressDialog(R.string.progress_finding_live_buses);
         }
 
         @Override
@@ -770,6 +769,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (result == null) {
                     return;
                 }
+
+                // TODO: bus composite key: operator + line + time e.g. FGL614:24
+                // for each bus in downloaded buses
+                //     if bus in db then
+                //         update db info
+                //     else
+                //         insert into db
+                //     end if
+                // end for
 
                 // Remove current buses for this stop.
                 Log.d(LOG_TAG, "removing old live buses from database");
