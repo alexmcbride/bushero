@@ -39,7 +39,6 @@ import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
+    private static final String SAVED_FAVOURITE_ATCOCODE = "FAVOURITE_ATCOCODE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE = 30; // metres
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean mIsUpdating;
     private boolean mIsChangingLocation;
     private boolean mIsUpdatingLiveBuses;
-    private boolean mIsFavouriteStop;
+    private long mFavouriteStopId; // if showing stop, otherwise -1.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 BusStop stop = mNearestBusStops.getStop(position);
 
                 // Update stop.
-                mIsFavouriteStop = false;
+                mFavouriteStopId = -1;
                 mCurrentStopPosition = position;
                 updateBusStop(stop);
             }
@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             SharedPreferences preferences = getPreferences(0);
             nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, -1);
             mCurrentStopPosition = preferences.getInt(SAVED_CURRENT_STOP_POSITION, 0);
+            mFavouriteStopId = preferences.getLong(SAVED_FAVOURITE_ATCOCODE, -1);
 
             // Workaround for fact that preferences doesn't support double for some reason.
             mLastLongitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LONGITUDE, 0));
@@ -168,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         else {
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
             nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID, -1);
+            mFavouriteStopId = savedInstanceState.getLong(SAVED_FAVOURITE_ATCOCODE, -1);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
             mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
 
@@ -183,12 +185,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (nearestStopsId > -1) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
+        }
 
-            // Lets restore the currently viewed stop while we're at it.
-            if (mNearestBusStops != null) {
-                BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-                updateBusStop(busStop);
-            }
+        // Lets restore the currently viewed stop or if we were viewing a favourite stop then load that.
+        if (mFavouriteStopId > -1) {
+            FavouriteStop favourite = mBusDatabase.getFavouriteStop(mFavouriteStopId);
+            loadFavouriteStop(favourite);
+        }
+        else if (mNearestBusStops != null) {
+            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+            updateBusStop(busStop);
         }
 
         // Initialise google play services API to access location GPS data.
@@ -273,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             SharedPreferences.Editor editor = preference.edit();
             editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
             editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+            editor.putLong(SAVED_FAVOURITE_ATCOCODE, mFavouriteStopId);
 
             // Workaround for fact that preferences doesn't support double.
             editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
@@ -290,6 +297,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? 0 : mNearestBusStops.getId());
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+        savedInstanceState.putLong(SAVED_FAVOURITE_ATCOCODE, mFavouriteStopId);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
     }
@@ -413,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.d(LOG_TAG, "location changed (" + latitude + "," + longitude + ")");
 
         // if we are viewing a favourite stop then don't update location.
-        if (mIsFavouriteStop) {
+        if (mFavouriteStopId > -1) {
             Log.d(LOG_TAG, "is favourite stop, not changing location");
             return;
         }
@@ -579,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Show/hide nearer button.
-        if (mCurrentStopPosition == 0 || mIsFavouriteStop) {
+        if (mCurrentStopPosition == 0 || mFavouriteStopId > -1) {
             mButtonNearer.setVisibility(View.INVISIBLE);
         }
         else {
@@ -587,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Show/hide further button.
-        if ((mCurrentStopPosition == mNearestBusStops.getStopCount() - 1) || mIsFavouriteStop) {
+        if ((mCurrentStopPosition == mNearestBusStops.getStopCount() - 1) || mFavouriteStopId > -1) {
             mButtonFurther.setVisibility(View.INVISIBLE);
         }
         else {
@@ -673,15 +681,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void loadFavouriteStop(FavouriteStop favourite) {
+        Log.d(LOG_TAG, "loading favourite stop: " + favourite.getName());
+
         // check if the bus stop is already in our downloaded list.
         int position = mNearestBusStops.getStopPosition(favourite.getAtcoCode());
         if (position > -1) {
+            Log.d(LOG_TAG, "favourite already in nearest stops list, reusing that");
+
             // it is, just select this in the UI.
             BusStop stop = mNearestBusStops.getStop(position);
             mCurrentStopPosition = position;
             updateBusStop(stop);
         }
         else {
+            Log.d(LOG_TAG, "loading 'fake' favoruite object");
+
             // lets create a "fake" bus stop object and update the UI.
             BusStop stop = new BusStop();
             stop.setAtcoCode(favourite.getAtcoCode());
@@ -693,9 +707,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             stop.setLongitude(favourite.getLongitude());
             stop.setLatitude(favourite.getLatitude());
 
-            updateBusStop(stop);
+            mFavouriteStopId = favourite.getId();
 
-            mIsFavouriteStop = true;
+            updateBusStop(stop);
         }
     }
 
@@ -923,6 +937,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
             return false;
+        }
+
+        public FavouriteStop getFavouriteStop(String atcoCode) {
+            for (int i = 0; i < getCount(); i++) {
+                FavouriteStop stop = getItem(i);
+                if (stop.getAtcoCode().equals(atcoCode)) {
+                    return stop;
+                }
+            }
+            return null;
         }
     }
 
