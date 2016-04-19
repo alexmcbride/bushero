@@ -512,6 +512,36 @@ public class BusDatabase {
         }
     }
 
+    public FavouriteStop getFavouriteStop(long id) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getReadableDatabase();
+
+            cursor = db.query(
+                    FavouriteStopTable.NAME,
+                    null,
+                    "((" + FavouriteStopTable.Columns.ID + "=?))",
+                    new String[]{Long.toString(id)},
+                    null, null, null);
+            BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
+
+            if (busCursor.moveToFirst()) {
+                return busCursor.getFavouriteStop();
+            }
+
+            return null;
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     public void removeFavouriteStop(FavouriteStop stop) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -528,10 +558,6 @@ public class BusDatabase {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
-    }
-
-    public boolean hasFavouriteStop(String atcoCode) {
-        return getFavouriteStop(atcoCode) != null;
     }
 
     // Converts object into ContentValues so it can be inserted into DB.
