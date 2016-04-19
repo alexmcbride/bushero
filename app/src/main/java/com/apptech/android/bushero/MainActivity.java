@@ -412,6 +412,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         final double latitude = location.getLatitude();
         Log.d(LOG_TAG, "location changed (" + latitude + "," + longitude + ")");
 
+        // if we are viewing a favourite stop then don't update location.
+        if (mIsFavouriteStop) {
+            Log.d(LOG_TAG, "is favourite stop, not changing location");
+            return;
+        }
+
         // If we have no nearest bus stops object then we better make one.
         if (mNearestBusStops == null) {
             changeLocation(longitude, latitude);

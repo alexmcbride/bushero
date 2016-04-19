@@ -124,7 +124,8 @@
             android:textStyle="bold"
             android:textColor="@color/colorVeryDarkGrey"
             android:id="@+id/textFavouritesTitle"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
             tools:ignore="RelativeOverlap"/>
 
         <ImageButton
@@ -137,12 +138,22 @@
             android:layout_marginBottom="8dp"
             android:background="@null"
             android:onClick="onClickAddFavourite"
-            android:contentDescription="@string/add_favourite_content_description"/>
+            android:contentDescription="@string/add_favourite_content_description"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="?android:attr/listDivider"
+            android:layout_below="@+id/textFavouritesTitle"
+            android:id="@+id/viewDivider"
+            android:layout_marginBottom="8dp"/>
 
         <ListView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/buttonFavourite"
+            android:layout_below="@+id/viewDivider"
             android:id="@+id/listFavourites"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp"/>
@@ -158,10 +169,18 @@
             android:id="@+id/textBusStopsTitle"
             android:layout_marginBottom="8dp"/>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="?android:attr/listDivider"
+            android:layout_below="@+id/textBusStopsTitle"
+            android:id="@+id/viewDivider2"
+            android:layout_marginBottom="8dp"/>
+
         <ListView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textBusStopsTitle"
+            android:layout_below="@+id/viewDivider2"
             android:layout_marginBottom="8dp"
             android:id="@+id/listNearest"
             android:divider="@android:color/transparent"
