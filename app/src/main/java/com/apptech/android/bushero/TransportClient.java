@@ -290,18 +290,19 @@ public class TransportClient {
         String minutesStr = time.substring(index + 1);
         int hours = Integer.parseInt(hoursStr);
         int minutes = Integer.parseInt(minutesStr);
-        int totalMinutes = (hours * 60) + minutes;
+//        int totalMinutes = (hours * 60) + minutes;
 
         Calendar now = GregorianCalendar.getInstance();
         int nowHours = now.get(Calendar.HOUR_OF_DAY);
         int nowMinutes = now.get(Calendar.MINUTE);
-        int nowTotalMinutes = (nowHours * 60) + nowMinutes;
+//        int nowTotalMinutes = (nowHours * 60) + nowMinutes;
 
         // if time is in the past increment day by one.
-        if (totalMinutes < nowTotalMinutes) {
-            int nowDay = now.get(Calendar.DAY_OF_MONTH);
-            now.set(Calendar.DAY_OF_MONTH, nowDay + 1);
-        }
+        // TODO: reevaluate this, causes bug.
+//        if (totalMinutes < nowTotalMinutes) {
+//            int nowDay = now.get(Calendar.DAY_OF_MONTH);
+//            now.set(Calendar.DAY_OF_MONTH, nowDay + 1);
+//        }
 
         // set this current time of this departure.
         now.set(Calendar.HOUR_OF_DAY, hours);
