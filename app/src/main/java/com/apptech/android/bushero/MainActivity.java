@@ -3,6 +3,7 @@ package com.apptech.android.bushero;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -651,13 +652,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private void removeFavouriteStop(FavouriteStop stop) {
-        // TODO: add yes/no dialog.
+    private void removeFavouriteStop(final FavouriteStop stop) {
         // Remove from database and adapter.
-        mBusDatabase.removeFavouriteStop(stop);
-        mFavouritesAdapter.remove(stop);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Favourites")
+                .setMessage("Remove favourite stop?")
+                .setNegativeButton("No", null);
 
-        Toast.makeText(this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mBusDatabase.removeFavouriteStop(stop);
+                mFavouritesAdapter.remove(stop);
+
+                Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.show();
     }
 
     private class DownloadNearestStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
