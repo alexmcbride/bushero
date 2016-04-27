@@ -126,13 +126,6 @@ public class NearestBusStops {
         mStops.add(stop);
     }
 
-    public BusStop getNearestStop() {
-        if (mStops.size() > 0) {
-            return mStops.get(0);
-        }
-        return null;
-    }
-
     public BusStop getStop(int index) {
         if (index > -1) {
             return mStops.get(index);

@@ -3,7 +3,6 @@ package com.apptech.android.bushero;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -25,7 +24,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -49,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
     private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
-    private static final String SAVED_FAVOURITE_ATCOCODE = "FAVOURITE_ATCOCODE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE = 30; // metres
@@ -64,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TextView mTextBearing;
     private TextView mTextLocality;
     private ListView mListBuses;
-    private ListView mListNearest;
-    private ListView mListFavourites;
     private Button mButtonNearer;
     private Button mButtonFurther;
     private ProgressDialog mProgressDialog;
@@ -77,8 +72,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private NearestBusStops mNearestBusStops;
     private LiveBuses mLiveBuses;
     private BusAdapter mBusAdapter;
-    private FavouritesAdapter mFavouritesAdapter;
-    private NearestStopsAdapter mNearestStopsAdapter;
     private Handler mUpdateHandler;
     private int mCurrentStopPosition;
     private double mLastLongitude;
@@ -86,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean mIsUpdating;
     private boolean mIsChangingLocation;
     private boolean mIsUpdatingLiveBuses;
-    private long mFavouriteStopId; // if showing stop, otherwise -1.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +95,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
-        mListFavourites = (ListView) findViewById(R.id.listFavourites);
-        mListNearest = (ListView)findViewById(R.id.listNearest);
 
         // Handle listview item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -112,39 +102,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Get clicked on bus and start route activity.
                 Bus bus = mLiveBuses.getBus(position);
-                BusStop stop = mNearestBusStops.getStop(mCurrentStopPosition);
+                BusStop stop = getCurrentBusStop();
                 Intent intent = RouteActivity.newIntent(
                         MainActivity.this,
                         bus.getId(),
                         stop.getAtcoCode());
                 startActivity(intent);
-            }
-        });
-
-        mListFavourites.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mLayoutDrawer.closeDrawers(); // close navigation drawer.
-
-                // Get favorite stop from adapter.
-                FavouriteStop favourite = mFavouritesAdapter.getItem(position);
-
-                loadFavouriteStop(favourite);
-            }
-        });
-
-        mListNearest.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mLayoutDrawer.closeDrawers(); // close navigation drawer.
-
-                // Get this stop.
-                BusStop stop = mNearestBusStops.getStop(position);
-
-                // Update stop.
-                mFavouriteStopId = -1;
-                mCurrentStopPosition = position;
-                updateBusStop(stop);
             }
         });
 
@@ -158,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             SharedPreferences preferences = getPreferences(0);
             nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, -1);
             mCurrentStopPosition = preferences.getInt(SAVED_CURRENT_STOP_POSITION, 0);
-            mFavouriteStopId = preferences.getLong(SAVED_FAVOURITE_ATCOCODE, -1);
 
             // Workaround for fact that preferences doesn't support double for some reason.
             mLastLongitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LONGITUDE, 0));
@@ -169,13 +131,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         else {
             mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
             nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID, -1);
-            mFavouriteStopId = savedInstanceState.getLong(SAVED_FAVOURITE_ATCOCODE, -1);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
             mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
 
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from saved state");
         }
 
+        // TODO: maybe just wipe all data when we change location?
         // TODO: update bus stops to use atcocode when updating, this will mean that the stop is reused.
         // update updating live buses remove passed stops from db. then set flag on stop for favourite stop
         // TODO: BUG - when you change date/time or timezone in android settings timings bug out.
@@ -185,16 +147,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (nearestStopsId > -1) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
-        }
 
-        // Lets restore the currently viewed stop or if we were viewing a favourite stop then load that.
-        if (mFavouriteStopId > -1) {
-            FavouriteStop favourite = mBusDatabase.getFavouriteStop(mFavouriteStopId);
-            loadFavouriteStop(favourite);
-        }
-        else if (mNearestBusStops != null) {
-            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-            updateBusStop(busStop);
+            if (mNearestBusStops != null) {
+                BusStop busStop = getCurrentBusStop();
+                updateBusStop(busStop);
+            }
         }
 
         // Initialise google play services API to access location GPS data.
@@ -204,15 +161,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .addApi(LocationServices.API)
                 .build();
 
-        // Setup favourites drawer list.
-        List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
-        mFavouritesAdapter = new FavouritesAdapter(this, favourites);
-        mListFavourites.setAdapter(mFavouritesAdapter);
-
         // Start update handler, this in a timer that elapses every so often and checks to see if
         // a live bus update is needed.
         mUpdateHandler = new Handler();
         startUpdateTask();
+    }
+
+    private BusStop getCurrentBusStop() {
+        return mNearestBusStops.getStop(mCurrentStopPosition);
     }
 
     @Override
@@ -279,7 +235,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             SharedPreferences.Editor editor = preference.edit();
             editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
             editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
-            editor.putLong(SAVED_FAVOURITE_ATCOCODE, mFavouriteStopId);
 
             // Workaround for fact that preferences doesn't support double.
             editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
@@ -295,9 +250,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // activity is running, for instance if the user rotates the device the activity is
         // destroyed and recreated, this lets us save state to be restored later.
         Log.d(LOG_TAG, "saving instance state");
-        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? 0 : mNearestBusStops.getId());
+        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? -1 : mNearestBusStops.getId());
         savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
-        savedInstanceState.putLong(SAVED_FAVOURITE_ATCOCODE, mFavouriteStopId);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
     }
@@ -333,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
 
                 // Check and see if we have a bus stop to update the buses for.
-                final BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                final BusStop busStop = getCurrentBusStop();
                 if (busStop == null) {
                     return;
                 }
@@ -419,12 +373,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         final double longitude = location.getLongitude();
         final double latitude = location.getLatitude();
         Log.d(LOG_TAG, "location changed (" + latitude + "," + longitude + ")");
-
-        // if we are viewing a favourite stop then don't update location.
-        if (mFavouriteStopId > -1) {
-            Log.d(LOG_TAG, "is favourite stop, not changing location");
-            return;
-        }
 
         // If we have no nearest bus stops object then we better make one.
         if (mNearestBusStops == null) {
@@ -526,6 +474,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    public void onClickAddFavourite(View view) {
+
+    }
+
     private void updateBusStop(BusStop busStop) {
         // Update current bus stop info first so user sees at least some activity on the screen.
         mTextName.setText(busStop.getName());
@@ -558,17 +510,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         }
-
-        // Update nearest bus stops list in the navigation drawer.
-        if (mNearestStopsAdapter == null) {
-            mNearestStopsAdapter = new NearestStopsAdapter(this, mNearestBusStops.getStops());
-            mListNearest.setAdapter(mNearestStopsAdapter);
-        }
-        else {
-            // Adapter exists already so just update it.
-            mNearestStopsAdapter.clear();
-            mNearestStopsAdapter.addAll(mNearestBusStops.getStops());
-        }
     }
 
     private void updateBuses() {
@@ -587,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Show/hide nearer button.
-        if (mCurrentStopPosition == 0 || mFavouriteStopId > -1) {
+        if (mCurrentStopPosition == 0) {
             mButtonNearer.setVisibility(View.INVISIBLE);
         }
         else {
@@ -595,7 +536,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Show/hide further button.
-        if ((mCurrentStopPosition == mNearestBusStops.getStopCount() - 1) || mFavouriteStopId > -1) {
+        if (mCurrentStopPosition == mNearestBusStops.getStopCount() - 1) {
             mButtonFurther.setVisibility(View.INVISIBLE);
         }
         else {
@@ -606,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onClickShowMap(View view) {
         // Launch map activity for currently displayed bus stop.
         if (!mLayoutDrawer.isDrawerOpen(mRelativeDrawer) &&  mNearestBusStops != null) {
-            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+            BusStop busStop = getCurrentBusStop();
             if (busStop != null) {
                 Intent intent = MapActivity.newIntent(this, busStop.getId());
                 startActivity(intent);
@@ -630,87 +571,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mProgressDialog.dismiss();
         }
         mProgressDialog = null;
-    }
-
-    public void onClickAddFavourite(View view) {
-        // Get currently viewed bus stop.
-        BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-
-        // check if stop already in favourites.
-        if (mFavouritesAdapter.hasFavouriteStop(busStop.getAtcoCode())) {
-            Toast.makeText(this, "Already in favourites", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            // Create new favourite object.
-            FavouriteStop favourite = new FavouriteStop();
-            favourite.setAtcoCode(busStop.getAtcoCode());
-            favourite.setMode(busStop.getMode());
-            favourite.setBearing(busStop.getBearing());
-            favourite.setLocality(busStop.getLocality());
-            favourite.setIndicator(busStop.getIndicator());
-            favourite.setLongitude(busStop.getLongitude());
-            favourite.setLatitude(busStop.getLatitude());
-            favourite.setName(busStop.getName());
-
-            // Add to database and current favourites list.
-            mBusDatabase.addFavouriteStop(favourite);
-            mFavouritesAdapter.add(favourite);
-
-            Toast.makeText(this, "Added to favourites", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void removeFavouriteStop(final FavouriteStop stop) {
-        // Remove from database and adapter.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("Favourites")
-                .setMessage("Remove favourite stop?")
-                .setNegativeButton("No", null);
-
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mBusDatabase.removeFavouriteStop(stop);
-                mFavouritesAdapter.remove(stop);
-
-                Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.show();
-    }
-
-    private void loadFavouriteStop(FavouriteStop favourite) {
-        Log.d(LOG_TAG, "loading favourite stop: " + favourite.getName());
-
-        // check if the bus stop is already in our downloaded list.
-        int position = mNearestBusStops.getStopPosition(favourite.getAtcoCode());
-        if (position > -1) {
-            Log.d(LOG_TAG, "favourite already in nearest stops list, reusing that");
-
-            // it is, just select this in the UI.
-            BusStop stop = mNearestBusStops.getStop(position);
-            mCurrentStopPosition = position;
-            updateBusStop(stop);
-        }
-        else {
-            Log.d(LOG_TAG, "loading 'fake' favoruite object");
-
-            // lets create a "fake" bus stop object and update the UI.
-            BusStop stop = new BusStop();
-            stop.setAtcoCode(favourite.getAtcoCode());
-            stop.setName(favourite.getName());
-            stop.setMode(favourite.getMode());
-            stop.setBearing(favourite.getBearing());
-            stop.setLocality(favourite.getLocality());
-            stop.setIndicator(favourite.getIndicator());
-            stop.setLongitude(favourite.getLongitude());
-            stop.setLatitude(favourite.getLatitude());
-
-            mFavouriteStopId = favourite.getId();
-
-            updateBusStop(stop);
-        }
     }
 
     private class DownloadNearestStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
@@ -771,8 +631,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(LOG_TAG, "cached nearest stops (" + mNearestBusStops.getId() + ") in database");
 
                 // Get nearest bus stop if there are any stops returned.
-                // TODO: reselect previously selected
-                BusStop stop = result.getStop(mCurrentStopPosition);
+                BusStop stop = getCurrentBusStop();
                 if (stop == null) {
                     // If there are no stops no other action will be performed, so hide the process
                     // dialog here.
@@ -782,7 +641,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     // Update the activity for this bus stop.
                     updateBusStop(stop);
                 }
-
             }
             finally {
                 // No longer updating.
@@ -827,7 +685,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 // Remove current buses for this stop.
                 Log.d(LOG_TAG, "removing old live buses from database");
-                BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
+                BusStop busStop = getCurrentBusStop();
                 mBusDatabase.removeLiveBuses(busStop.getId());
 
                 // Add newly downloaded buses to database
@@ -882,98 +740,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textTime.setText(bus.getBestDepartureEstimate());
             textDirection.setText(TextHelper.getDirection(bus.getDirection()));
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
-
-            return convertView;
-        }
-    }
-
-    private class FavouritesAdapter extends ArrayAdapter<FavouriteStop> {
-        public FavouritesAdapter(Context context, List<FavouriteStop> stops) {
-            super(context, -1);
-
-            if (stops != null) {
-                addAll(stops);
-            }
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            FavouriteStop stop = getItem(position);
-
-            // If a view already exists then reuse it.
-            if (convertView == null) {
-                LayoutInflater inflater = getLayoutInflater();
-                convertView = inflater.inflate(R.layout.list_item_favourite, parent, false);
-
-                // Only do this once when the view is inflated.
-                ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
-                buttonDelete.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                    int position = (int)v.getTag(); // Get position from tag.
-                    FavouriteStop stop = getItem(position);
-
-                    Log.d(LOG_TAG, "removing favourite stop: " + stop.getName());
-
-                    removeFavouriteStop(stop);
-                    }
-                });
-            }
-
-            TextView textName = (TextView)convertView.findViewById(R.id.textName);
-            textName.setText(stop.getName());
-
-            // We use tag to store the position so we can retrieve it later.
-            ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
-            buttonDelete.setTag(position);
-
-            return convertView;
-        }
-
-        public boolean hasFavouriteStop(String atcoCode) {
-            for (int i = 0; i < getCount(); i++) {
-                if (getItem(i).getAtcoCode().equals(atcoCode)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public FavouriteStop getFavouriteStop(String atcoCode) {
-            for (int i = 0; i < getCount(); i++) {
-                FavouriteStop stop = getItem(i);
-                if (stop.getAtcoCode().equals(atcoCode)) {
-                    return stop;
-                }
-            }
-            return null;
-        }
-    }
-
-    private class NearestStopsAdapter extends ArrayAdapter<BusStop> {
-        public NearestStopsAdapter(Context context, List<BusStop> stops) {
-            super(context, -1);
-
-            if (stops != null) {
-                addAll(stops);
-            }
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            BusStop stop = getItem(position);
-
-            // If a view already exists then reuse it.
-            if (convertView == null) {
-                LayoutInflater inflater = getLayoutInflater();
-                convertView = inflater.inflate(R.layout.list_item_bus_stop, parent, false);
-            }
-
-            TextView textName = (TextView)convertView.findViewById(R.id.textName);
-            TextView textDistance = (TextView)convertView.findViewById(R.id.textDistance);
-
-            textName.setText(stop.getName());
-            textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
             return convertView;
         }
