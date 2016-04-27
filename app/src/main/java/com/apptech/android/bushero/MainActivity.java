@@ -3,6 +3,7 @@ package com.apptech.android.bushero;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TextView mTextLocality;
     private ListView mListBuses;
     private ListView mListNearest;
+    private ListView mListFavorites;
     private Button mButtonNearer;
     private Button mButtonFurther;
     private ProgressDialog mProgressDialog;
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LiveBuses mLiveBuses;
     private BusAdapter mBusAdapter;
     private NearestStopsAdapter mNearestStopsAdapter;
+    private FavouritesAdapter mFavouritesAdapter;
     private Handler mUpdateHandler;
     private int mCurrentPosition;
     private double mLastLongitude;
@@ -98,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
         mListNearest = (ListView)findViewById(R.id.listNearest);
+        mListFavorites = (ListView)findViewById(R.id.listFavourites);
 
         // Handle listview item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -119,6 +124,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mCurrentPosition = position;
                 updateBusStop();
+                mLayoutDrawer.closeDrawers();
+            }
+        });
+
+        mListFavorites.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                FavouriteStop favourite = mFavouritesAdapter.getItem(position);
+
+                loadFavouriteStop(favourite);
+
                 mLayoutDrawer.closeDrawers();
             }
         });
@@ -149,17 +165,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from saved state");
         }
 
-        // TODO: maybe just wipe all data when we change location?
-        // TODO: update bus stops to use atcocode when updating, this will mean that the stop is reused.
-        // update updating live buses remove passed stops from db. then set flag on stop for favourite stop
-        // TODO: BUG - when you change date/time or timezone in android settings timings bug out.
-        // TODO: BUG - because saved milliseconds for times are now in the future.
-
         // If we have a nearest stop id then restore it from the database.
         if (nearestStopsId > -1) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
-
             updateBusStop();
         }
 
@@ -174,9 +183,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // a live bus update is needed.
         mUpdateHandler = new Handler();
         startUpdateTask();
+
+        // create favourites list
+        List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
+        mFavouritesAdapter = new FavouritesAdapter(this, favourites);
+        mListFavorites.setAdapter(mFavouritesAdapter);
     }
 
     private BusStop getCurrentBusStop() {
+        if (mNearestBusStops == null) {
+            return null;
+        }
         return mNearestBusStops.getStop(mCurrentPosition);
     }
 
@@ -329,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
         long now = System.currentTimeMillis(); // Current system time.
 
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm", Locale.ENGLISH);
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm:ss", Locale.ENGLISH);
         Log.d(LOG_TAG, "Checking bus expired - now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
 
         // Check departure time was in the past.
@@ -477,7 +494,72 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void onClickAddFavourite(View view) {
+        BusStop stop = getCurrentBusStop();
 
+        if (stop == null) {
+            return;
+        }
+
+        if (mBusDatabase.hasFavouriteStop(stop.getAtcoCode())) {
+            Toast.makeText(this, "Stop already favourited", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            FavouriteStop favourite = new FavouriteStop();
+            favourite.setAtcoCode(stop.getAtcoCode());
+            favourite.setBearing(stop.getBearing());
+            favourite.setIndicator(stop.getIndicator());
+            favourite.setLatitude(stop.getLatitude());
+            favourite.setLongitude(stop.getLongitude());
+            favourite.setMode(stop.getMode());
+            favourite.setLocality(stop.getLocality());
+            favourite.setName(stop.getName());
+
+            mBusDatabase.addFavouriteStop(favourite);
+            mFavouritesAdapter.add(favourite);
+
+            Toast.makeText(this, "Added favourite stop", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void removeFavouriteStop(final FavouriteStop favourite) {
+        // check user definietly wants to remove it...
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Favourites")
+                .setMessage("Remove favourite stop?")
+                .setNegativeButton("No", null);
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Remove from database and adapter.
+                mBusDatabase.removeFavouriteStop(favourite);
+                mFavouritesAdapter.remove(favourite);
+
+                Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void loadFavouriteStop(FavouriteStop favourite) {
+        // check if stop already in nearest stops list.
+
+        boolean refreshNeeded = true;
+
+        // check if stop is in current nearest stops list, if so reselect it.
+        if (mNearestBusStops != null) {
+            int position = mNearestBusStops.getStopPosition(favourite.getAtcoCode());
+            if (position > -1) {
+                mCurrentPosition = position;
+                updateBusStop();
+                refreshNeeded = false;
+            }
+        }
+
+        if (refreshNeeded) {
+
+        }
     }
 
     private void updateBusStop() {
@@ -645,8 +727,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
                 else {
                     Log.d(LOG_TAG, "existing ATCO code: " + mAtcoCode);
-                    mCurrentPosition = mNearestBusStops.getStopPosition(mAtcoCode);
+                    int position = mNearestBusStops.getStopPosition(mAtcoCode);
                     Log.d(LOG_TAG, "current position: " + mCurrentPosition);
+                    if (position > -1) {
+                        mCurrentPosition = position;
+                    }
                 }
 
                 // Get nearest bus stop if there are any stops returned.
@@ -788,6 +873,50 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             textName.setText(stop.getName());
             textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
+
+            return convertView;
+        }
+    }
+
+    private class FavouritesAdapter extends ArrayAdapter<FavouriteStop> {
+        public FavouritesAdapter(Context context, List<FavouriteStop> stops) {
+            super(context, -1);
+
+            if (stops != null) {
+                addAll(stops);
+            }
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            FavouriteStop stop = getItem(position);
+
+            // If a view already exists then reuse it.
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.list_item_favourite, parent, false);
+
+                // Only do this once when the view is inflated.
+                ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
+                buttonDelete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int position = (int)v.getTag(); // Get position from tag.
+                        FavouriteStop stop = getItem(position);
+
+                        Log.d(LOG_TAG, "removing favourite stop: " + stop.getName());
+
+                        removeFavouriteStop(stop);
+                    }
+                });
+            }
+
+            TextView textName = (TextView)convertView.findViewById(R.id.textName);
+            textName.setText(stop.getName());
+
+            // We use tag to store the position so we can retrieve it later.
+            ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
+            buttonDelete.setTag(position);
 
             return convertView;
         }

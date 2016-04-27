@@ -118,44 +118,6 @@ public class BusDatabase {
         }
     }
 
-//    public List<BusStop> add(NearestBusStops stops) {
-//        BusDbHelper helper = null;
-//        SQLiteDatabase db = null;
-//
-//        try {
-//            helper = new BusDbHelper(mContext);
-//            db = helper.getWritableDatabase();
-//
-//            ContentValues values = getContentValues(stops);
-//            long id = db.insert(NearestBusStopsTable.NAME, null, values);
-//
-//            List<BusStop> newStops = new ArrayList<>();
-//            for (BusStop stop : stops.getStops()) {
-//                stop.setNearestBusStopsId(id);
-//                values = getContentValues(stop);
-//
-//                // update stop if it exists.
-//                int rows = db.update(BusStopTable.NAME,
-//                        values,
-//                        "((" + BusStopTable.Columns.ATCOCODE + "=?))",
-//                        new String[]{stop.getAtcoCode()});
-//
-//                // if not then insert new.
-//                if (rows == 0) {
-//                    long stopId = db.insert(BusStopTable.NAME, null, values);
-//                    stops.setId(stopId);
-//                    newStops.add(stop);
-//                }
-//            }
-//
-//            return newStops;
-//        }
-//        finally {
-//            if (db != null) db.close();
-//            if (helper != null) helper.close();
-//        }
-//    }
-
     public void addNearestBusStops(NearestBusStops nearest) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -510,6 +472,10 @@ public class BusDatabase {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
+    }
+
+    public boolean hasFavouriteStop(String atcoCode) {
+        return getFavouriteStop(atcoCode) != null;
     }
 
     public FavouriteStop getFavouriteStop(long id) {

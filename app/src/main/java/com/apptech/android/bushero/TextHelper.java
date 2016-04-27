@@ -1,5 +1,7 @@
 package com.apptech.android.bushero;
 
+import android.location.Location;
+
 public class TextHelper {
     public static String getDestination(String dest) {
         int start = dest.lastIndexOf("(");
