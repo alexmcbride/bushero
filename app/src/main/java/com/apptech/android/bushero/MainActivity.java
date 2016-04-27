@@ -44,7 +44,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
     private static final String SAVED_NEAREST_STOP_ID = "NEAREST_STOP_ID";
-    private static final String SAVED_CURRENT_STOP_POSITION = "CURRENT_STOP_POSITION";
+    private static final String SAVED_CURRENT_POSITION = "CURRENT_POSITION";
     private static final String SAVED_LAST_LONGITUDE = "LAST_LONGITUDE";
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TextView mTextBearing;
     private TextView mTextLocality;
     private ListView mListBuses;
+    private ListView mListNearest;
     private Button mButtonNearer;
     private Button mButtonFurther;
     private ProgressDialog mProgressDialog;
@@ -72,8 +73,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private NearestBusStops mNearestBusStops;
     private LiveBuses mLiveBuses;
     private BusAdapter mBusAdapter;
+    private NearestStopsAdapter mNearestStopsAdapter;
     private Handler mUpdateHandler;
-    private int mCurrentStopPosition;
+    private int mCurrentPosition;
     private double mLastLongitude;
     private double mLastLatitude;
     private boolean mIsUpdating;
@@ -95,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
+        mListNearest = (ListView)findViewById(R.id.listNearest);
 
         // Handle listview item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -111,6 +114,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        mListNearest.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mCurrentPosition = position;
+                updateBusStop();
+                mLayoutDrawer.closeDrawers();
+            }
+        });
+
         // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
         mTransportClient = new TransportClient();
@@ -120,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (savedInstanceState == null) {
             SharedPreferences preferences = getPreferences(0);
             nearestStopsId = preferences.getLong(SAVED_NEAREST_STOP_ID, -1);
-            mCurrentStopPosition = preferences.getInt(SAVED_CURRENT_STOP_POSITION, 0);
+            mCurrentPosition = preferences.getInt(SAVED_CURRENT_POSITION, 0);
 
             // Workaround for fact that preferences doesn't support double for some reason.
             mLastLongitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LONGITUDE, 0));
@@ -129,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from preferences");
         }
         else {
-            mCurrentStopPosition = savedInstanceState.getInt(SAVED_CURRENT_STOP_POSITION);
+            mCurrentPosition = savedInstanceState.getInt(SAVED_CURRENT_POSITION);
             nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID, -1);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
             mLastLatitude = savedInstanceState.getDouble(SAVED_LAST_LATITUDE);
@@ -148,10 +160,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
 
-            if (mNearestBusStops != null) {
-                BusStop busStop = getCurrentBusStop();
-                updateBusStop(busStop);
-            }
+            updateBusStop();
         }
 
         // Initialise google play services API to access location GPS data.
@@ -168,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private BusStop getCurrentBusStop() {
-        return mNearestBusStops.getStop(mCurrentStopPosition);
+        return mNearestBusStops.getStop(mCurrentPosition);
     }
 
     @Override
@@ -234,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             SharedPreferences preference = getPreferences(0);
             SharedPreferences.Editor editor = preference.edit();
             editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
-            editor.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+            editor.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
 
             // Workaround for fact that preferences doesn't support double.
             editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
@@ -251,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // destroyed and recreated, this lets us save state to be restored later.
         Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? -1 : mNearestBusStops.getId());
-        savedInstanceState.putInt(SAVED_CURRENT_STOP_POSITION, mCurrentStopPosition);
+        savedInstanceState.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
     }
@@ -288,13 +297,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 // Check and see if we have a bus stop to update the buses for.
                 final BusStop busStop = getCurrentBusStop();
-                if (busStop == null) {
-                    return;
-                }
-
-                // Check that bus stop has an actual bus.
                 Bus bus = mLiveBuses.getBus(0);
-                if (bus == null) {
+                if (busStop == null || bus == null) {
                     return;
                 }
 
@@ -402,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void changeLocation(double longitude, double latitude) {
         // Start async background task to update nearest bus stops.
-        new DownloadNearestStopsAsyncTask(null).execute(longitude, latitude);
+        new DownloadNearestStopsAsyncTask().execute(longitude, latitude);
 
         // Keep track of where we are.
         mLastLongitude = longitude;
@@ -456,21 +460,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void onClickNearer(View view) {
         // Move to previous bus stop in list.
-        if (mNearestBusStops != null && mCurrentStopPosition > 0) {
-            mCurrentStopPosition--;
+        if (mNearestBusStops != null && mCurrentPosition > 0) {
+            mCurrentPosition--;
 
-            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-            updateBusStop(busStop);
+            updateBusStop();
         }
     }
 
     public void onClickFurther(View view) {
         // Move to next bus stop in list.
-        if (mNearestBusStops != null && mCurrentStopPosition + 1 < mNearestBusStops.getStopCount()) {
-            mCurrentStopPosition++;
+        if (mNearestBusStops != null && mCurrentPosition + 1 < mNearestBusStops.getStopCount()) {
+            mCurrentPosition++;
 
-            BusStop busStop = mNearestBusStops.getStop(mCurrentStopPosition);
-            updateBusStop(busStop);
+            updateBusStop();
         }
     }
 
@@ -478,7 +480,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
-    private void updateBusStop(BusStop busStop) {
+    private void updateBusStop() {
+        BusStop busStop = getCurrentBusStop();
+
         // Update current bus stop info first so user sees at least some activity on the screen.
         mTextName.setText(busStop.getName());
 
@@ -510,6 +514,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         }
+
+        // Update nearest bus stops list in the navigation drawer.
+        if (mNearestStopsAdapter == null) {
+            mNearestStopsAdapter = new NearestStopsAdapter(this, mNearestBusStops.getStops());
+            mListNearest.setAdapter(mNearestStopsAdapter);
+        }
+        else {
+            // Adapter exists already so just update it.
+            mNearestStopsAdapter.clear();
+            mNearestStopsAdapter.addAll(mNearestBusStops.getStops());
+        }
     }
 
     private void updateBuses() {
@@ -528,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Show/hide nearer button.
-        if (mCurrentStopPosition == 0) {
+        if (mCurrentPosition == 0) {
             mButtonNearer.setVisibility(View.INVISIBLE);
         }
         else {
@@ -536,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // Show/hide further button.
-        if (mCurrentStopPosition == mNearestBusStops.getStopCount() - 1) {
+        if (mCurrentPosition == mNearestBusStops.getStopCount() - 1) {
             mButtonFurther.setVisibility(View.INVISIBLE);
         }
         else {
@@ -576,14 +591,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private class DownloadNearestStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         private String mAtcoCode;
 
-        public DownloadNearestStopsAsyncTask(String atcoCode) {
-            mAtcoCode = atcoCode;
-        }
-
         @Override
         public void onPreExecute() {
             // Show loading dialog. this isn't hidden until the end of DownloadLiveBusesAsyncTask.
             showProgressDialog(R.string.progress_finding_nearest_stop);
+
+            // get currently viewed stops ATCO code so it can be reselected.
+            BusStop stop = getCurrentBusStop();
+            if (stop != null) {
+                mAtcoCode = stop.getAtcoCode();
+            }
         }
 
         @Override
@@ -616,30 +633,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
 
                 // Save nearest stops in database.
+                Log.d(LOG_TAG, "adding nearest stops to cache.");
                 mBusDatabase.addNearestBusStops(result);
                 mNearestBusStops = result;
 
                 // Reset current position. If we have an existing stop then reselect it, otherwise
                 // just select the first stop.
                 if (mAtcoCode == null) {
-                    mCurrentStopPosition = 0;
+                    Log.d(LOG_TAG, "no ATCO code, current position 0");
+                    mCurrentPosition = 0;
                 }
                 else {
-                    mCurrentStopPosition = mNearestBusStops.getStopPosition(mAtcoCode);
+                    Log.d(LOG_TAG, "existing ATCO code: " + mAtcoCode);
+                    mCurrentPosition = mNearestBusStops.getStopPosition(mAtcoCode);
+                    Log.d(LOG_TAG, "current position: " + mCurrentPosition);
                 }
 
-                Log.d(LOG_TAG, "cached nearest stops (" + mNearestBusStops.getId() + ") in database");
-
                 // Get nearest bus stop if there are any stops returned.
-                BusStop stop = getCurrentBusStop();
-                if (stop == null) {
+                if (mNearestBusStops.getStopCount() == 0) {
                     // If there are no stops no other action will be performed, so hide the process
                     // dialog here.
                     dismissProgressDialog();
                 }
                 else {
                     // Update the activity for this bus stop.
-                    updateBusStop(stop);
+                    Log.d(LOG_TAG, "updating bus stop info");
+                    updateBusStop();
                 }
             }
             finally {
@@ -740,6 +759,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textTime.setText(bus.getBestDepartureEstimate());
             textDirection.setText(TextHelper.getDirection(bus.getDirection()));
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
+
+            return convertView;
+        }
+    }
+
+    private class NearestStopsAdapter extends ArrayAdapter<BusStop> {
+        public NearestStopsAdapter(Context context, List<BusStop> stops) {
+            super(context, -1);
+
+            if (stops != null) {
+                addAll(stops);
+            }
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            BusStop stop = getItem(position);
+
+            // If a view already exists then reuse it.
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.list_item_bus_stop, parent, false);
+            }
+
+            TextView textName = (TextView)convertView.findViewById(R.id.textName);
+            TextView textDistance = (TextView)convertView.findViewById(R.id.textDistance);
+
+            textName.setText(stop.getName());
+            textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
             return convertView;
         }
