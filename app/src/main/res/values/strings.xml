@@ -26,4 +26,6 @@
     <string name="progress_finding_nearest_stop">Finding nearest bus stop</string>
     <string name="progress_finding_live_buses">Loading live buses</string>
     <string name="progress_title">Loading</string>
+    <string name="location_content_description">Location</string>
+    <string name="favourite_content_description">Favourite</string>
 </resources>

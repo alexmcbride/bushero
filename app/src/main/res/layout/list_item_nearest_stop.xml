@@ -11,7 +11,32 @@
         style="@style/Base.TextAppearance.AppCompat.Small"
         android:textColor="@color/colorVeryDarkGrey"
         tools:text="Bus Stop Name"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginEnd="2dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/textName"
+        android:layout_toEndOf="@id/textName"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_location_dark"
+            android:id="@+id/imageLocation"
+            android:contentDescription="@string/location_content_description"
+            android:layout_marginRight="2dp"
+            android:layout_marginEnd="2dp"/>
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_star_gold"
+            android:id="@+id/imageFavourite"
+            android:contentDescription="@string/favourite_content_description"/>
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
