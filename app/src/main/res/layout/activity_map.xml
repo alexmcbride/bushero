@@ -8,7 +8,7 @@
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorLightBlue"
+        android:background="@color/colorDarkBlue"
         android:padding="16dp">
         <ImageButton
             android:layout_width="wrap_content"

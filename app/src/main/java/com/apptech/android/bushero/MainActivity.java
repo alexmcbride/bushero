@@ -65,8 +65,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ListView mListBuses;
     private ListView mListNearest;
     private ListView mListFavorites;
-    private Button mButtonNearer;
-    private Button mButtonFurther;
+    private ImageButton mButtonNearer;
+    private ImageButton mButtonFurther;
     private ImageButton mButtonLocation;
     private ProgressDialog mProgressDialog;
 
@@ -100,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextDistance = (TextView) findViewById(R.id.textDistance);
         mTextBearing = (TextView) findViewById(R.id.textBearing);
         mTextLocality = (TextView) findViewById(R.id.textLocality);
-        mButtonNearer = (Button) findViewById(R.id.buttonNearer);
-        mButtonFurther = (Button) findViewById(R.id.buttonFurther);
+        mButtonNearer = (ImageButton) findViewById(R.id.buttonNearer);
+        mButtonFurther = (ImageButton) findViewById(R.id.buttonFurther);
         mButtonLocation = (ImageButton) findViewById(R.id.buttonLocation);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
@@ -680,6 +680,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (stop != null) {
                 mAtcoCode = stop.getAtcoCode();
             }
+
+            mIsChangingLocation = true;
         }
 
         @Override

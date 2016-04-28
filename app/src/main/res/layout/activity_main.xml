@@ -14,7 +14,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorLightBlue"
+            android:background="@color/colorDarkBlue"
             android:id="@+id/relativeMain"
             android:onClick="onClickShowMap"
             android:padding="8dp">
@@ -85,14 +85,15 @@
             android:layout_alignParentBottom="true"
             android:id="@+id/relativeButtons"
             android:padding="8dp">
-            <Button
-                android:layout_width="wrap_content"
+            <ImageButton
+                android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:text="@string/btn_nearer_text"
+                android:src="@drawable/ic_nearer"
                 android:id="@+id/buttonNearer"
-                android:background="@color/colorDarkBlue"
-                android:textColor="@color/colorVeryLightGrey"
-                android:onClick="onClickNearer"/>
+                android:background="@null"
+                android:onClick="onClickNearer"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"/>
 
             <ImageButton
                 android:layout_width="28dp"
@@ -105,17 +106,18 @@
                 android:id="@+id/buttonLocation"
                 android:onClick="onClickChangeLocation"/>
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonFurther"
-                android:layout_width="wrap_content"
+                android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:text="@string/btn_further_text"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:background="@color/colorDarkBlue"
-                android:textColor="@color/colorVeryLightGrey"
+                android:background="@null"
+                android:src="@drawable/ic_further"
                 tools:ignore="RelativeOverlap"
-                android:onClick="onClickFurther"/>
+                android:onClick="onClickFurther"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"/>
         </RelativeLayout>
     </RelativeLayout>
 
