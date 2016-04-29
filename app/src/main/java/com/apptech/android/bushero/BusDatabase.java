@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -170,8 +171,8 @@ public class BusDatabase {
         }
     }
 
-    public LiveBuses getLiveBuses(long busStopId) {
-        if (busStopId == 0) {
+    public LiveBuses getLiveBuses(long busStopId, long favouriteStopId) {
+        if (busStopId == 0 && favouriteStopId == 0) {
             return null;
         }
 
@@ -183,13 +184,25 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
-            // query DB for buses.
-            cursor = db.query(
-                    BusTable.NAME,
-                    null,
-                    "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
-                    new String[]{Long.toString(busStopId)},
-                    null, null, null);
+            if (busStopId > 0) {
+                // query DB for buses.
+                cursor = db.query(
+                        BusTable.NAME,
+                        null,
+                        "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
+                        new String[]{Long.toString(busStopId)},
+                        null, null, null);
+            }
+            else if (favouriteStopId > 0) {
+                // query DB for buses.
+                cursor = db.query(
+                        BusTable.NAME,
+                        null,
+                        "((" + BusTable.Columns.FAVOURITE_STOP_ID + "=?))",
+                        new String[]{Long.toString(favouriteStopId)},
+                        null, null, null);
+            }
+
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
 
             // loop through result adding buses to LiveBuses object.
@@ -213,7 +226,7 @@ public class BusDatabase {
         }
     }
 
-    public void addLiveBuses(LiveBuses live, long busStopId) {
+    public void addLiveBuses(LiveBuses live, long busStopId, long favouriteStopId) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
 
@@ -224,6 +237,7 @@ public class BusDatabase {
             // loop through each bus adding it to the database.
             for (Bus bus : live.getBuses()) {
                 bus.setBusStopId(busStopId); // tell which stop the bus belongs to.
+                bus.setFavouriteStopId(favouriteStopId);
 
                 // insert bus into db
                 ContentValues values = getContentValues(bus);
@@ -237,7 +251,7 @@ public class BusDatabase {
         }
     }
 
-    public boolean removeLiveBuses(long busStopId) {
+    public boolean removeLiveBuses(long busStopId, long favouriteStopId) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
 
@@ -245,9 +259,24 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
-            int rows = db.delete(BusTable.NAME,
-                    "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
-                    new String[]{Long.toString(busStopId)});
+            int rows = 0;
+            if (busStopId > 0) {
+                Log.d("BusDatabase", "deleteing live buses for bus stop id: " + busStopId);
+
+                rows = db.delete(BusTable.NAME,
+                        "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
+                        new String[]{Long.toString(busStopId)});
+            }
+            else if (favouriteStopId > 0) {
+                Log.d("BusDatabase", "deleteing live buses for favourite stop id: " + favouriteStopId);
+
+                rows = db.delete(BusTable.NAME,
+                        "((" + BusTable.Columns.FAVOURITE_STOP_ID + "=?))",
+                        new String[]{Long.toString(favouriteStopId)});
+            }
+            else {
+
+            }
 
             return rows > 0;
         }
@@ -573,6 +602,7 @@ public class BusDatabase {
     private ContentValues getContentValues(Bus bus) {
         ContentValues values = new ContentValues();
         values.put(BusTable.Columns.BUS_STOP_ID, bus.getBusStopId());
+        values.put(BusTable.Columns.FAVOURITE_STOP_ID, bus.getFavouriteStopId());
         values.put(BusTable.Columns.MODE, bus.getMode());
         values.put(BusTable.Columns.LINE, bus.getLine());
         values.put(BusTable.Columns.DIRECTION, bus.getDirection());

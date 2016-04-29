@@ -62,6 +62,7 @@ public class BusDbSchema {
         public class Columns {
             public static final String ID = "id";
             public static final String BUS_STOP_ID = "busStopId";
+            public static final String FAVOURITE_STOP_ID = "favouriteStopId";
             public static final String MODE = "mode";
             public static final String LINE = "line";
             public static final String DIRECTION = "direction";

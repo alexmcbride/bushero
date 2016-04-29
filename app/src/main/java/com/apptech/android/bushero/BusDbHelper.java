@@ -69,6 +69,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + BusTable.NAME + " (" +
                 BusTable.Columns.ID + " INTEGER PRIMARY KEY," +
                 BusTable.Columns.BUS_STOP_ID + " INTEGER," +
+                BusTable.Columns.FAVOURITE_STOP_ID + " INTEGER," +
                 BusTable.Columns.MODE + " TEXT," +
                 BusTable.Columns.LINE + " TEXT," +
                 BusTable.Columns.DESTINATION + " TEXT," +

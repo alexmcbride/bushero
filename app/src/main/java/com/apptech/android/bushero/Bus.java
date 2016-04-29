@@ -13,6 +13,7 @@ import java.util.GregorianCalendar;
 public class Bus {
     private long mId;
     private long mBusStopId; // The bus stop this bus is owned by.
+    private long mFavouriteStopId; // Or this is set if owned by a favourite stop.
     private String mMode;
     private String mLine;
     private String mDestination;
@@ -43,6 +44,14 @@ public class Bus {
 
     public void setBusStopId(long busStopId) {
         mBusStopId = busStopId;
+    }
+
+    public long getFavouriteStopId() {
+        return mFavouriteStopId;
+    }
+
+    public void setFavouriteStopId(long favouriteStopId) {
+        mFavouriteStopId = favouriteStopId;
     }
 
     public String getMode() {
