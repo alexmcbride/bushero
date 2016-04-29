@@ -54,11 +54,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int MIN_DISTANCE = 45; // metres
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
 
-    // We add a second to bus times so they elapse once the time has expires, e.g. so a bus due
+    // We add a second to bus times so they elapse once the time expires, e.g. so a bus due
     // at 13:05 won't expire until we hit 13:06. We then add an extra ten seconds as a hack to
     // account for the fact that the transportapi.com server may not be on exactly the same second
     // as us.
-    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 + 10)* 1000; // ms.
+    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 + 10) * 1000; // ms.
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
@@ -149,6 +149,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        mLayoutDrawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                // create favourites list if it doesn't exist.
+                if (mFavouritesAdapter == null) {
+                    List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
+                    mFavouritesAdapter = new FavouritesAdapter(MainActivity.this, favourites);
+                    mListFavorites.setAdapter(mFavouritesAdapter);
+                }
+
+                // switch colour of favourite star depending on whether currently viewed bus stop is
+                // a favourite.
+                BusStop stop = getCurrentBusStop();
+                if (stop != null && isFavouriteStop(stop.getAtcoCode())) {
+                    setAddFavouriteButtonBright();
+                }
+                else {
+                    setAddFavouriteButtonDark();
+                }
+            }
+
+            @Override public void onDrawerOpened(View drawerView) {}
+            @Override public void onDrawerClosed(View drawerView) {}
+            @Override public void onDrawerStateChanged(int newState) {}
+        });
+
         // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
         mTransportClient = new TransportClient();
@@ -193,31 +219,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // a live bus update is needed.
         mUpdateHandler = new Handler();
         startUpdateTask();
-
-        // create favourites list
-        List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
-        mFavouritesAdapter = new FavouritesAdapter(this, favourites);
-        mListFavorites.setAdapter(mFavouritesAdapter);
-
-        // handle drawer slide event.
-        mLayoutDrawer.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                // switch colour of favourite star depending on whether currently viewed bus stop is
-                // a favourite.
-                BusStop stop = getCurrentBusStop();
-                if (stop != null && isFavouriteStop(stop.getAtcoCode())) {
-                    setAddFavouriteButtonBright();
-                }
-                else {
-                    setAddFavouriteButtonDark();
-                }
-            }
-
-            @Override public void onDrawerOpened(View drawerView) {}
-            @Override public void onDrawerClosed(View drawerView) {}
-            @Override public void onDrawerStateChanged(int newState) {}
-        });
     }
 
     private BusStop getCurrentBusStop() {
@@ -228,11 +229,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private boolean isFavouriteStop(String atcoCode) {
+        if (mFavouritesAdapter == null) {
+            return false;
+        }
+
         for (int i = 0; i < mFavouritesAdapter.getCount(); i++) {
             if (mFavouritesAdapter.getItem(i).getAtcoCode().equals(atcoCode)) {
                 return true;
             }
         }
+
         return false;
     }
 
