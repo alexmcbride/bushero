@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE = 45; // metres
-    private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
 
     // We add a second to bus times so they elapse once the time expires, e.g. so a bus due
     // at 13:05 won't expire until we hit 13:06. We then add an extra ten seconds as a hack to
@@ -124,10 +123,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // Get clicked on bus and start route activity.
                 Bus bus = mLiveBuses.getBus(position);
                 BusStop stop = getCurrentBusStop();
+
+                String atcoCode = null;
+                if (mFavouriteStop == null) {
+                    atcoCode = stop.getAtcoCode();
+                }
+                else {
+                    atcoCode = mFavouriteStop.getAtcoCode();
+                }
+
                 Intent intent = RouteActivity.newIntent(
                         MainActivity.this,
                         bus.getId(),
-                        stop.getAtcoCode());
+                        atcoCode);
                 startActivity(intent);
             }
         });
@@ -151,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        // handle drawer slide event.
         mLayoutDrawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -229,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
         }
 
+        // load either nearest stop or favourite into UI.
         updateBusStop();
 
         // Initialise google play services API to access location GPS data.
@@ -241,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Start update handler, this in a timer that elapses every so often and checks to see if
         // a live bus update is needed.
         mUpdateHandler = new Handler();
-        startUpdateTask();
     }
 
     private BusStop getCurrentBusStop() {
@@ -563,32 +572,51 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void onClickAddFavourite(View view) {
-        BusStop stop = getCurrentBusStop();
+        // check if we are viewing a normal stop or a favourite.
+        if (mFavouriteStop == null) {
+            BusStop stop = getCurrentBusStop();
+            if (stop != null) {
+                // check if already in favourites list.
+                FavouriteStop favourite = mBusDatabase.getFavouriteStop(stop.getAtcoCode());
+                if (favourite == null) {
+                    // add stop to favourites.
+                    favourite = new FavouriteStop();
+                    favourite.setAtcoCode(stop.getAtcoCode());
+                    favourite.setName(stop.getName());
+                    favourite.setMode(stop.getMode());
+                    favourite.setBearing(stop.getBearing());
+                    favourite.setLocality(stop.getLocality());
+                    favourite.setIndicator(stop.getIndicator());
+                    favourite.setLongitude(stop.getLongitude());
+                    favourite.setLatitude(stop.getLatitude());
 
-        if (stop == null) {
-            return;
-        }
-
-        if (mBusDatabase.hasFavouriteStop(stop.getAtcoCode())) {
-            Toast.makeText(this, "Stop already favourited", Toast.LENGTH_SHORT).show();
+                    addStopToFavourites(favourite);
+                }
+                else {
+                    // remove from favourites.
+                    removeFavouriteStop(favourite);
+                }
+            }
         }
         else {
-            FavouriteStop favourite = new FavouriteStop();
-            favourite.setAtcoCode(stop.getAtcoCode());
-            favourite.setBearing(stop.getBearing());
-            favourite.setIndicator(stop.getIndicator());
-            favourite.setLatitude(stop.getLatitude());
-            favourite.setLongitude(stop.getLongitude());
-            favourite.setMode(stop.getMode());
-            favourite.setLocality(stop.getLocality());
-            favourite.setName(stop.getName());
-
-            mBusDatabase.addFavouriteStop(favourite);
-            mFavouritesAdapter.add(favourite);
-
-            Toast.makeText(this, "Added favourite stop", Toast.LENGTH_SHORT).show();
-            setAddFavouriteButtonBright();
+            // check if currently viewed favourite stop is in favourites list.
+            if (mBusDatabase.hasFavouriteStop(mFavouriteStop.getAtcoCode())) {
+                removeFavouriteStop(mFavouriteStop);
+            }
+            else {
+                addStopToFavourites(mFavouriteStop);
+            }
         }
+    }
+
+    private void addStopToFavourites(FavouriteStop favourite) {
+        // add to database.
+        mBusDatabase.addFavouriteStop(favourite);
+
+        // update ui
+        mFavouritesAdapter.add(favourite);
+        Toast.makeText(this, "Added to favourites", Toast.LENGTH_SHORT).show();
+        setAddFavouriteButtonBright();
     }
 
     private void removeFavouriteStop(final FavouriteStop favourite) {
@@ -603,7 +631,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onClick(DialogInterface dialog, int which) {
                 // Remove from database and adapter.
                 mBusDatabase.removeFavouriteStop(favourite);
-                mFavouritesAdapter.remove(favourite);
+
+                mFavouritesAdapter.remove(favourite.getAtcoCode());
 
                 Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
                 setAddFavouriteButtonDark();
@@ -651,6 +680,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "loading normal stop");
 
             BusStop busStop = getCurrentBusStop();
+
+            if (busStop == null) {
+                return;
+            }
+
             atcoCode = busStop.getAtcoCode();
             busStopId = busStop.getId();
 
@@ -699,7 +733,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // set update location button to be invisible
-        mButtonLocation.setVisibility(View.INVISIBLE);
+        mButtonLocation.setVisibility(View.GONE);
     }
 
     private void updateBuses() {
@@ -719,7 +753,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // Show/hide nearer button.
         if (mCurrentPosition == 0 || mFavouriteStop != null) {
-            mButtonNearer.setVisibility(View.INVISIBLE);
+            mButtonNearer.setVisibility(View.GONE);
         }
         else {
             mButtonNearer.setVisibility(View.VISIBLE);
@@ -727,7 +761,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // Show/hide further button.
         if ((mCurrentPosition == mNearestBusStops.getStopCount() - 1) || mFavouriteStop != null) {
-            mButtonFurther.setVisibility(View.INVISIBLE);
+            mButtonFurther.setVisibility(View.GONE);
         }
         else {
             mButtonFurther.setVisibility(View.VISIBLE);
@@ -837,7 +871,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // do this before updateBusStop.
                 mLastLongitude = mLongitude;
                 mLastLatitude = mLatitude;
-                mButtonLocation.setVisibility(View.INVISIBLE);
+                mButtonLocation.setVisibility(View.GONE);
 
                 // Get nearest bus stop if there are any stops returned.
                 if (mNearestBusStops.getStopCount() == 0) {
@@ -987,11 +1021,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
             // set location icon visible if this is the current bus stop.{
-            imageLocation.setVisibility(position == mCurrentPosition ? View.VISIBLE : View.INVISIBLE);
+            imageLocation.setVisibility(position == mCurrentPosition ? View.VISIBLE : View.GONE);
 
             // check if this is in our favourites list, if so set favourite icon to visible.
             boolean found = isFavouriteStop(stop.getAtcoCode());
-            imageFavourite.setVisibility(found ? View.VISIBLE : View.INVISIBLE);
+            imageFavourite.setVisibility(found ? View.VISIBLE : View.GONE);
 
             return convertView;
         }
@@ -1038,6 +1072,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             buttonDelete.setTag(position);
 
             return convertView;
+        }
+
+        public void remove(String atcoCode) {
+            for (int i = 0; i < getCount(); i++) {
+                FavouriteStop favourite = getItem(i);
+                if (favourite.getAtcoCode().equals(atcoCode)) {
+                    remove(favourite);
+                    break;
+                }
+            }
         }
     }
 }
