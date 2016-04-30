@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE = 45; // metres
+    private static final int UPDATE_CHECK_INTERVAL = 15000; // ms.
 
     // We add a second to bus times so they elapse once the time expires, e.g. so a bus due
     // at 13:05 won't expire until we hit 13:06. We then add an extra ten seconds as a hack to
