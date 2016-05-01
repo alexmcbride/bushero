@@ -181,16 +181,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     setAddFavouriteButtonDark();
                 }
 
-                // Update nearest bus stops list in the navigation drawer.
-                if (mNearestStopsAdapter == null) {
-                    mNearestStopsAdapter = new NearestStopsAdapter(MainActivity.this, mNearestBusStops.getStops());
-                    mListNearest.setAdapter(mNearestStopsAdapter);
-                }
-                else {
-                    // Adapter exists already so just update it.
-                    mNearestStopsAdapter.clear();
-                    mNearestStopsAdapter.addAll(mNearestBusStops.getStops());
-                }
+                updateNearestStopsList();
             }
 
             @Override public void onDrawerOpened(View drawerView) {}
@@ -273,6 +264,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         return false;
+    }
+
+    private void updateNearestStopsList() {
+        // Update nearest bus stops list in the navigation drawer. This is a bit brute force, but
+        // oh well.
+        if (mNearestStopsAdapter == null) {
+            mNearestStopsAdapter = new NearestStopsAdapter(MainActivity.this, mNearestBusStops.getStops());
+            mListNearest.setAdapter(mNearestStopsAdapter);
+        }
+        else {
+            // Adapter exists already so just update it.
+            mNearestStopsAdapter.clear();
+            mNearestStopsAdapter.addAll(mNearestBusStops.getStops());
+        }
     }
 
     @Override
@@ -618,6 +623,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mFavouritesAdapter.add(favourite);
         Toast.makeText(this, "Added to favourites", Toast.LENGTH_SHORT).show();
         setAddFavouriteButtonBright();
+
+        updateNearestStopsList();
     }
 
     private void removeFavouriteStop(final FavouriteStop favourite) {
@@ -637,6 +644,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 Toast.makeText(MainActivity.this, "Favourite stop removed", Toast.LENGTH_SHORT).show();
                 setAddFavouriteButtonDark();
+
+                updateNearestStopsList();
             }
         });
 
