@@ -560,7 +560,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mNearestBusStops != null && mCurrentPosition > 0) {
             mCurrentPosition--;
 
+            // remember and reset visibility after update.
+            int visibility = mButtonLocation.getVisibility();
             updateBusStop();
+            mButtonLocation.setVisibility(visibility);
         }
     }
 
@@ -569,7 +572,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mNearestBusStops != null && mCurrentPosition + 1 < mNearestBusStops.getStopCount()) {
             mCurrentPosition++;
 
+            // remember and reset visibility after update.
+            int visibility = mButtonLocation.getVisibility();
             updateBusStop();
+            mButtonLocation.setVisibility(visibility);
         }
     }
 
