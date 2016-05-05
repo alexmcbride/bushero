@@ -41,7 +41,7 @@ public class BusDatabase {
             cursor = db.query(
                     BusRouteTable.NAME,
                     new String[]{"id"},
-                    "((" + BusRouteTable.Columns.REQUEST_TIME + " < ?))",
+                    BusRouteTable.Columns.REQUEST_TIME + "<?",
                     whereArgs,
                     null, null, null);
 
@@ -50,12 +50,12 @@ public class BusDatabase {
                 do {
                     whereArgs = new String[]{Long.toString(cursor.getLong(cursor.getColumnIndex("id")))};
 
-                    rows += db.delete(BusStopTable.NAME, "((" + BusStopTable.Columns.BUS_ROUTE_ID + "=?))", whereArgs);
+                    rows += db.delete(BusStopTable.NAME, BusStopTable.Columns.BUS_ROUTE_ID + "=?", whereArgs);
                 }
                 while (cursor.moveToNext());
             }
 
-            rows += db.delete(BusRouteTable.NAME, "((" + BusRouteTable.Columns.REQUEST_TIME + " < ?))", whereArgs);
+            rows += db.delete(BusRouteTable.NAME, BusRouteTable.Columns.REQUEST_TIME + "<?", whereArgs);
 
             return rows;
         }
@@ -157,12 +157,12 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
-            db.delete(NearestBusStopsTable.NAME, "((id=?))", new String[]{Long.toString(nearest.getId())});
+            db.delete(NearestBusStopsTable.NAME, "id=?", new String[]{Long.toString(nearest.getId())});
 
             for (BusStop stop : nearest.getStops()) {
                 // delete bus stops and their buses.
-                db.delete(BusStopTable.NAME, "((id=?))", new String[]{Long.toString(stop.getId())});
-                db.delete(BusTable.NAME, "((busStopId=?))", new String[]{Long.toString(stop.getId())});
+                db.delete(BusStopTable.NAME, "id=?", new String[]{Long.toString(stop.getId())});
+                db.delete(BusTable.NAME, "busStopId=?", new String[]{Long.toString(stop.getId())});
             }
         }
         finally {
@@ -189,7 +189,7 @@ public class BusDatabase {
                 cursor = db.query(
                         BusTable.NAME,
                         null,
-                        "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
+                        BusTable.Columns.BUS_STOP_ID + "=?",
                         new String[]{Long.toString(busStopId)},
                         null, null, null);
             }
@@ -198,7 +198,7 @@ public class BusDatabase {
                 cursor = db.query(
                         BusTable.NAME,
                         null,
-                        "((" + BusTable.Columns.FAVOURITE_STOP_ID + "=?))",
+                        BusTable.Columns.FAVOURITE_STOP_ID + "=?",
                         new String[]{Long.toString(favouriteStopId)},
                         null, null, null);
             }
@@ -264,14 +264,14 @@ public class BusDatabase {
                 Log.d("BusDatabase", "deleteing live buses for bus stop id: " + busStopId);
 
                 rows = db.delete(BusTable.NAME,
-                        "((" + BusTable.Columns.BUS_STOP_ID + "=?))",
+                        BusTable.Columns.BUS_STOP_ID + "=?",
                         new String[]{Long.toString(busStopId)});
             }
             else if (favouriteStopId > 0) {
                 Log.d("BusDatabase", "deleteing live buses for favourite stop id: " + favouriteStopId);
 
                 rows = db.delete(BusTable.NAME,
-                        "((" + BusTable.Columns.FAVOURITE_STOP_ID + "=?))",
+                        BusTable.Columns.FAVOURITE_STOP_ID + "=?",
                         new String[]{Long.toString(favouriteStopId)});
             }
             else {
@@ -367,7 +367,7 @@ public class BusDatabase {
             cursor = db.query(
                     BusStopTable.NAME,
                     null,
-                    "((" + BusStopTable.Columns.ID + "=?))",
+                    BusStopTable.Columns.ID + "=?",
                     new String[]{Long.toString(id)},
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
@@ -399,7 +399,7 @@ public class BusDatabase {
             cursor = db.query(
                     BusTable.NAME,
                     null,
-                    "((" + BusTable.Columns.ID + "=?))",
+                    BusTable.Columns.ID + "=?",
                     new String[]{Long.toString(id)},
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
@@ -485,7 +485,7 @@ public class BusDatabase {
             cursor = db.query(
                     FavouriteStopTable.NAME,
                     null,
-                    "((" + FavouriteStopTable.Columns.ATCOCODE + "=?))",
+                    FavouriteStopTable.Columns.ATCOCODE + "=?",
                     new String[]{atcoCode},
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
@@ -519,7 +519,7 @@ public class BusDatabase {
             cursor = db.query(
                     FavouriteStopTable.NAME,
                     null,
-                    "((" + FavouriteStopTable.Columns.ID + "=?))",
+                    FavouriteStopTable.Columns.ID + "=?",
                     new String[]{Long.toString(id)},
                     null, null, null);
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
@@ -546,7 +546,7 @@ public class BusDatabase {
             db = helper.getWritableDatabase();
 
             db.delete(FavouriteStopTable.NAME,
-                    "((" + BusRouteTable.Columns.ID + "=?))",
+                    BusRouteTable.Columns.ID + "=?",
                     new String[] { Long.toString(stop.getId()) });
         }
         finally {
