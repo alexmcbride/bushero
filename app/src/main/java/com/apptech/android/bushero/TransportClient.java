@@ -188,13 +188,20 @@ public class TransportClient {
 
                 switch (name) {
                     case "atcocode":
-                        Log.i("TransportClient", "atcocode: " + reader.nextString());
+                        if (reader.peek() == JsonToken.NULL) {
+                            reader.skipValue();
+                        }
+                        else {
+                            Log.i("TransportClient", "atcocode: " + reader.nextString());
+                        }
                         break;
                     case "smscode":
                     case "request_time":
                     case "bearing":
                     case "stop_name":
-                        reader.skipValue();
+                        if (reader.peek() != JsonToken.NULL) {
+                            reader.skipValue();
+                        }
                         break;
                     case "departures":
                         reader.beginObject();
@@ -247,7 +254,12 @@ public class TransportClient {
                         bus.setOperator(reader.nextString());
                         break;
                     case "aimed_departure_time":
-                        bus.setAimedDepartureTime(reader.nextString());
+                        if (reader.peek() == JsonToken.NULL) {
+                            reader.skipValue();
+                        }
+                        else {
+                            bus.setAimedDepartureTime(reader.nextString());
+                        }
                         break;
                     case "dir":
                         bus.setDirection(reader.nextString());
@@ -265,7 +277,12 @@ public class TransportClient {
                         updateBusDepartureTime(bus);
                         break;
                     case "expected_departure_time":
-                        bus.setExpectedDepartureTime(reader.nextString());
+                        if (reader.peek() == JsonToken.NULL) {
+                            reader.skipValue();
+                        }
+                        else {
+                            bus.setExpectedDepartureTime(reader.nextString());
+                        }
                         break;
                 }
             }
@@ -376,22 +393,42 @@ public class TransportClient {
                                     name = reader.nextName();
                                     switch (name) {
                                         case "time":
-                                            stop.setTime(reader.nextString());
+                                            if (reader.peek() == JsonToken.NULL) {
+                                                reader.skipValue();
+                                            }
+                                            else {
+                                                stop.setTime(reader.nextString());
+                                            }
                                             break;
                                         case "atcocode":
                                             stop.setAtcoCode(reader.nextString());
                                             break;
                                         case "smscode":
-                                            stop.setSmsCode(reader.nextString());
+                                            if (reader.peek() == JsonToken.NULL) {
+                                                reader.skipValue();
+                                            }
+                                            else {
+                                                stop.setSmsCode(reader.nextString());
+                                            }
                                             break;
                                         case "name":
                                             stop.setName(reader.nextString());
                                             break;
                                         case "locality":
-                                            stop.setLocality(reader.nextString());
+                                            if (reader.peek() == JsonToken.NULL) {
+                                                reader.skipValue();
+                                            }
+                                            else {
+                                                stop.setLocality(reader.nextString());
+                                            }
                                             break;
                                         case "indicator":
-                                            stop.setIndicator(reader.nextString());
+                                            if (reader.peek() == JsonToken.NULL) {
+                                                reader.skipValue();
+                                            }
+                                            else {
+                                                stop.setIndicator(reader.nextString());
+                                            }
                                             break;
                                         case "latitude":
                                             stop.setLatitude(reader.nextDouble());

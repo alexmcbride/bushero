@@ -1,9 +1,12 @@
 package com.apptech.android.bushero;
 
+import android.content.pm.PackageInfo;
 import android.location.Location;
 
 public class TextHelper {
     public static String getDestination(String dest) {
+
+
         int start = dest.lastIndexOf("(");
         int end = dest.lastIndexOf(")");
 
@@ -15,6 +18,10 @@ public class TextHelper {
     }
 
     public static String getDirection(String direction) {
+        if (direction == null) {
+            return "";
+        }
+
         // capitalise first character
         char[] chars = direction.toCharArray();
         if (chars.length > 0) {
@@ -99,6 +106,10 @@ public class TextHelper {
     }
 
     public static String getIndicator(String indicator) {
+        if (indicator == null) {
+            return "";
+        }
+
         indicator = indicator.toLowerCase();
 
         switch (indicator) {
