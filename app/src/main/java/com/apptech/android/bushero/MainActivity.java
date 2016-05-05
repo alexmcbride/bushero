@@ -670,6 +670,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // check if stop already in nearest stops list.
 
         boolean refreshNeeded = true;
+        int visibility = mButtonLocation.getVisibility();
 
         // check if stop is in current nearest stops list, if so reselect it.
         if (mNearestBusStops != null) {
@@ -685,6 +686,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mFavouriteStop = favourite;
             updateBusStop();
         }
+
+        mButtonLocation.setVisibility(visibility);
     }
 
     private void updateBusStop() {
@@ -744,6 +747,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 else {
                     // We're good to go, lets use what we got from the DB.
                     updateBuses();
+
+                    // hide nearest buses async task progress dialog.
+                    dismissProgressDialog();
                 }
             }
         }
