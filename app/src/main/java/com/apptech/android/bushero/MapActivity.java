@@ -23,10 +23,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
     private static final float MAP_ZOOM_LEVEL = 18; // higher is closer to ground
     private static final float MAX_DISTANCE_METRES = 30; // distance after which YOU marker is shown.
+    private static final String KEY_FAVOURITE_STOP_ID = "com.apptech.android.bushero.FAVOURITE_STOP_ID";
 
     private GoogleMap mMap;
     private BusStop mBusStop;
-    private NearestBusStops mNearestBusStops;
+    private FavouriteStop mFavouriteStop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,46 +41,43 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // get bus stop ID from intent.
         Intent intent = getIntent();
         long busStopId = intent.getLongExtra(KEY_BUS_STOP_ID, 0);
+        long favouriteStopId = intent.getLongExtra(KEY_FAVOURITE_STOP_ID, 0);
 
         // get bus stop from database.
         Log.d(LOG_TAG, "fetching bus stop from database for id " + busStopId);
         BusDatabase busDatabase = new BusDatabase(this);
-        mBusStop = busDatabase.getBusStop(busStopId);
 
-        // get nearest bus stops for search location.
-        mNearestBusStops = busDatabase.getNearestBusStops(mBusStop.getNearestBusStopsId());
+        String name = null;
+        if (favouriteStopId > 0) {
+            mFavouriteStop = busDatabase.getFavouriteStop(favouriteStopId);
+            name = mFavouriteStop.getName();
+        }
+        else if (busStopId > 0) {
+            mBusStop = busDatabase.getBusStop(busStopId);
+            name = mBusStop.getName();
+        }
 
         // update UI
         TextView textBusStopName = (TextView) findViewById(R.id.textBusStopName);
-        textBusStopName.setText(mBusStop.getName());
+        textBusStopName.setText(name);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // get info for this bus stop.
-        String name = getString(R.string.map_title, mBusStop.getName());
-        double latitude = mBusStop.getLatitude();
-        double longitude = mBusStop.getLongitude();
-
-        // TODO: use different marker icons?
-
-        // Add marker for your current position if we have it.
-        if (mNearestBusStops != null) {
-
-            float[] results = new float[1];
-            Location.distanceBetween(mNearestBusStops.getSearchLongitude(),
-                    mNearestBusStops.getSearchLatitude(),
-                    longitude,
-                    latitude,
-                    results);
-
-            if (results[0] > MAX_DISTANCE_METRES) {
-                BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-                LatLng currentLocation = new LatLng(mNearestBusStops.getSearchLatitude(), mNearestBusStops.getSearchLongitude());
-                mMap.addMarker(new MarkerOptions().position(currentLocation).icon(icon).title("You"));
-            }
+        double longitude;
+        double latitude;
+        String name;
+        if (mFavouriteStop == null) {
+            longitude = mBusStop.getLongitude();
+            latitude = mBusStop.getLatitude();
+            name = mBusStop.getName();
+        }
+        else {
+            longitude = mFavouriteStop.getLongitude();
+            latitude = mFavouriteStop.getLatitude();
+            name = mFavouriteStop.getName();
         }
 
         // Add marker to map, move camera to that location and zoom.
@@ -93,9 +91,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         finish();
     }
 
-    public static Intent newIntent(Context context, long busStopId) {
+    public static Intent newIntent(Context context, long busStopId, long favouriteStopId) {
         Intent intent = new Intent(context, MapActivity.class);
         intent.putExtra(KEY_BUS_STOP_ID, busStopId);
+        intent.putExtra(KEY_FAVOURITE_STOP_ID, favouriteStopId);
         return intent;
     }
 }

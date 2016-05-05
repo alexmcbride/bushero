@@ -23,7 +23,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
     private static final String KEY_ATCOCODE = "com.apptech.android.bushero.ATCOCODE";
     private static final String SAVED_BUS_ID = "BUS_ID";
     private static final String SAVED_ATCOCODE = "ATCOCODE";
-    private static final int ROUTE_EXPIRE_INTERVAL = 1000 * 60 * 60 * 24; // day in ms
+    private static final int ROUTE_EXPIRE_INTERVAL = 1000 * 60 * 60; // one hour
 
     private ListView mListBusStops;
     private ProgressDialog mProgressDialog;
@@ -122,7 +122,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         BusStop busStop = mBusRoute.getStop(position);
-        Intent intent = MapActivity.newIntent(RouteActivity.this, busStop.getId());
+        Intent intent = MapActivity.newIntent(RouteActivity.this, busStop.getId(), 0);
         startActivity(intent);
     }
 

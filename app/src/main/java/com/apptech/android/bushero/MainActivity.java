@@ -789,11 +789,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onClickShowMap(View view) {
         // Launch map activity for currently displayed bus stop.
         if (!mLayoutDrawer.isDrawerOpen(mRelativeDrawer) &&  mNearestBusStops != null) {
-            BusStop busStop = getCurrentBusStop();
-            if (busStop != null) {
-                Intent intent = MapActivity.newIntent(this, busStop.getId());
-                startActivity(intent);
+            long busStopId = 0;
+            long favouriteStopId = 0;
+
+            if (mFavouriteStop == null) {
+                busStopId = getCurrentBusStop().getId();
             }
+            else {
+                favouriteStopId = mFavouriteStop.getId();
+            }
+
+            Intent intent = MapActivity.newIntent(this, busStopId, favouriteStopId);
+            startActivity(intent);
         }
     }
 
