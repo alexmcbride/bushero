@@ -292,27 +292,41 @@ public class TransportClient {
         String minutesStr = time.substring(index + 1);
         int hours = Integer.parseInt(hoursStr);
         int minutes = Integer.parseInt(minutesStr);
-//        int totalMinutes = (hours * 60) + minutes;
 
+        // set this current date/time.
         Calendar now = GregorianCalendar.getInstance();
-        int nowHours = now.get(Calendar.HOUR_OF_DAY);
-        int nowMinutes = now.get(Calendar.MINUTE);
-//        int nowTotalMinutes = (nowHours * 60) + nowMinutes;
 
-        // if time is in the past increment day by one.
-        // TODO: reevaluate this, causes bug.
-//        if (totalMinutes < nowTotalMinutes) {
-//            int nowDay = now.get(Calendar.DAY_OF_MONTH);
-//            now.set(Calendar.DAY_OF_MONTH, nowDay + 1);
-//        }
+        // if this bus is due on a different date then transport api gives us a date object,
+        // otherwise it just defaults to today.
+        String date = bus.getDate();
+        if (date != null && date.length() > 0) {
+            String[] tokens = date.split("-");
+            if (tokens.length == 3) {
+                try {
+                    int year = Integer.parseInt(tokens[0]);
+                    int month = Integer.parseInt(tokens[1]) - 1; // months are indexed from 0
+                    int day = Integer.parseInt(tokens[2]);
 
-        // set this current time of this departure.
+                    now.set(Calendar.YEAR, year);
+                    now.set(Calendar.MONTH, month);
+                    now.set(Calendar.DAY_OF_MONTH, day);
+                }
+                catch (NumberFormatException e) {
+                    Log.d(LOG_TAG, "error: date didn't parse");
+                    // well, let's just not do that then...
+                }
+            }
+        }
+
+        // set bus due time.
         now.set(Calendar.HOUR_OF_DAY, hours);
         now.set(Calendar.MINUTE, minutes);
         now.set(Calendar.SECOND, 0);
         now.set(Calendar.MILLISECOND, 0);
 
-        bus.setDepartureTime(now.getTimeInMillis());
+        long t = now.getTimeInMillis();
+
+        bus.setDepartureTime(t);
     }
 
     public BusRoute getBusRoute(String operator, String line, String direction, String atcoCode, String date, String time) throws IOException {

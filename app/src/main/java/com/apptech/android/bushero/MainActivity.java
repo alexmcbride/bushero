@@ -444,8 +444,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         departureTime += DEPARTURE_TIME_ADJUSTMENT;
         long now = System.currentTimeMillis(); // Current system time.
 
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd - hh:mm:ss", Locale.ENGLISH);
-        Log.d(LOG_TAG, "Checking bus expired - now: " + fmt.format(new Date(now)) + " departure: " + fmt.format(new Date(departureTime)));
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd - hh:mm:ss", Locale.ENGLISH);
+        Date a = new Date(now);
+        Date b = new Date(departureTime);
+        Log.d(LOG_TAG, "Checking bus expired - now: " + fmt.format(a) + " departure: " + fmt.format(b));
 
         // Check departure time was in the past.
         return now > departureTime;
