@@ -25,6 +25,8 @@ public class TransportClient {
     private static final String BUS_ROUTE_URL = "http://transportapi.com/v3/uk/bus/route/%s/%s/%s/%s/%s/%s/timetable.json?app_key=%s&app_id=%s";
     private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
     private static final String APP_ID = "a10284ad";
+    private static final int MAX_BUSES = 16;
+    private static final int MAX_BUS_STOPS = 10;
 
     public TransportClient() {}
 
@@ -41,7 +43,7 @@ public class TransportClient {
     }
 
     public NearestBusStops getNearestBusStops(double longitude, double latitude) throws IOException {
-        URL url = getNearestBusStopsUrl(longitude, latitude, 1, 10);
+        URL url = getNearestBusStopsUrl(longitude, latitude, 1, MAX_BUS_STOPS);
         URLConnection connection = url.openConnection();
         connection.connect();
 
@@ -164,7 +166,7 @@ public class TransportClient {
     }
 
     public LiveBuses getLiveBuses(String atcoCode) throws IOException {
-        URL url = getLiveBusesUrl(atcoCode, 10);
+        URL url = getLiveBusesUrl(atcoCode, MAX_BUSES);
         URLConnection connection = url.openConnection();
         connection.connect();
 
