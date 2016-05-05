@@ -678,6 +678,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mNearestBusStops != null) {
             int position = mNearestBusStops.getStopPosition(favourite.getAtcoCode());
             if (position > -1) {
+                mFavouriteStop = null;
                 mCurrentPosition = position;
                 updateBusStop();
                 refreshNeeded = false;
