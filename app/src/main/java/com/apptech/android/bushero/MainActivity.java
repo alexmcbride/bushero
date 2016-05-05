@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 return;
                             }
 
-                            new DownloadLiveBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
+                            new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
                         }
                     });
                     snackbar.show();
@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // If we have no nearest bus stops object then we better make one.
         if (mNearestBusStops == null) {
-            new DownloadNearestStopsAsyncTask().execute(longitude, latitude);
+            new ChangeLocationAsyncTask().execute(longitude, latitude);
         }
         else {
             // Check to see how far the user has moved since last update.
@@ -582,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void onClickChangeLocation(View view) {
-        new DownloadNearestStopsAsyncTask().execute(mPendingLongitude, mPendingLatitude);
+        new ChangeLocationAsyncTask().execute(mPendingLongitude, mPendingLatitude);
     }
 
     public void onClickAddFavourite(View view) {
@@ -737,7 +737,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "no live buses, starting async task");
             // Download live bus data on background thread so as not to hang the main UI while the
             // potentially long network operation completes.
-            new DownloadLiveBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
+            new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
         }
         else {
             // Check we have a bus stop already in our live buses.
@@ -745,7 +745,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (bus != null) {
                 if (isBusDepartureDue(bus.getDepartureTime())) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
-                    new DownloadLiveBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
+                    new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
                 }
                 else {
                     // We're good to go, lets use what we got from the DB.
@@ -831,14 +831,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mProgressDialog = null;
     }
 
-    private class DownloadNearestStopsAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
+    private class ChangeLocationAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         private String mAtcoCode;
         private double mLongitude;
         private double mLatitude;
 
         @Override
         public void onPreExecute() {
-            // Show loading dialog. this isn't hidden until the end of DownloadLiveBusesAsyncTask.
+            // Show loading dialog. this isn't hidden until the end of UpdateBusesAsyncTask.
             showProgressDialog(R.string.progress_finding_nearest_stop);
 
             // get currently viewed stops ATCO code so it can be reselected.
@@ -926,12 +926,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private class DownloadLiveBusesAsyncTask extends AsyncTask<BusStop, Void, LiveBuses> {
+    private class UpdateBusesAsyncTask extends AsyncTask<BusStop, Void, LiveBuses> {
         private final String mAtcoCode;
         private final long mBusStopId;
         private final long mFavouriteStopId;
 
-        public DownloadLiveBusesAsyncTask(String atcoCode, long busStopId, long favouriteStopId) {
+        public UpdateBusesAsyncTask(String atcoCode, long busStopId, long favouriteStopId) {
             mAtcoCode = atcoCode;
             mBusStopId = busStopId;
             mFavouriteStopId = favouriteStopId;
