@@ -76,11 +76,11 @@ public class BusDatabase {
             db = helper.getReadableDatabase();
 
             // Query DB for nearest stop info and bus stops in a single query.
-            String sql = "SELECT * FROM " + NearestBusStopsTable.NAME +
-                    " JOIN " + BusStopTable.NAME +
-                    " ON " + NearestBusStopsTable.NAME + "." + NearestBusStopsTable.Columns.ID +
-                    "=" + BusStopTable.NAME + "." + BusStopTable.Columns.NEAREST_BUS_STOPS_ID +
-                    " WHERE " + NearestBusStopsTable.NAME + "." + NearestBusStopsTable.Columns.ID + "=?" +
+            String sql = "SELECT * FROM " + NearestBusStopsTable.NAME  + " AS n" +
+                    " JOIN " + BusStopTable.NAME + " AS b" +
+                    " ON n." + NearestBusStopsTable.Columns.ID +
+                    "=b." + BusStopTable.Columns.NEAREST_BUS_STOPS_ID +
+                    " WHERE n." + NearestBusStopsTable.Columns.ID + "=?" +
                     " ORDER BY " + BusStopTable.Columns.DISTANCE + " ASC;";
 
             // Perform DB query passing in our query parametres.
@@ -297,11 +297,11 @@ public class BusDatabase {
 
             //SELECT * FROM BusRoute JOIN BusStop ON BusRoute.id=BusStop.busRouteId WHERE BusRoute.busId=?
 
-            String sql = "SELECT * FROM " + BusRouteTable.NAME +
-                    " JOIN " + BusStopTable.NAME +
-                    " ON " + BusRouteTable.NAME + "." + BusRouteTable.Columns.ID +
-                    "=" + BusStopTable.NAME + "." + BusStopTable.Columns.BUS_ROUTE_ID +
-                    " WHERE " + BusRouteTable.NAME + "." + BusRouteTable.Columns.BUS_ID + "=?;";
+            String sql = "SELECT * FROM " + BusRouteTable.NAME + " AS r" +
+                    " JOIN " + BusStopTable.NAME + " AS s" +
+                    " ON r." + BusRouteTable.Columns.ID +
+                    "=s." + BusStopTable.Columns.BUS_ROUTE_ID +
+                    " WHERE r." + BusRouteTable.Columns.BUS_ID + "=?;";
 
             cursor = db.rawQuery(sql, new String[]{Long.toString(busId)});
             BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
