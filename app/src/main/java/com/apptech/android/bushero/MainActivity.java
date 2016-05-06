@@ -830,6 +830,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         private String mAtcoCode;
         private double mLongitude;
         private double mLatitude;
+        private IOException mException;
 
         @Override
         public void onPreExecute() {
@@ -856,7 +857,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return mTransportClient.getNearestBusStops(mLongitude, mLatitude);
             }
             catch (IOException e) {
-                Log.d(LOG_TAG, "Nearest Bus Stops Exception: " + e.toString());
+                // can't really handle exception on background thread so store it for later.
+                mException = e;
                 return null;
             }
         }
@@ -864,6 +866,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         public void onPostExecute(final NearestBusStops result) {
             if (result == null) {
+                // if we got an exception earlier then deal with it now.
+                if (mException != null) {
+                    Log.d(LOG_TAG, "Nearest Bus Stops Exception: " + mException.toString());
+                    Toast.makeText(MainActivity.this, "Error: " + mException.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+
                 return;
             }
 
@@ -925,6 +933,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         private final String mAtcoCode;
         private final long mBusStopId;
         private final long mFavouriteStopId;
+        private IOException mException;
 
         public UpdateBusesAsyncTask(String atcoCode, long busStopId, long favouriteStopId) {
             mAtcoCode = atcoCode;
@@ -947,8 +956,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return mTransportClient.getLiveBuses(mAtcoCode);
             }
             catch (IOException e) {
-                Log.d(LOG_TAG, "Live Buses Exception: " + e.toString());
-                Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                mException = e;
                 return null;
             }
         }
@@ -956,6 +964,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public void onPostExecute(final LiveBuses result) {
             try {
                 if (result == null) {
+                    if (mException != null) {
+                        Log.d(LOG_TAG, "Live Buses Exception: " + mException.toString());
+                        Toast.makeText(MainActivity.this, "Error: " + mException.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
                     return;
                 }
 
