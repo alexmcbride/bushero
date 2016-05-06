@@ -337,21 +337,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void savePreferences() {
         // Save preferences. These are things we want preserved so they are available the next time
         // the user starts up the app.
-        if (mNearestBusStops != null) {
-            Log.d(LOG_TAG, "saving nearest stops id (" + mNearestBusStops.getId() + ") to preferences");
+        SharedPreferences preference = getPreferences(0);
+        SharedPreferences.Editor editor = preference.edit();
+        editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? -1 : mNearestBusStops.getId());
+        editor.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
+        editor.putLong(SAVED_FAVOURITE_STOP_ID, mFavouriteStop == null ? -1 : mFavouriteStop.getId());
 
-            SharedPreferences preference = getPreferences(0);
-            SharedPreferences.Editor editor = preference.edit();
-            editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops.getId());
-            editor.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
-            editor.putLong(SAVED_FAVOURITE_STOP_ID, mFavouriteStop == null ? -1 : mFavouriteStop.getId());
+        // Workaround for fact that preferences doesn't support double.
+        editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
+        editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
 
-            // Workaround for fact that preferences doesn't support double.
-            editor.putLong(SAVED_LAST_LONGITUDE, Double.doubleToLongBits(mLastLongitude));
-            editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
-
-            editor.apply();
-        }
+        editor.apply();
     }
 
     @Override
@@ -359,7 +355,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Save state data so activity can be recreated. This is used to save state while the
         // activity is running, for instance if the user rotates the device the activity is
         // destroyed and recreated, this lets us save state to be restored later.
-        Log.d(LOG_TAG, "saving instance state");
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? -1 : mNearestBusStops.getId());
         savedInstanceState.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
