@@ -95,16 +95,27 @@
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"/>
 
-            <ImageButton
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_location"
-                android:layout_centerInParent="true"
-                android:background="@null"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:id="@+id/buttonLocation"
-                android:onClick="onClickChangeLocation"/>
+                android:onClick="onClickChangeLocation"
+                android:layout_centerInParent="true">
+                <ImageButton
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_location"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:onClick="onClickChangeLocation"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="1234m"
+                    android:layout_gravity="center_vertical"
+                    android:id="@+id/textLocationDistance"/>
+            </LinearLayout>
 
             <ImageButton
                 android:id="@+id/buttonFurther"

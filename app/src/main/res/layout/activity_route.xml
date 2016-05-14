@@ -1,81 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RouteActivity">
-
-    <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorDarkBlue"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:paddingRight="8dp"
-        android:paddingEnd="8dp"
-        android:id="@+id/toolbarRoute">
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_back"
-            android:background="@null"
-            android:contentDescription="@string/btn_back_text"
-            android:id="@+id/btnRouteBack"
-            android:layout_marginRight="8dp"
-            android:layout_marginEnd="8dp"
-            android:onClick="onClickBack"/>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/textRouteLine"
-                tools:text="75 - Castlemilk"
-                android:textColor="@color/colorVeryLightGrey"
-                android:textStyle="bold"
-                style="@style/Base.TextAppearance.AppCompat.Large"
-                tools:ignore="RelativeOverlap"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Outbound"
-                android:layout_below="@+id/textRouteLine"
-                android:id="@+id/textRouteDirection"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                android:textColor="@color/colorVeryLightGrey"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="First"
-                android:layout_below="@+id/textRouteLine"
-                android:layout_toRightOf="@+id/textRouteDirection"
-                android:layout_toEndOf="@+id/textRouteDirection"
-                android:textColor="@color/colorVeryLightGrey"
-                android:id="@+id/textRouteOperator"/>
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_bus_white"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginRight="4dp"
-                android:layout_marginEnd="4dp"
-                android:contentDescription="@string/text_bus"/>
-        </RelativeLayout>
-    </android.support.v7.widget.Toolbar>
-
-    <ListView
+    tools:context=".MainActivity"
+    android:background="@color/colorVeryLightGrey"
+    android:id="@+id/drawerLayout">
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/listRouteBusStops"
-        android:layout_below="@+id/toolbarRoute"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"/>
-</RelativeLayout>
+        tools:context=".RouteActivity">
+
+        <android.support.v7.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorDarkBlue"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"
+            android:id="@+id/toolbarRoute">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_back"
+                android:background="@null"
+                android:contentDescription="@string/btn_back_text"
+                android:id="@+id/btnRouteBack"
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
+                android:onClick="onClickBack"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textRouteLine"
+                    tools:text="75 - Castlemilk"
+                    android:textColor="@color/colorVeryLightGrey"
+                    android:textStyle="bold"
+                    style="@style/Base.TextAppearance.AppCompat.Large"
+                    tools:ignore="RelativeOverlap"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Outbound"
+                    android:layout_below="@+id/textRouteLine"
+                    android:id="@+id/textRouteDirection"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:textColor="@color/colorVeryLightGrey"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="First"
+                    android:layout_below="@+id/textRouteLine"
+                    android:layout_toRightOf="@+id/textRouteDirection"
+                    android:layout_toEndOf="@+id/textRouteDirection"
+                    android:textColor="@color/colorVeryLightGrey"
+                    android:id="@+id/textRouteOperator"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_bus_white"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/text_bus"/>
+            </RelativeLayout>
+        </android.support.v7.widget.Toolbar>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/listStops"
+            android:layout_below="@+id/toolbarRoute"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"/>
+    </RelativeLayout>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="320dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/relativeDrawer"
+                    android:layout_gravity="start"
+                    android:background="@color/colorVeryLightGrey"
+                    android:padding="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text_recent_routes"
+            style="@style/Base.TextAppearance.AppCompat.Large"
+            android:textStyle="bold"
+            android:textColor="@color/colorVeryDarkGrey"
+            android:id="@+id/textRoutesTitle"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            tools:ignore="RelativeOverlap"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="?android:attr/listDivider"
+            android:layout_below="@+id/textRoutesTitle"
+            android:id="@+id/viewDivider"
+            android:layout_marginBottom="8dp"/>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/viewDivider"
+            android:id="@+id/listRoutes"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"/>
+
+    </RelativeLayout>
+</android.support.v4.widget.DrawerLayout>

@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -68,12 +69,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TextView mTextDistance;
     private TextView mTextBearing;
     private TextView mTextLocality;
+    private TextView mTextLocationDistance;
     private ListView mListBuses;
     private ListView mListNearest;
     private ListView mListFavorites;
     private ImageButton mButtonNearer;
     private ImageButton mButtonFurther;
-    private ImageButton mButtonLocation;
+    private LinearLayout mLinearChangeLocation;
     private ImageButton mButtonFavourite;
     private ProgressDialog mProgressDialog;
 
@@ -107,9 +109,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextDistance = (TextView) findViewById(R.id.textDistance);
         mTextBearing = (TextView) findViewById(R.id.textBearing);
         mTextLocality = (TextView) findViewById(R.id.textLocality);
+        mTextLocationDistance = (TextView)findViewById(R.id.textLocationDistance);
         mButtonNearer = (ImageButton) findViewById(R.id.buttonNearer);
         mButtonFurther = (ImageButton) findViewById(R.id.buttonFurther);
-        mButtonLocation = (ImageButton) findViewById(R.id.buttonLocation);
+        mLinearChangeLocation = (LinearLayout) findViewById(R.id.buttonLocation);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
@@ -218,16 +221,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from saved state");
         }
 
-        // load favourite stop if we're looking at one.
-        if (favouriteStopId > -1) {
-            Log.d(LOG_TAG, "loading favourite stop (id: " + favouriteStopId + ")");
-            mFavouriteStop = mBusDatabase.getFavouriteStop(favouriteStopId);
-        }
-
         // If we have a nearest stop id then restore it from the database.
         if (nearestStopsId > -1) {
             Log.d(LOG_TAG, "loading nearest stops from database");
             mNearestBusStops = mBusDatabase.getNearestBusStops(nearestStopsId);
+        }
+
+        // load favourite stop if we're looking at one.
+        // TODO: if favourite set, stop and make sure stop isn't in nearest.
+        if (favouriteStopId > -1) {
+            Log.d(LOG_TAG, "loading favourite stop (id: " + favouriteStopId + ")");
+            mFavouriteStop = mBusDatabase.getFavouriteStop(favouriteStopId);
         }
 
         // load either nearest stop or favourite into UI.
@@ -368,7 +372,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "starting update timer");
             mIsUpdating = true;
             // start update checker after interval.
-            mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
+//            mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
+            mUpdateHandler.post(mUpdateChecker);
         }
     }
 
@@ -502,7 +507,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // show change location button, store pending location for later.
                 mPendingLongitude = longitude;
                 mPendingLatitude = latitude;
-                mButtonLocation.setVisibility(View.VISIBLE);
+                mLinearChangeLocation.setVisibility(View.VISIBLE);
+                mTextLocationDistance.setText(getString(R.string.text_nearest_distance, (int)distance));
             }
         }
     }
@@ -558,9 +564,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mCurrentPosition--;
 
             // remember and reset visibility after update.
-            int visibility = mButtonLocation.getVisibility();
+            int visibility = mLinearChangeLocation.getVisibility();
             updateBusStop();
-            mButtonLocation.setVisibility(visibility);
+            mLinearChangeLocation.setVisibility(visibility);
         }
     }
 
@@ -570,9 +576,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mCurrentPosition++;
 
             // remember and reset visibility after update.
-            int visibility = mButtonLocation.getVisibility();
+            int visibility = mLinearChangeLocation.getVisibility();
             updateBusStop();
-            mButtonLocation.setVisibility(visibility);
+            mLinearChangeLocation.setVisibility(visibility);
         }
     }
 
@@ -666,10 +672,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void loadFavouriteStop(FavouriteStop favourite) {
         // check if stop already in nearest stops list.
 
-        boolean refreshNeeded = true;
-        int visibility = mButtonLocation.getVisibility();
+        int visibility = mLinearChangeLocation.getVisibility();
 
         // check if stop is in current nearest stops list, if so reselect it.
+        boolean refreshNeeded = true;
         if (mNearestBusStops != null) {
             int position = mNearestBusStops.getStopPosition(favourite.getAtcoCode());
             if (position > -1) {
@@ -685,7 +691,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             updateBusStop();
         }
 
-        mButtonLocation.setVisibility(visibility);
+        mLinearChangeLocation.setVisibility(visibility);
     }
 
     private void updateBusStop() {
@@ -753,7 +759,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // set update location button to be invisible
-        mButtonLocation.setVisibility(View.GONE);
+        mLinearChangeLocation.setVisibility(View.GONE);
     }
 
     private void updateBuses() {
@@ -837,10 +843,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Show loading dialog. this isn't hidden until the end of UpdateBusesAsyncTask.
             showProgressDialog(R.string.progress_finding_nearest_stop);
 
-            // get currently viewed stops ATCO code so it can be reselected.
+            // get currently viewed stop ATCO code so it can be reselected.
             BusStop stop = getCurrentBusStop();
             if (stop != null) {
                 mAtcoCode = stop.getAtcoCode();
+            }
+
+            // as above get atcocode from favourite if set.
+            if (mFavouriteStop != null) {
+                mAtcoCode = mFavouriteStop.getAtcoCode();
+                mFavouriteStop = null;
             }
 
             mIsChangingLocation = true;
@@ -908,7 +920,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // do this before updateBusStop.
                 mLastLongitude = mLongitude;
                 mLastLatitude = mLatitude;
-                mButtonLocation.setVisibility(View.GONE);
+                mLinearChangeLocation.setVisibility(View.GONE);
 
                 // Get nearest bus stop if there are any stops returned.
                 if (mNearestBusStops.getStopCount() == 0) {
@@ -1062,7 +1074,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textName.setText(stop.getName());
             textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
-            // set location icon visible if this is the current bus stop.{
+            // set location icon visible if this is the current bus stop.
             imageLocation.setVisibility(position == mCurrentPosition ? View.VISIBLE : View.GONE);
 
             // check if this is in our favourites list, if so set favourite icon to visible.
@@ -1108,6 +1120,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
             textName.setText(stop.getName());
+
+            // show or hide icon indicating this favourite stop is currently being viewed.
+//            ImageView imageLocation = (ImageView)convertView.findViewById(R.id.imageLocation);
+//            if (mFavouriteStop != null && mFavouriteStop.getAtcoCode().equals(stop.getAtcoCode())){
+//                imageLocation.setVisibility(View.VISIBLE);
+//            }
+//            else {
+//                imageLocation.setVisibility(View.GONE);
+//            }
 
             // We use tag to store the position so we can retrieve it later.
             ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);

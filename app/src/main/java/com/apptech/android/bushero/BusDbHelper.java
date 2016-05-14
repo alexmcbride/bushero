@@ -15,7 +15,7 @@ import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
  */
 public class BusDbHelper extends SQLiteOpenHelper {
     private static final String DB_FILE = "busHero.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public BusDbHelper(Context context) {
         super(context, DB_FILE, null, DB_VERSION);
@@ -81,6 +81,7 @@ public class BusDbHelper extends SQLiteOpenHelper {
                 BusTable.Columns.SOURCE + " TEXT," +
                 BusTable.Columns.DATE + " TEXT," +
                 BusTable.Columns.DEPARTURE_TIME + " INTEGER," +
+                BusTable.Columns.IS_OVERDUE + " INTEGER," +
                 "FOREIGN KEY(" + BusTable.Columns.BUS_STOP_ID + ") REFERENCES " + BusStopTable.NAME + "(" + BusStopTable.Columns.ID + ")" +
                 ");");
 
@@ -100,11 +101,11 @@ public class BusDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // when upgrading just drop everything and recreate it.
-        db.execSQL("DROP TABLE " + NearestBusStopsTable.NAME + ";");
-        db.execSQL("DROP TABLE " + BusRouteTable.NAME + ";");
-        db.execSQL("DROP TABLE " + BusStopTable.NAME + ";");
-        db.execSQL("DROP TABLE " + BusTable.NAME + ";");
-        db.execSQL("DROP TABLE " + FavouriteStopTable.NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + NearestBusStopsTable.NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + BusRouteTable.NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + BusStopTable.NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + BusTable.NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + FavouriteStopTable.NAME + ";");
         onCreate(db);
     }
 }

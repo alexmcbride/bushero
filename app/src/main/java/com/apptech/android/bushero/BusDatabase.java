@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.io.PushbackInputStream;
+import java.net.PortUnreachableException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -24,46 +26,6 @@ public class BusDatabase {
 
     public BusDatabase(Context context) {
         mContext = context;
-    }
-
-    public int expireRouteCache(int interval) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-        Cursor cursor = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            Date date = new Date();
-            String[] whereArgs = new String[]{Long.toString(date.getTime() - interval)};
-
-            cursor = db.query(
-                    BusRouteTable.NAME,
-                    new String[]{"id"},
-                    BusRouteTable.Columns.REQUEST_TIME + "<?",
-                    whereArgs,
-                    null, null, null);
-
-            int rows = 0;
-            if (cursor.moveToFirst()) {
-                do {
-                    whereArgs = new String[]{Long.toString(cursor.getLong(cursor.getColumnIndex("id")))};
-
-                    rows += db.delete(BusStopTable.NAME, BusStopTable.Columns.BUS_ROUTE_ID + "=?", whereArgs);
-                }
-                while (cursor.moveToNext());
-            }
-
-            rows += db.delete(BusRouteTable.NAME, BusRouteTable.Columns.REQUEST_TIME + "<?", whereArgs);
-
-            return rows;
-        }
-        finally {
-            if (cursor != null) cursor.close();
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
     }
 
     public NearestBusStops getNearestBusStops(long id) {
@@ -251,6 +213,70 @@ public class BusDatabase {
         }
     }
 
+    public LiveBuses addLiveBuses2(LiveBuses live, long busStopId, long favouriteStopId) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            LiveBuses buses = new LiveBuses();
+            for (Bus bus : live.getBuses()) {
+                Cursor cursor = null;
+                try {
+                    if (bus.getDate() == null) {
+                        String[] selectionArgs = {String.valueOf(busStopId),
+                                String.valueOf(favouriteStopId),
+                                bus.getOperator(),
+                                bus.getLine(),
+                                bus.getBestDepartureEstimate()};
+
+                        cursor = db.query(BusTable.NAME,
+                                null,
+                                "busStopId=? AND favouriteStopId=? AND operator=? AND line=? AND time=?",
+                                selectionArgs,
+                                null, null, null);
+                    }
+                    else {
+                        String[] selectionArgs = {String.valueOf(busStopId),
+                                String.valueOf(favouriteStopId),
+                                bus.getOperator(),
+                                bus.getLine(),
+                                bus.getBestDepartureEstimate(),
+                                bus.getDate()};
+
+                        cursor = db.query(BusTable.NAME,
+                                null,
+                                "busStopId=? AND favouriteStopId=? AND operator=? AND line=? AND time=? AND date=?",
+                                selectionArgs,
+                                null, null, null);
+                    }
+
+                    if (cursor.moveToFirst()) {
+                        BusCursorWrapper cursorWrapper = new BusCursorWrapper(cursor);
+                        buses.addBus(cursorWrapper.getBus());
+                    }
+                    else {
+                        long id = db.insert(BusTable.NAME, null, getContentValues(bus));
+                        bus.setId(id);
+                        buses.addBus(bus);
+                    }
+                }
+                finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+            }
+            return buses;
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     public boolean removeLiveBuses(long busStopId, long favouriteStopId) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -286,7 +312,7 @@ public class BusDatabase {
         }
     }
 
-    public BusRoute getBusRoute(long busId) {
+    public List<BusRoute> getBusRoutes() {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -295,7 +321,42 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
 
-            //SELECT * FROM BusRoute JOIN BusStop ON BusRoute.id=BusStop.busRouteId WHERE BusRoute.busId=?
+            String sql = "SELECT * FROM " + BusRouteTable.NAME + " AS r " +
+                    "JOIN " + BusStopTable.NAME + " AS s " +
+                    "ON r." + BusRouteTable.Columns.ID + "=s." + BusStopTable.Columns.BUS_ROUTE_ID;
+            cursor = db.rawQuery(sql, null);
+            BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
+
+            List<BusRoute> routes = new ArrayList<>();
+            if (busCursor.moveToFirst()) {
+                BusRoute route = null;
+                do {
+                    if (route == null) {
+                        route = busCursor.getBusRoute();
+                        routes.add(route);
+                    }
+
+                    route.addStop(busCursor.getBusStop());
+                }
+                while (busCursor.moveToNext());
+            }
+            return routes;
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public BusRoute getBusRoute(long busId) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getReadableDatabase();
 
             String sql = "SELECT * FROM " + BusRouteTable.NAME + " AS r" +
                     " JOIN " + BusStopTable.NAME + " AS s" +
@@ -349,6 +410,46 @@ public class BusDatabase {
             }
         }
         finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public int expireRouteCache(int interval) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            Date date = new Date();
+            String[] whereArgs = new String[]{Long.toString(date.getTime() - interval)};
+
+            cursor = db.query(
+                    BusRouteTable.NAME,
+                    new String[]{"id"},
+                    BusRouteTable.Columns.REQUEST_TIME + "<?",
+                    whereArgs,
+                    null, null, null);
+
+            int rows = 0;
+            if (cursor.moveToFirst()) {
+                do {
+                    whereArgs = new String[]{Long.toString(cursor.getLong(cursor.getColumnIndex("id")))};
+
+                    rows += db.delete(BusStopTable.NAME, BusStopTable.Columns.BUS_ROUTE_ID + "=?", whereArgs);
+                }
+                while (cursor.moveToNext());
+            }
+
+            rows += db.delete(BusRouteTable.NAME, BusRouteTable.Columns.REQUEST_TIME + "<?", whereArgs);
+
+            return rows;
+        }
+        finally {
+            if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -413,6 +514,27 @@ public class BusDatabase {
         }
         finally {
             if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public boolean updateBus(Bus bus) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            int rows = db.update(BusTable.NAME,
+                    getContentValues(bus),
+                    BusTable.Columns.ID + "=?",
+                    new String[]{String.valueOf(bus.getId())});
+
+            return rows > 0;
+        }
+        finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -614,6 +736,7 @@ public class BusDatabase {
         values.put(BusTable.Columns.SOURCE, bus.getSource());
         values.put(BusTable.Columns.DATE, bus.getDate());
         values.put(BusTable.Columns.DEPARTURE_TIME, bus.getDepartureTime());
+        values.put(BusTable.Columns.IS_OVERDUE, bus.isOverdue() ? 1 : 0);
         return values;
     }
 

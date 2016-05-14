@@ -25,6 +25,7 @@ public class Bus {
     private String mSource;
     private String mDate;
     private long mDepartureTime;
+    private boolean isOverdue;
 
     public Bus() {
 
@@ -140,5 +141,13 @@ public class Bus {
 
     public void setDepartureTime(long departureTime) {
         mDepartureTime = departureTime;
+    }
+
+    public boolean isOverdue() {
+        return isOverdue;
+    }
+
+    public void setOverdue(boolean overdue) {
+        isOverdue = overdue;
     }
 }

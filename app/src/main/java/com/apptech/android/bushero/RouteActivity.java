@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,8 +15,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.List;
 
 public class RouteActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String LOG_TAG = "RouteActivity";
@@ -23,10 +26,13 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
     private static final String KEY_ATCOCODE = "com.apptech.android.bushero.ATCOCODE";
     private static final String SAVED_BUS_ID = "BUS_ID";
     private static final String SAVED_ATCOCODE = "ATCOCODE";
-    private static final int ROUTE_EXPIRE_INTERVAL = 1000 * 60 * 60; // one hour
+    private static final int ROUTE_EXPIRE_INTERVAL = 1000 * 60 * 60 * 24; // one day in ms
 
-    private ListView mListBusStops;
+    private ListView mListStops;
+    private ListView mListRoutes;
     private ProgressDialog mProgressDialog;
+    private DrawerLayout mDrawerLayout;
+    private BusRouteArrayAdapter mRouteAdatper;
 
     private BusDatabase mBusDatabase;
     private String mAtcoCode;
@@ -42,8 +48,45 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         TextView textLine = (TextView) findViewById(R.id.textRouteLine);
         TextView textDirection = (TextView) findViewById(R.id.textRouteDirection);
         TextView textOperator = (TextView) findViewById(R.id.textRouteOperator);
-        mListBusStops = (ListView)findViewById(R.id.listRouteBusStops);
-        mListBusStops.setOnItemClickListener(this);
+        mListStops = (ListView)findViewById(R.id.listStops);
+        mListStops.setOnItemClickListener(this);
+
+        // handle drawer layout event.
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawerLayout);
+        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                List<BusRoute> routes = mBusDatabase.getBusRoutes();
+
+                if (mRouteAdatper == null) {
+                    mRouteAdatper = new BusRouteArrayAdapter(RouteActivity.this, routes);
+                    mListRoutes.setAdapter(mRouteAdatper);
+                }
+                else {
+                    mRouteAdatper.clear();
+                    mRouteAdatper.addAll(routes);
+                }
+            }
+            @Override public void onDrawerOpened(View drawerView) {}
+            @Override public void onDrawerClosed(View drawerView) {}
+            @Override public void onDrawerStateChanged(int newState) {}
+        });
+
+        // handle route list
+        mListRoutes = (ListView)findViewById(R.id.listRoutes);
+        mListRoutes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                BusRoute route = mRouteAdatper.getItem(position);
+                BusStop stop = route.getStop(0);
+                if (stop == null) {
+                    Toast.makeText(RouteActivity.this, "No stops found for route", Toast.LENGTH_SHORT).show();
+                }
+                else {
+
+                }
+            }
+        });
 
         // get info from intent or saved instance state if it exists.
         long busId;
@@ -95,7 +138,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
     private void updateBusRoute() {
         BusStopArrayAdapter arrayAdapter = new BusStopArrayAdapter(this);
         arrayAdapter.addAll(mBusRoute.getStops());
-        mListBusStops.setAdapter(arrayAdapter);
+        mListStops.setAdapter(arrayAdapter);
     }
 
     @Override
@@ -199,6 +242,42 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             time.setText(stop.getTime());
             locality.setText(stop.getLocality());
             bearing.setText(TextHelper.getBearing(stop.getBearing()));
+
+            return convertView;
+        }
+    }
+
+    private class BusRouteArrayAdapter extends ArrayAdapter<BusRoute> {
+        public BusRouteArrayAdapter(Context context, List<BusRoute> routes) {
+            super(context, -1);
+            addAll(routes);
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Log.d(LOG_TAG, "route view: " + position);
+
+            // if a view already exists then reuse it.
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.list_item_bus_route, parent, false);
+            }
+
+            TextView textOperator = (TextView)convertView.findViewById(R.id.textOperator);
+            TextView textLine = (TextView)convertView.findViewById(R.id.textLine);
+            TextView textOrigin = (TextView)convertView.findViewById(R.id.textOrigin);
+            TextView textTime = (TextView)convertView.findViewById(R.id.textTime);
+
+            // show route details.
+            BusRoute route = getItem(position);
+            textOperator.setText(route.getOperator());
+            textLine.setText(route.getLine());
+
+            // show original stop details.
+            BusStop stop = route.getStop(0);
+            if (stop != null) {
+                textOrigin.setText(stop.getName());
+                textTime.setText(stop.getTime());
+            }
 
             return convertView;
         }

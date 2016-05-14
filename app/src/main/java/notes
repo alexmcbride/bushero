@@ -1,5 +1,4 @@
 // TODO: maybe just wipe all data when we change location?
 // TODO: update bus stops to use atcocode when updating, this will mean that the stop is reused.
 // update updating live buses remove passed stops from db. then set flag on stop for favourite stop
-// TODO: BUG - when you change date/time or timezone in android settings timings bug out.
-// TODO: BUG - because saved milliseconds for times are now in the future.
+// TODO: BUG - when you change date/time or timezone in android settings timings bug out because saved milliseconds for times are now in the future.

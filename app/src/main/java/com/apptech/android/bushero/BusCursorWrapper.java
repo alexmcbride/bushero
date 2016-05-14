@@ -81,11 +81,9 @@ public class BusCursorWrapper extends CursorWrapper {
         bus.setExpectedDepartureTime(getString(getColumnIndex(BusTable.Columns.EXPECTED_DEPARTURE_TIME)));
         bus.setBestDepartureEstimate(getString(getColumnIndex(BusTable.Columns.BEST_DEPARTURE_ESTIMATE)));
         bus.setSource(getString(getColumnIndex(BusTable.Columns.SOURCE)));
-
-        // TODO: is date only set if different from today?
         bus.setDate(getString(getColumnIndex(BusTable.Columns.DATE)));
-
         bus.setDepartureTime(getLong(getColumnIndex(BusTable.Columns.DEPARTURE_TIME)));
+        bus.setOverdue(getInt(getColumnIndex(BusTable.Columns.IS_OVERDUE)) == 1);
         return bus;
     }
 
