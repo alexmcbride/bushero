@@ -271,6 +271,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void updateNearestStopsList() {
+        if (mNearestBusStops == null) {
+            return;
+        }
+
         // Update nearest bus stops list in the navigation drawer. This is a bit brute force, but
         // oh well.
         if (mNearestStopsAdapter == null) {
@@ -371,8 +375,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (!mIsUpdating) {
             Log.d(LOG_TAG, "starting update timer");
             mIsUpdating = true;
-            // start update checker after interval.
-//            mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
+            // start update checker.
             mUpdateHandler.post(mUpdateChecker);
         }
     }
@@ -670,8 +673,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void loadFavouriteStop(FavouriteStop favourite) {
-        // check if stop already in nearest stops list.
-
+        // remember location button state.
         int visibility = mLinearChangeLocation.getVisibility();
 
         // check if stop is in current nearest stops list, if so reselect it.
@@ -686,11 +688,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
+        // stop isn't in list, probably need to download it.
         if (refreshNeeded) {
             mFavouriteStop = favourite;
             updateBusStop();
         }
 
+        // restore location button state.
         mLinearChangeLocation.setVisibility(visibility);
     }
 
