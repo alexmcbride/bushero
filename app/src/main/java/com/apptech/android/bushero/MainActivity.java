@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Bus bus = mLiveBuses.getBus(position);
                 BusStop stop = getCurrentBusStop();
 
-                String atcoCode = null;
+                String atcoCode;
                 if (mFavouriteStop == null) {
                     atcoCode = stop.getAtcoCode();
                 }
@@ -390,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     // Check for live bus updates.
-    private Runnable mUpdateChecker = new Runnable() {
+    private final Runnable mUpdateChecker = new Runnable() {
         @Override
         public void run() {
             try {
@@ -699,7 +699,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void updateBusStop() {
-        String atcoCode = null;
+        String atcoCode;
         long busStopId = 0;
         long favouriteStopId = 0;
 

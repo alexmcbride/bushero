@@ -1,12 +1,5 @@
 package com.apptech.android.bushero;
 
-import android.util.Log;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 /**
  * Class to represent a bus.
  */

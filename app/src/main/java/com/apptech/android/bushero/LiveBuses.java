@@ -7,7 +7,7 @@ import java.util.List;
  * Class to represent a list of live buses for a stop.
  */
 public class LiveBuses {
-    private List<Bus> mBuses;
+    private final List<Bus> mBuses;
 
     public LiveBuses() {
         mBuses = new ArrayList<>();

@@ -16,7 +16,7 @@ import java.util.Date;
  * Custom DB cursor that we've populated with our own methods. These methods take the current cursor
  * record and convert it into a nice friendly Java object.
  */
-public class BusCursorWrapper extends CursorWrapper {
+class BusCursorWrapper extends CursorWrapper {
     public BusCursorWrapper(Cursor cursor) {
         super(cursor);
     }

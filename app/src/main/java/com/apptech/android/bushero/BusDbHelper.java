@@ -13,7 +13,7 @@ import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
 /**
  * Class to help take care of common DB operations. This creates and updates our DB automatically.
  */
-public class BusDbHelper extends SQLiteOpenHelper {
+class BusDbHelper extends SQLiteOpenHelper {
     private static final String DB_FILE = "busHero.db";
     private static final int DB_VERSION = 2;
 

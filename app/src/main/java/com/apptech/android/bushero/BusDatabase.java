@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import java.io.PushbackInputStream;
-import java.net.PortUnreachableException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -22,7 +20,7 @@ import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
  * Class to represent the database.
  */
 public class BusDatabase {
-    private Context mContext;
+    private final Context mContext;
 
     public BusDatabase(Context context) {
         mContext = context;
@@ -299,9 +297,6 @@ public class BusDatabase {
                 rows = db.delete(BusTable.NAME,
                         BusTable.Columns.FAVOURITE_STOP_ID + "=?",
                         new String[]{Long.toString(favouriteStopId)});
-            }
-            else {
-
             }
 
             return rows > 0;

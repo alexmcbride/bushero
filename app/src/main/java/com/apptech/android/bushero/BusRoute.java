@@ -14,7 +14,7 @@ public class BusRoute {
     private String mOperator;
     private String mLine;
     private String mOriginAtcoCode;
-    private List<BusStop> mStops;
+    private final List<BusStop> mStops;
 
     public BusRoute() {
         mStops = new ArrayList<>();

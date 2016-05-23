@@ -1,8 +1,5 @@
 package com.apptech.android.bushero;
 
-import android.content.pm.PackageInfo;
-import android.location.Location;
-
 public class TextHelper {
     public static String getDestination(String dest) {
 

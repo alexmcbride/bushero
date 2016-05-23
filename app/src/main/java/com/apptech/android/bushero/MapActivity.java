@@ -2,7 +2,6 @@ package com.apptech.android.bushero;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,8 +12,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -25,7 +22,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private static final float MAX_DISTANCE_METRES = 30; // distance after which YOU marker is shown.
     private static final String KEY_FAVOURITE_STOP_ID = "com.apptech.android.bushero.FAVOURITE_STOP_ID";
 
-    private GoogleMap mMap;
     private BusStop mBusStop;
     private FavouriteStop mFavouriteStop;
 
@@ -64,8 +60,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
         double longitude;
         double latitude;
         String name;
@@ -82,8 +76,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // Add marker to map, move camera to that location and zoom.
         LatLng busStopLocation = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().position(busStopLocation).title(name));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
+        googleMap.addMarker(new MarkerOptions().position(busStopLocation).title(name));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
     }
 
     public void onClickButtonBack(View view) {

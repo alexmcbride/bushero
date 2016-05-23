@@ -3,7 +3,7 @@ package com.apptech.android.bushero;
 /**
  * Class to define our DB schema.
  */
-public class BusDbSchema {
+class BusDbSchema {
     public class NearestBusStopsTable {
         public static final String NAME = "NearestBusStops";
 

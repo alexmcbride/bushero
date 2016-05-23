@@ -31,7 +31,6 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
     private ListView mListStops;
     private ListView mListRoutes;
     private ProgressDialog mProgressDialog;
-    private DrawerLayout mDrawerLayout;
     private BusRouteArrayAdapter mRouteAdatper;
 
     private BusDatabase mBusDatabase;
@@ -52,8 +51,8 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         mListStops.setOnItemClickListener(this);
 
         // handle drawer layout event.
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawerLayout);
-        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 List<BusRoute> routes = mBusDatabase.getBusRoutes();

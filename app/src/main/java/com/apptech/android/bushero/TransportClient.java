@@ -16,8 +16,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
-public class TransportClient {
+class TransportClient {
     private static final String LOG_TAG = "TransportClient";
 
     private static final String NEAREST_BUS_STOPS_URL = "http://transportapi.com/v3/uk/bus/stops/near.json?app_key=%s&app_id=%s&lat=%f&lon=%f&page=%d&rpp=%d";
@@ -31,15 +32,15 @@ public class TransportClient {
     public TransportClient() {}
 
     private URL getNearestBusStopsUrl(double longitude, double latitude, int page, int returnPerPage) throws MalformedURLException {
-        return new URL(String.format(NEAREST_BUS_STOPS_URL, APP_KEY, APP_ID, latitude, longitude, page, returnPerPage));
+        return new URL(String.format(Locale.ENGLISH, NEAREST_BUS_STOPS_URL, APP_KEY, APP_ID, latitude, longitude, page, returnPerPage));
     }
 
     private URL getLiveBusesUrl(String atcoCode, int limit) throws MalformedURLException {
-        return new URL(String.format(LIVE_BUSES_URL, atcoCode, APP_KEY, APP_ID, limit));
+        return new URL(String.format(Locale.ENGLISH, LIVE_BUSES_URL, atcoCode, APP_KEY, APP_ID, limit));
     }
 
     private URL getBusRouteUrl(String operator, String line, String direction, String atcoCode, String date, String time) throws MalformedURLException {
-        return new URL(String.format(BUS_ROUTE_URL, operator, line, direction, atcoCode, date, time, APP_KEY, APP_ID));
+        return new URL(String.format(Locale.ENGLISH, BUS_ROUTE_URL, operator, line, direction, atcoCode, date, time, APP_KEY, APP_ID));
     }
 
     public NearestBusStops getNearestBusStops(double longitude, double latitude) throws IOException {
@@ -361,7 +362,6 @@ public class TransportClient {
             input = new BufferedInputStream(url.openStream());
             streamReader = new InputStreamReader(input);
             reader = new JsonReader(streamReader);
-            LiveBuses buses = new LiveBuses();
 
             reader.beginObject();
             BusRoute route = new BusRoute();
