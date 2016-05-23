@@ -24,7 +24,8 @@
                 android:src="@drawable/ic_timetable"
                 android:contentDescription="@string/app_name"
                 android:id="@+id/imageTimetable"
-                android:layout_marginRight="8dp"/>
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -46,7 +47,8 @@
                 android:layout_toRightOf="@+id/imageTimetable"
                 android:layout_toEndOf="@+id/imageTimetable"
                 android:textColor="@color/colorVeryLightGrey"
-                android:layout_marginRight="8dp"/>
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -57,7 +59,8 @@
                 android:layout_toRightOf="@+id/textDistance"
                 android:layout_toEndOf="@+id/textDistance"
                 android:textColor="@color/colorVeryLightGrey"
-                android:layout_marginRight="8dp"/>
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -93,14 +96,16 @@
                 android:background="@null"
                 android:onClick="onClickNearer"
                 android:scaleType="fitCenter"
-                android:adjustViewBounds="true"/>
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/btn_nearer_text"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/buttonLocation"
                 android:onClick="onClickChangeLocation"
-                android:layout_centerInParent="true">
+                android:layout_centerInParent="true"
+                tools:ignore="RelativeOverlap">
                 <ImageButton
                     android:layout_width="28dp"
                     android:layout_height="28dp"
@@ -108,7 +113,8 @@
                     android:background="@null"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
-                    android:onClick="onClickChangeLocation"/>
+                    android:onClick="onClickChangeLocation"
+                    android:contentDescription="@string/btn_change_location"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -128,7 +134,8 @@
                 tools:ignore="RelativeOverlap"
                 android:onClick="onClickFurther"
                 android:scaleType="fitCenter"
-                android:adjustViewBounds="true"/>
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/btn_further_text"/>
         </RelativeLayout>
     </RelativeLayout>
 

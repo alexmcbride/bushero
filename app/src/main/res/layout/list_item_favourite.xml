@@ -14,7 +14,8 @@
         android:textColor="@color/colorVeryDarkGrey"
         tools:ignore="RelativeOverlap"
         android:layout_marginBottom="16dp"
-        android:layout_marginRight="4dp"/>
+        android:layout_marginRight="4dp"
+        android:layout_marginEnd="4dp"/>
 
     <!--<ImageView-->
         <!--android:layout_width="16dp"-->

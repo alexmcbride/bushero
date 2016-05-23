@@ -29,4 +29,5 @@
     <string name="location_content_description">Location</string>
     <string name="favourite_content_description">Favourite</string>
     <string name="text_recent_routes">Recent Routes</string>
+    <string name="btn_change_location">Change Location</string>
 </resources>

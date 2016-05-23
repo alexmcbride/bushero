@@ -9,6 +9,7 @@
         tools:text="First"
         android:id="@+id/textOperator"
         android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:textColor="@color/colorVeryDarkGrey"/>
     <TextView
@@ -17,7 +18,9 @@
         tools:text="6"
         android:id="@+id/textLine"
         android:layout_toRightOf="@id/textOperator"
+        android:layout_toEndOf="@id/textOperator"
         android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:textColor="@color/colorVeryDarkGrey"/>
     <TextView
@@ -26,7 +29,9 @@
         tools:text="Calderwood"
         android:id="@+id/textOrigin"
         android:layout_toRightOf="@id/textLine"
+        android:layout_toEndOf="@id/textLine"
         android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:textColor="@color/colorVeryDarkGrey"/>
     <TextView
@@ -35,6 +40,7 @@
         tools:text="13:54"
         android:id="@+id/textTime"
         android:layout_toRightOf="@id/textOrigin"
+        android:layout_toEndOf="@id/textOrigin"
         android:layout_marginBottom="16dp"
         android:textColor="@color/colorVeryDarkGrey"/>
 </RelativeLayout>

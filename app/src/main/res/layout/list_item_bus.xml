@@ -12,8 +12,10 @@
         android:src="@drawable/ic_bus"
         android:contentDescription="@string/ic_bus_content_description"
         android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="4dp"/>
+        android:layout_marginRight="4dp"
+        android:layout_marginEnd="4dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -25,7 +27,8 @@
         android:layout_toRightOf="@+id/imageBus"
         android:layout_toEndOf="@+id/imageBus"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="4dp"/>
+        android:layout_marginRight="4dp"
+        android:layout_marginEnd="4dp"/>
 
     <TextView
         android:id="@+id/textHyphen"
@@ -37,7 +40,8 @@
         android:layout_toRightOf="@+id/textLine"
         android:layout_toEndOf="@id/textLine"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="4dp"/>
+        android:layout_marginRight="4dp"
+        android:layout_marginEnd="4dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -58,7 +62,8 @@
         android:layout_toRightOf="@+id/imageBus"
         android:layout_toEndOf="@+id/imageBus"
         android:layout_below="@id/textLine"
-        android:layout_marginRight="8dp"/>
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -68,7 +73,8 @@
         android:layout_toRightOf="@+id/textTime"
         android:layout_toEndOf="@+id/textTime"
         android:layout_below="@id/textLine"
-        android:layout_marginRight="8dp"/>
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"/>
 
     <TextView
         android:layout_width="wrap_content"
