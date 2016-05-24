@@ -156,6 +156,9 @@ class TransportClient {
                     case "distance":
                         stop.setDistance(reader.nextInt());
                         break;
+                    default:
+                        reader.skipValue();
+                        break;
                 }
             }
             stops.add(stop);
@@ -215,6 +218,9 @@ class TransportClient {
                         }
 
                         reader.endObject();
+                        break;
+                    default:
+                        reader.skipValue();
                         break;
                 }
             }
@@ -284,6 +290,9 @@ class TransportClient {
                         else {
                             bus.setExpectedDepartureTime(reader.nextString());
                         }
+                        break;
+                    default:
+                        reader.skipValue();
                         break;
                 }
             }
@@ -446,6 +455,9 @@ class TransportClient {
                             }
                             reader.endArray();
                         }
+                        break;
+                    default:
+                        reader.skipValue();
                         break;
                 }
             }
