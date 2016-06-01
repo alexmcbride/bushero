@@ -18,6 +18,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +34,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -71,13 +74,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TextView mTextLocality;
     private TextView mTextLocationDistance;
     private ListView mListBuses;
-    private ListView mListNearest;
-    private ListView mListFavorites;
     private ImageButton mButtonNearer;
     private ImageButton mButtonFurther;
     private LinearLayout mLinearChangeLocation;
-    private ImageButton mButtonFavourite;
     private ProgressDialog mProgressDialog;
+    private ImageButton mButtonFavourite;
+    private ListView mListNearest;
+    private ListView mListFavorites;
 
     // Variables
     private BusDatabase mBusDatabase;
@@ -116,9 +119,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
-        mListNearest = (ListView)findViewById(R.id.listNearest);
-        mListFavorites = (ListView)findViewById(R.id.listFavourites);
-        mButtonFavourite = (ImageButton)findViewById(R.id.buttonFavourite);
+
+        View include = findViewById(R.id.drawerMain);
+        mListNearest = (ListView)include.findViewById(R.id.listNearest);
+        mListFavorites = (ListView)include.findViewById(R.id.listFavourites);
+        mButtonFavourite = (ImageButton)include.findViewById(R.id.buttonFavourite);
+
+        // set toolbar
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+//        getActionBar().set
 
         // Handle listview item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -292,13 +302,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStart() {
         super.onStart();
 
-        // Connect to google play services api on start. Once connected the onConnected method is
-        // called.
-        Log.d(LOG_TAG, "Connecting to Google API Service");
-        mGoogleApiClient.connect();
+        // make sure we've got what we need to continue.
+        Log.d(LOG_TAG, "checking if google player sevices installed");
+        GoogleApiAvailability instance = GoogleApiAvailability.getInstance();
+        int error = instance.isGooglePlayServicesAvailable(this);
+        if (error == ConnectionResult.SUCCESS) {
+            // Connect to google play services api on start. Once connected the onConnected method is
+            // called.
+            Log.d(LOG_TAG, "Connecting to Google API Service");
+            mGoogleApiClient.connect();
 
-        // Start checking to see if live bus updates are available.
-        startUpdateTask();
+            // Start checking to see if live bus updates are available.
+            startUpdateTask();
+        }
+        else {
+            instance.getErrorDialog(this, error, 1).show();
+        }
     }
 
     @Override
@@ -802,7 +821,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void onClickShowMap(View view) {
         // Launch map activity for currently displayed bus stop.
-        if (!mLayoutDrawer.isDrawerOpen(mRelativeDrawer) &&  mNearestBusStops != null) {
+        if (mNearestBusStops != null) {
             long busStopId = 0;
             long favouriteStopId = 0;
 

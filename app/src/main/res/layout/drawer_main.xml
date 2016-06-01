@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="320dp"
+    android:layout_height="match_parent"
+    android:id="@+id/relativeDrawer"
+    android:layout_gravity="start"
+    android:background="@color/colorVeryLightGrey"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_favourites"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        android:textColor="@color/colorVeryDarkGrey"
+        android:id="@+id/textFavouritesTitle"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        tools:ignore="RelativeOverlap"/>
+
+    <ImageButton
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/buttonFavourite"
+        android:layout_marginBottom="8dp"
+        android:background="@null"
+        android:onClick="onClickAddFavourite"
+        android:contentDescription="@string/add_favourite_content_description"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider"
+        android:layout_below="@+id/textFavouritesTitle"
+        android:id="@+id/viewDivider"
+        android:layout_marginBottom="8dp"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/viewDivider"
+        android:id="@+id/listFavourites"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_nearest_bus_stops"
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        android:textColor="@color/colorVeryDarkGrey"
+        android:layout_below="@+id/listFavourites"
+        android:id="@+id/textBusStopsTitle"
+        android:layout_marginBottom="8dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider"
+        android:layout_below="@+id/textBusStopsTitle"
+        android:id="@+id/viewDivider2"
+        android:layout_marginBottom="8dp"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/viewDivider2"
+        android:layout_marginBottom="8dp"
+        android:id="@+id/listNearest"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"/>
+
+</RelativeLayout>
