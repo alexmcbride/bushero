@@ -14,12 +14,14 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -124,11 +126,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mListNearest = (ListView)include.findViewById(R.id.listNearest);
         mListFavorites = (ListView)include.findViewById(R.id.listFavourites);
         mButtonFavourite = (ImageButton)include.findViewById(R.id.buttonFavourite);
-
-        // set toolbar
-        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-//        getActionBar().set
 
         // Handle listview item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -853,6 +850,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mProgressDialog.dismiss();
         }
         mProgressDialog = null;
+    }
+
+    public void onClickOpenDrawer(View view) {
+        // open the navigation drawer.
+        mLayoutDrawer.openDrawer(GravityCompat.START);
     }
 
     private class ChangeLocationAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
