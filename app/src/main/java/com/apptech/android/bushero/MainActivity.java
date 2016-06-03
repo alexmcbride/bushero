@@ -19,9 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +35,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -171,32 +168,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         // handle drawer slide event.
+
         mLayoutDrawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            private boolean mIsClosed = true;
+
             @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                // create favourites list if it doesn't exist.
-                if (mFavouritesAdapter == null) {
-                    List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
-                    mFavouritesAdapter = new FavouritesAdapter(MainActivity.this, favourites);
-                    mListFavorites.setAdapter(mFavouritesAdapter);
-                }
+            public void onDrawerSlide(View drawerView, float slideOffset) {}
 
-                // switch colour of favourite star depending on whether currently viewed bus stop is
-                // a favourite.
-                BusStop stop = getCurrentBusStop();
-                if (mFavouriteStop != null || (stop != null && isFavouriteStop(stop.getAtcoCode()))) {
-                    setAddFavouriteButtonBright();
-                }
-                else {
-                    setAddFavouriteButtonDark();
-                }
-
-                updateNearestStopsList();
+            @Override public void onDrawerOpened(View drawerView) {
+                mIsClosed = false;
             }
 
-            @Override public void onDrawerOpened(View drawerView) {}
-            @Override public void onDrawerClosed(View drawerView) {}
-            @Override public void onDrawerStateChanged(int newState) {}
+            @Override public void onDrawerClosed(View drawerView) {
+                mIsClosed = true;
+            }
+
+            @Override public void onDrawerStateChanged(int newState) {
+                if (mIsClosed && newState == DrawerLayout.STATE_DRAGGING) {
+                    updateDrawerState();
+                }
+            }
         });
 
         // Setup database and transport API client.
@@ -254,6 +245,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Start update handler, this in a timer that elapses every so often and checks to see if
         // a live bus update is needed.
         mUpdateHandler = new Handler();
+    }
+
+    private void updateDrawerState() {
+        Log.d(LOG_TAG, "drawer opening");
+
+        // create favourites list if it doesn't exist.
+        if (mFavouritesAdapter == null) {
+            List<FavouriteStop> favourites = mBusDatabase.getFavouriteStops();
+            mFavouritesAdapter = new FavouritesAdapter(MainActivity.this, favourites);
+            mListFavorites.setAdapter(mFavouritesAdapter);
+        }
+
+        // switch colour of favourite star depending on whether currently viewed bus stop is
+        // a favourite.
+        BusStop stop = getCurrentBusStop();
+        if (mFavouriteStop != null || (stop != null && isFavouriteStop(stop.getAtcoCode()))) {
+            setAddFavouriteButtonBright();
+        } else {
+            setAddFavouriteButtonDark();
+        }
+
+        updateNearestStopsList();
     }
 
     private BusStop getCurrentBusStop() {
@@ -854,6 +867,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void onClickOpenDrawer(View view) {
         // open the navigation drawer.
+        updateDrawerState();
         mLayoutDrawer.openDrawer(GravityCompat.START);
     }
 
