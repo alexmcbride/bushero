@@ -379,6 +379,8 @@ class TransportClient {
                 String name = reader.nextName();
 
                 switch (name) {
+                    case "error":
+                        return null;
                     case "request_time":
                         reader.skipValue();
                         route.setRequestTime(new Date());

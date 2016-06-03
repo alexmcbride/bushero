@@ -203,15 +203,24 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
 
         @Override
         protected void onPostExecute(BusRoute result) {
-            Log.d(LOG_TAG, "async task post");
-            Log.d(LOG_TAG, "caching route in database");
+            try {
+                Log.d(LOG_TAG, "async task post");
+                Log.d(LOG_TAG, "caching route in database");
 
-            mBusDatabase.addBusRoute(result, mBus.getId());
-            mBusRoute = result;
+                if (result == null) {
+                    Log.d(LOG_TAG, "BusRoute result was null");
+                    Toast.makeText(RouteActivity.this, "No bus route found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            updateBusRoute();
+                mBusDatabase.addBusRoute(result, mBus.getId());
+                mBusRoute = result;
 
-            dismissProgressDialog();
+                updateBusRoute();
+            }
+            finally {
+                dismissProgressDialog();
+            }
         }
     }
 
