@@ -19,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String SAVED_LAST_LATITUDE = "LAST_LATITUDE";
     private static final String SAVED_FAVOURITE_STOP_ID = "FAVOURITE_STOP_ID";
     private static final int REQUEST_PERMISSION_FINE_LOCATION = 1;
+    private static final int REQUEST_CHOOSE_LOCATION = 2;
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE = 45; // metres
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
@@ -168,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         // handle drawer slide event.
-
         mLayoutDrawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             private boolean mIsClosed = true;
 
@@ -523,8 +524,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onLocationChanged(Location location) {
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
+        onLocationChanged(location.getLongitude(), location.getLatitude());
+    }
+
+    private void onLocationChanged(double longitude, double latitude) {
         Log.d(LOG_TAG, "location changed (" + latitude + "," + longitude + ")");
 
         // If we have no nearest bus stops object then we better make one.
@@ -869,6 +872,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // open the navigation drawer.
         updateDrawerState();
         mLayoutDrawer.openDrawer(GravityCompat.START);
+    }
+
+    public void onClickChooseLocation(View view) {
+        Intent intent = MapActivity.newIntent(this, /* choose location = */ true);
+        startActivityForResult(intent, REQUEST_CHOOSE_LOCATION);
+        mLayoutDrawer.closeDrawers();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_CHOOSE_LOCATION:
+                    Log.d(LOG_TAG, "changing location by request");
+
+                    double longitude = MapActivity.getResultLongitude(data);
+                    double latitude = MapActivity.getResultLatitude(data);
+                    onLocationChanged(longitude, latitude);
+                    break;
+            }
+        }
     }
 
     private class ChangeLocationAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {

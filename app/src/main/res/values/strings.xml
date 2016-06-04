@@ -26,4 +26,5 @@
     <string name="favourite_content_description">Favourite</string>
     <string name="text_recent_routes">Recent Routes</string>
     <string name="btn_change_location">Change Location</string>
+    <string name="title_activity_choose_location">Map</string>
 </resources>

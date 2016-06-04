@@ -6,7 +6,8 @@
     android:id="@+id/relativeDrawer"
     android:layout_gravity="start"
     android:background="@color/colorVeryLightGrey"
-    android:padding="8dp">
+    android:padding="8dp"
+    tools:context=".MainActivity">
 
     <TextView
         android:layout_width="wrap_content"
@@ -18,7 +19,7 @@
         android:id="@+id/textFavouritesTitle"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="8dp"
-        tools:ignore="RelativeOverlap"/>
+        tools:ignore="RelativeOverlap" />
 
     <ImageButton
         android:layout_width="32dp"
@@ -47,7 +48,8 @@
         android:layout_below="@+id/viewDivider"
         android:id="@+id/listFavourites"
         android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"/>
+        android:dividerHeight="0dp"
+        tools:layout_height="128dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -68,13 +70,29 @@
         android:id="@+id/viewDivider2"
         android:layout_marginBottom="8dp"/>
 
+    <ImageButton
+        android:id="@+id/buttonChooseLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_map_location"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@null"
+        android:padding="8dp"
+        android:onClick="onClickChooseLocation"/>
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/viewDivider2"
+        android:layout_above="@id/buttonChooseLocation"
         android:layout_marginBottom="8dp"
         android:id="@+id/listNearest"
         android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"/>
+        android:dividerHeight="0dp"
+        tools:layout_height="128dp"/>
 
 </RelativeLayout>
