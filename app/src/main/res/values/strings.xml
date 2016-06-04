@@ -27,4 +27,8 @@
     <string name="text_recent_routes">Recent Routes</string>
     <string name="btn_change_location">Change Location</string>
     <string name="title_activity_choose_location">Map</string>
+    <string name="text_choose_location">Choose Location</string>
+    <string name="marker_new_location">New Location</string>
+    <string name="marker_you">You</string>
+    <string name="error_permissions">Error: permissions</string>
 </resources>

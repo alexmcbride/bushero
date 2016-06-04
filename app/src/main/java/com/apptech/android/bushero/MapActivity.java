@@ -57,7 +57,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         if (mChooseLocation) {
             Log.d(LOG_TAG, "choosing location");
 
-            textBusStopName.setText("Choose Location");
+            textBusStopName.setText(R.string.text_choose_location);
         }
         else {
             // get bus stop from database.
@@ -92,7 +92,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                         mLocationMarker = new MarkerOptions()
                                 .position(latLng)
                                 .draggable(true)
-                                .title("new Location");
+                                .title(getString(R.string.marker_new_location));
                         googleMap.addMarker(mLocationMarker);
                     }
                 }
@@ -145,7 +145,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 googleMap.addMarker(new MarkerOptions()
                         .position(myPosition)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .title("You"));
+                        .title(getString(R.string.marker_you)));
 
                 // if not looking at bus stop then move camera to user
                 if (mChooseLocation) {
@@ -154,7 +154,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             }
         }
         catch (SecurityException e) {
-            Toast.makeText(this, "Error: permissions", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_permissions, Toast.LENGTH_SHORT).show();
         }
     }
 
