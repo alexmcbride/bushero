@@ -29,7 +29,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -100,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private FavouriteStop mFavouriteStop;
     private double mPendingLongitude;
     private double mPendingLatitude;
+    private boolean mIsShowingUpdateMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -422,7 +422,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public void run() {
             try {
                 // Check if we can perform an update.
-                if (mIsChangingLocation || mIsUpdatingLiveBuses || mNearestBusStops == null || mLiveBuses == null) {
+                if (mIsChangingLocation || mIsUpdatingLiveBuses || mIsShowingUpdateMessage) {
+                    return;
+                }
+
+                // check if our data objects are populated.
+                if (mNearestBusStops == null || mLiveBuses == null) {
                     return;
                 }
 
@@ -457,9 +462,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             }
 
                             new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
+                            mIsShowingUpdateMessage = false;
+                        }
+                    });
+                    snackbar.setCallback(new Snackbar.Callback() {
+                        @Override
+                        public void onDismissed(Snackbar snackbar, int event) {
+                            super.onDismissed(snackbar, event);
+                            mIsShowingUpdateMessage = false;
                         }
                     });
                     snackbar.show();
+                    mIsShowingUpdateMessage = true;
                 }
             }
             finally {
@@ -681,7 +695,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // check user definietly wants to remove it...
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("Favourites")
-                .setMessage("Remove favourite stop?")
+                .setMessage("Remove '" + favourite.getName() + "'?")
                 .setNegativeButton("No", null);
 
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -1142,11 +1156,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
 
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
+            TextView textBearing = (TextView)convertView.findViewById(R.id.textBearing);
             TextView textDistance = (TextView)convertView.findViewById(R.id.textDistance);
             ImageView imageLocation = (ImageView)convertView.findViewById(R.id.imageLocation);
             ImageView imageFavourite = (ImageView)convertView.findViewById(R.id.imageFavourite);
 
             textName.setText(stop.getName());
+            textBearing.setText(getString(R.string.bearing_brackets, stop.getBearing()));
             textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
             // set location icon visible if this is the current bus stop.
