@@ -31,4 +31,10 @@
     <string name="marker_new_location">New Location</string>
     <string name="marker_you">You</string>
     <string name="error_permissions">Error: permissions</string>
+    <string name="about_title">About</string>
+    <string name="about_content_description">About</string>
+    <string name="choose_location_content_description">Choose Location</string>
+    <string name="about_text">Bus Hero was created as a project by students at City of Glasgow College in Glasgow, Scotland</string>
+    <string name="text_about_icon_title">Icons</string>
+    <string name="text_about_icon_message">Icons made by Freepik from www.flaticon.com</string>
 </resources>

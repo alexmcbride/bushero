@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AboutActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorDarkBlue"
+        android:padding="16dp"
+        android:id="@+id/toolbar">
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_back"
+            android:background="@null"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:onClick="onClickButtonBack"
+            android:contentDescription="@string/ic_back_content_description"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorVeryLightGrey"
+            style="@style/Base.TextAppearance.AppCompat.Large"
+            android:text="@string/about_title"
+            android:id="@+id/textBusStopName"
+            android:textStyle="bold"/>
+    </android.support.v7.widget.Toolbar>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/about_text"
+        android:id="@+id/textCreated"
+        android:layout_below="@id/toolbar"
+        android:layout_margin="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/text_about_icon_title"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_below="@id/textCreated"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:id="@+id/textIconTitle"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/text_about_icon_message"
+        android:layout_below="@id/textIconTitle"
+        android:layout_margin="16dp"/>
+</RelativeLayout>

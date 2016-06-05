@@ -15,7 +15,7 @@ import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
  */
 class BusDbHelper extends SQLiteOpenHelper {
     private static final String DB_FILE = "busHero.db";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     public BusDbHelper(Context context) {
         super(context, DB_FILE, null, DB_VERSION);

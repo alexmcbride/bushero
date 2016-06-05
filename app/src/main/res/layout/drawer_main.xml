@@ -82,7 +82,18 @@
         android:layout_marginEnd="8dp"
         android:background="@null"
         android:padding="8dp"
-        android:onClick="onClickChooseLocation"/>
+        android:onClick="onClickChooseLocation"
+        android:contentDescription="@string/choose_location_content_description"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_about"
+        android:background="@null"
+        android:onClick="onClickAbout"
+        android:contentDescription="@string/about_content_description"/>
 
     <ListView
         android:layout_width="match_parent"

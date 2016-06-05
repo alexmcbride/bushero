@@ -19,7 +19,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
-    private RelativeLayout mRelativeDrawer;
     private TextView mTextName;
     private TextView mTextDistance;
     private TextView mTextBearing;
@@ -118,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mButtonFurther = (ImageButton) findViewById(R.id.buttonFurther);
         mLinearChangeLocation = (LinearLayout) findViewById(R.id.buttonLocation);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
-        mRelativeDrawer = (RelativeLayout)findViewById(R.id.relativeDrawer);
         mListBuses = (ListView) findViewById(R.id.listBuses);
 
         View include = findViewById(R.id.drawerMain);
@@ -486,6 +483,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return now > departureTime;
     }
 
+    private boolean areAllBusesOverdue() {
+        for (Bus bus : mLiveBuses.getBuses()) {
+            if (!isBusDepartureDue(bus.getDepartureTime())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public void onConnected(Bundle bundle) {
         // Once connected to google play services start receiving location updates.
@@ -780,6 +786,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Check we have a bus stop already in our live buses.
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
+                // if the next bus is overdue then updates buses
                 if (isBusDepartureDue(bus.getDepartureTime())) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
                     new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
@@ -893,6 +900,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     break;
             }
         }
+    }
+
+    public void onClickAbout(View view) {
+        Intent intent = AboutActivity.newIntent(this);
+        startActivity(intent);
     }
 
     private class ChangeLocationAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
