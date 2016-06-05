@@ -37,4 +37,5 @@
     <string name="about_text">Bus Hero was created as a project by students at City of Glasgow College in Glasgow, Scotland</string>
     <string name="text_about_icon_title">Icons</string>
     <string name="text_about_icon_message">Icons made by Freepik from www.flaticon.com</string>
+    <string name="bearing_brackets" formatted="false">(%s)</string>
 </resources>

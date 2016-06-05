@@ -15,11 +15,24 @@
         android:layout_marginRight="2dp"
         android:layout_marginEnd="2dp"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textBearing"
+        style="@style/Base.TextAppearance.AppCompat.Small"
+        android:textColor="@color/colorVeryDarkGrey"
+        tools:text="(NW)"
+        android:layout_toRightOf="@id/textName"
+        android:layout_toEndOf="@id/textName"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginEnd="2dp"/>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/textName"
-        android:layout_toEndOf="@id/textName"
+        android:layout_toRightOf="@id/textBearing"
+        android:layout_toEndOf="@id/textBearing"
         android:layout_marginBottom="16dp">
         <ImageView
             android:layout_width="16dp"
