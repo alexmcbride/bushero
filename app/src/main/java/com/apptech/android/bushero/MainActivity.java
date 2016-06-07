@@ -910,7 +910,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                     double longitude = MapActivity.getResultLongitude(data);
                     double latitude = MapActivity.getResultLatitude(data);
-                    onLocationChanged(longitude, latitude);
+                    new ChangeLocationAsyncTask().execute(longitude, latitude);
                     break;
             }
         }

@@ -1,12 +1,14 @@
 package com.apptech.android.bushero;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -80,36 +82,35 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
-        // if choosing location hook up click listener, otherwise plant bus stop marker
-        if (mChooseLocation) {
-            // handle marker being placed on map
-            googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                @Override
-                public void onMapClick(LatLng latLng) {
-                    if (mLocationMarker == null) {
-                        updateResult(latLng.longitude, latLng.latitude);
+        // add event you location drag event.
+        googleMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override public void onMarkerDragStart(Marker marker) {}
+            @Override public void onMarkerDrag(Marker marker) {}
 
-                        mLocationMarker = new MarkerOptions()
-                                .position(latLng)
-                                .draggable(true)
-                                .title(getString(R.string.marker_new_location));
-                        googleMap.addMarker(mLocationMarker);
+            @Override
+            public void onMarkerDragEnd(final Marker marker) {
+                // show yes/no dialog.
+                AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this)
+                        .setTitle("Change Location")
+                        .setMessage("Change to this location?")
+                        .setNegativeButton("No", null);
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        LatLng position = marker.getPosition();
+                        updateResult(position.longitude, position.latitude);
+                        Log.d(LOG_TAG, "dragged marker: " + position.latitude + "," + position.longitude);
+                        finish();
                     }
-                }
-            });
+                });
 
-            // handle marker being moved
-            googleMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-                @Override public void onMarkerDragStart(Marker marker) {}
-                @Override public void onMarkerDrag(Marker marker) {}
-                @Override
-                public void onMarkerDragEnd(Marker marker) {
-                    LatLng position = marker.getPosition();
-                    updateResult(position.longitude, position.latitude);
-                }
-            });
-        }
-        else {
+                builder.show();
+            }
+        });
+
+        // if not choosing location place a bus stop marker
+        if (!mChooseLocation) {
             double longitude;
             double latitude;
             String name;
@@ -130,26 +131,28 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
         }
 
+        // show your location on the map, which can be dragged if choosing location.
         try {
-            // show your location on map.
             googleMap.setMyLocationEnabled(true);
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             Criteria criteria = new Criteria();
             String provider = locationManager.getBestProvider(criteria, true);
+
             Location youLocation = locationManager.getLastKnownLocation(provider);
             if (youLocation != null) {
-                double youLatitude = youLocation.getLatitude();
-                double youLongitude = youLocation.getLongitude();
-
-                LatLng myPosition = new LatLng(youLatitude, youLongitude);
+                LatLng myPosition = new LatLng(youLocation.getLatitude(), youLocation.getLongitude());
                 googleMap.addMarker(new MarkerOptions()
                         .position(myPosition)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .title(getString(R.string.marker_you)));
+                        .title(getString(R.string.marker_you))
+                        .draggable(mChooseLocation));
+                Log.d(LOG_TAG, "adding \"you\" marker");
 
                 // if not looking at bus stop then move camera to user
                 if (mChooseLocation) {
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPosition, MAP_ZOOM_LEVEL));
+
+                    Log.d(LOG_TAG, "moving camera to marker");
                 }
             }
         }
