@@ -9,13 +9,14 @@ import com.apptech.android.bushero.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.BusDbSchema.BusTable;
 import com.apptech.android.bushero.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
+import com.apptech.android.bushero.BusDbSchema.OperatorColorTable;
 
 /**
  * Class to help take care of common DB operations. This creates and updates our DB automatically.
  */
 class BusDbHelper extends SQLiteOpenHelper {
     private static final String DB_FILE = "busHero.db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
 
     public BusDbHelper(Context context) {
         super(context, DB_FILE, null, DB_VERSION);
@@ -95,6 +96,11 @@ class BusDbHelper extends SQLiteOpenHelper {
                 FavouriteStopTable.Columns.INDICATOR + " TEXT," +
                 FavouriteStopTable.Columns.LONGITUDE + " REAL," +
                 FavouriteStopTable.Columns.LATITUDE + " REAL" +
+                ");");
+
+        db.execSQL("CREATE TABLE " + OperatorColorTable.NAME + "(" +
+                OperatorColorTable.Columns.NAME + " TEXT PRIMARY KEY," +
+                OperatorColorTable.Columns.COLOR + " TEXT" +
                 ");");
     }
 

@@ -93,4 +93,13 @@ class BusDbSchema {
             public static final String LATITUDE = "latitude";
         }
     }
+
+    public class OperatorColorTable {
+        public static final String NAME = "OperatorTable";
+
+        public class Columns {
+            public static final String NAME = "name";
+            public static final String COLOR = "color";
+        }
+    }
 }

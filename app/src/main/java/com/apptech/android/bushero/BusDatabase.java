@@ -7,14 +7,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
 
 import com.apptech.android.bushero.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.BusDbSchema.BusStopTable;
 import com.apptech.android.bushero.BusDbSchema.BusTable;
 import com.apptech.android.bushero.BusDbSchema.NearestBusStopsTable;
 import com.apptech.android.bushero.BusDbSchema.FavouriteStopTable;
+import com.apptech.android.bushero.BusDbSchema.OperatorColorTable;
 
 /**
  * Class to represent the database.
@@ -672,6 +675,49 @@ public class BusDatabase {
         }
     }
 
+    public List<OperatorColor> getOperatorColors() {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getReadableDatabase();
+            cursor = db.query(OperatorColorTable.NAME, null, null, null, null, null, null);
+
+            List<OperatorColor> colors = new ArrayList<>();
+            if (cursor.moveToFirst()) {
+                BusCursorWrapper busCursor = new BusCursorWrapper(cursor);
+                do {
+                    OperatorColor color = busCursor.getOperatorColor();
+                    colors.add(color);
+                }
+                while (cursor.moveToNext());
+            }
+            return colors;
+        }
+        finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public void addOperatorColor(OperatorColor color) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+            db.insert(OperatorColorTable.NAME, null, getContentValues(color));
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     // Converts object into ContentValues so it can be inserted into DB.
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();
@@ -745,6 +791,13 @@ public class BusDatabase {
         values.put(FavouriteStopTable.Columns.INDICATOR, stop.getIndicator());
         values.put(FavouriteStopTable.Columns.LONGITUDE, stop.getLongitude());
         values.put(FavouriteStopTable.Columns.LATITUDE, stop.getLatitude());
+        return values;
+    }
+
+    private ContentValues getContentValues(OperatorColor color) {
+        ContentValues values = new ContentValues();
+        values.put(OperatorColorTable.Columns.NAME, color.getName());
+        values.put(OperatorColorTable.Columns.COLOR, color.getColor());
         return values;
     }
 }

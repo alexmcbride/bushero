@@ -100,4 +100,11 @@ class BusCursorWrapper extends CursorWrapper {
         stop.setLatitude(getDouble(getColumnIndex(FavouriteStopTable.Columns.LATITUDE)));
         return stop;
     }
+
+    public OperatorColor getOperatorColor() {
+        OperatorColor color = new OperatorColor();
+        color.setName(getString(getColumnIndex(BusDbSchema.OperatorColorTable.Columns.NAME)));
+        color.setColor(getString(getColumnIndex(BusDbSchema.OperatorColorTable.Columns.COLOR)));
+        return color;
+    }
 }

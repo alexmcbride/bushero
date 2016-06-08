@@ -179,7 +179,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
     public void onClickButtonBack(View view) {
-        // TODO: there should be a better way of doing this, look more into ToolBar stuff.
         finish();
     }
 
