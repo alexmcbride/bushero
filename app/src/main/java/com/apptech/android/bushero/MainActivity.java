@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ImageButton mButtonFavourite;
     private ListView mListNearest;
     private ListView mListFavorites;
+    private Snackbar mUpdateSnackbar;
 
     // Variables
     private BusDatabase mBusDatabase;
@@ -446,8 +447,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // Check departure time was in the past.
                 if (isBusDepartureDue(bus.getDepartureTime())) {
                     // Ask user if they want to update live bus info.
-                    Snackbar snackbar = Snackbar.make(mLayoutDrawer, R.string.snackbar_live_message, Snackbar.LENGTH_INDEFINITE);
-                    snackbar.setAction(R.string.snackbar_live_update, new View.OnClickListener() {
+                    mUpdateSnackbar = Snackbar.make(mLayoutDrawer, R.string.snackbar_live_message, Snackbar.LENGTH_INDEFINITE);
+                    mUpdateSnackbar.setAction(R.string.snackbar_live_update, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             String atcoCode;
@@ -471,14 +472,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             mIsShowingUpdateMessage = false;
                         }
                     });
-                    snackbar.setCallback(new Snackbar.Callback() {
+                    mUpdateSnackbar.setCallback(new Snackbar.Callback() {
                         @Override
                         public void onDismissed(Snackbar snackbar, int event) {
                             super.onDismissed(snackbar, event);
                             mIsShowingUpdateMessage = false;
                         }
                     });
-                    snackbar.show();
+                    mUpdateSnackbar.show();
                     mIsShowingUpdateMessage = true;
                 }
             }
@@ -628,6 +629,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             int visibility = mLinearChangeLocation.getVisibility();
             updateBusStop();
             mLinearChangeLocation.setVisibility(visibility);
+
+            if (mIsShowingUpdateMessage) {
+                mUpdateSnackbar.dismiss();
+            }
         }
     }
 
@@ -640,6 +645,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             int visibility = mLinearChangeLocation.getVisibility();
             updateBusStop();
             mLinearChangeLocation.setVisibility(visibility);
+
+            if (mIsShowingUpdateMessage) {
+                mUpdateSnackbar.dismiss();
+            }
         }
     }
 
@@ -823,6 +832,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // set update location button to be invisible
         mLinearChangeLocation.setVisibility(View.GONE);
+
+        // hide update message if it's showing.
+        if (mIsShowingUpdateMessage) {
+            mUpdateSnackbar.dismiss();
+        }
     }
 
     private void updateBuses() {
@@ -907,11 +921,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLayoutDrawer.closeDrawers();
     }
 
-    private String getOperatorColor(String operator) {
+    private OperatorColor getOperatorColor(String operator) {
         // find existing color for operator
         for (OperatorColor color : mOperatorColors) {
             if (color.getName().equals(operator)) {
-                return color.getColor();
+                return color;
             }
         }
 
@@ -923,7 +937,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mBusDatabase.addOperatorColor(color);
         mOperatorColors.add(color);
 
-        return color.getColor();
+        return color;
     }
 
     private String getUnusedColor() {
@@ -1139,6 +1153,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // Bus adapter for converting a bus object into a view for the ListView.
     private class BusAdapter extends ArrayAdapter<Bus> {
+        private OperatorColor mLastColor;
+        private int mLastResource;
+
         public BusAdapter(Context context, List<Bus> buses) {
             super(context, -1);
 
@@ -1177,9 +1194,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
 
             // get operator color.
-            String color = getOperatorColor(bus.getOperator());
-            int resource = getResources().getIdentifier(color, "drawable", getPackageName());
-            imageBus.setImageResource(resource);
+            if (mLastColor == null || !mLastColor.getName().equals(bus.getOperator())) {
+                mLastColor = getOperatorColor(bus.getOperator());
+                mLastResource = getResources().getIdentifier(mLastColor.getColor(), "drawable", getPackageName());
+            }
+
+            imageBus.setImageResource(mLastResource);
 
             return convertView;
         }
