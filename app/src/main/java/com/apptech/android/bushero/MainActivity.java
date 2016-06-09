@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mPendingLatitude;
     private boolean mIsShowingUpdateMessage;
     private List<OperatorColor> mOperatorColors;
+    private SwipeRefreshLayout mSwipeContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +123,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLinearChangeLocation = (LinearLayout) findViewById(R.id.buttonLocation);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mListBuses = (ListView) findViewById(R.id.listBuses);
+        mSwipeContainer = (SwipeRefreshLayout)findViewById(R.id.swipeContainer);
 
+        // navigation drawer
         View include = findViewById(R.id.drawerMain);
         mListNearest = (ListView)include.findViewById(R.id.listNearest);
         mListFavorites = (ListView)include.findViewById(R.id.listFavourites);
@@ -189,6 +193,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (mIsClosed && newState == DrawerLayout.STATE_DRAGGING) {
                     updateDrawerState();
                 }
+            }
+        });
+
+        // handle swipe refresh
+        mSwipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                performBusUpdate();
             }
         });
 
@@ -451,24 +463,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     mUpdateSnackbar.setAction(R.string.snackbar_live_update, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            String atcoCode;
-                            long busStopId = 0;
-                            long favouriteStopId = 0;
-
-                            BusStop busStop = getCurrentBusStop();
-                            if (mFavouriteStop != null) {
-                                atcoCode = mFavouriteStop.getAtcoCode();
-                                favouriteStopId = mFavouriteStop.getId();
-                            }
-                            else if (busStop != null) {
-                                atcoCode = busStop.getAtcoCode();
-                                busStopId = busStop.getId();
-                            }
-                            else {
-                                return;
-                            }
-
-                            new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
+                            performBusUpdate();
                             mIsShowingUpdateMessage = false;
                         }
                     });
@@ -490,6 +485,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
     };
+
+    private void performBusUpdate() {
+        // get bus stop info
+        String atcoCode;
+        long busStopId = 0;
+        long favouriteStopId = 0;
+        BusStop busStop = getCurrentBusStop();
+        if (mFavouriteStop != null) {
+            atcoCode = mFavouriteStop.getAtcoCode();
+            favouriteStopId = mFavouriteStop.getId();
+        }
+        else if (busStop != null) {
+            atcoCode = busStop.getAtcoCode();
+            busStopId = busStop.getId();
+        }
+        else {
+            return;
+        }
+
+        // start async task
+        new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
+    }
 
     private boolean isBusDepartureDue(long departureTime) {
         departureTime += DEPARTURE_TIME_ADJUSTMENT;
@@ -941,20 +958,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private String getUnusedColor() {
+        // loop through operator colours looking for one that's unused.
         for (String color : OPERATOR_COLORS) {
             boolean found = false;
 
             for (OperatorColor operator : mOperatorColors) {
                 if (operator.getColor().equals(color)) {
                     found = true;
+                    break;
                 }
             }
 
+            // if not found then return that colour
             if (!found) {
                 return color;
             }
         }
 
+        // all colours used so return default.
         return DEFAULT_OPERATOR_COLOR;
     }
 
@@ -1083,6 +1104,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             finally {
                 // No longer updating.
                 mIsChangingLocation = false;
+                dismissProgressDialog();
             }
         }
     }
@@ -1103,7 +1125,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public void onPreExecute() {
             // Let app know we are updating the live buses, so no one else tries to.
             mIsUpdatingLiveBuses = true;
-            showProgressDialog(R.string.progress_finding_live_buses);
+//            showProgressDialog(R.string.progress_finding_live_buses);
+            mSwipeContainer.setRefreshing(true);
         }
 
         @Override
@@ -1146,7 +1169,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             finally {
                 // Dismiss progress dialog and set flag as not updating.
                 mIsUpdatingLiveBuses = false;
-                dismissProgressDialog();
+                mSwipeContainer.setRefreshing(false);
+//                dismissProgressDialog();
             }
         }
     }
@@ -1280,15 +1304,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
             textName.setText(stop.getName());
-
-            // show or hide icon indicating this favourite stop is currently being viewed.
-//            ImageView imageLocation = (ImageView)convertView.findViewById(R.id.imageLocation);
-//            if (mFavouriteStop != null && mFavouriteStop.getAtcoCode().equals(stop.getAtcoCode())){
-//                imageLocation.setVisibility(View.VISIBLE);
-//            }
-//            else {
-//                imageLocation.setVisibility(View.GONE);
-//            }
 
             // We use tag to store the position so we can retrieve it later.
             ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);

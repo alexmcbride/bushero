@@ -15,16 +15,17 @@
         tools:ignore="RelativeOverlap"
         android:layout_centerVertical="true"/>
 
-    <!--<ImageView-->
-        <!--android:layout_width="16dp"-->
-        <!--android:layout_height="16dp"-->
-        <!--android:src="@drawable/ic_location_dark"-->
-        <!--android:background="@null"-->
-        <!--android:scaleType="fitCenter"-->
-        <!--android:id="@+id/imageLocation"-->
-        <!--android:layout_toRightOf="@id/textName"-->
-        <!--android:layout_toEndOf="@id/textName"-->
-        <!--android:contentDescription="@string/favourite_content_description"/>-->
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_location_dark"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:id="@+id/imageLocation"
+        android:layout_toRightOf="@id/textName"
+        android:layout_toEndOf="@id/textName"
+        android:contentDescription="@string/favourite_content_description"
+        android:layout_centerVertical="true"/>
 
     <ImageButton
         android:layout_width="24dp"

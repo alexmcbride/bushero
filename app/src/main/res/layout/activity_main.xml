@@ -82,14 +82,19 @@
                     android:onClick="onClickShowMap"/>
             </RelativeLayout>
 
-        <ListView
+        <android.support.v4.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/listBuses"
             android:layout_below="@+id/relativeMain"
             android:layout_above="@+id/relativeButtons"
-            android:dividerHeight="0dp"
-            android:divider="@android:color/transparent"/>
+            android:id="@+id/swipeContainer">
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/listBuses"
+                android:dividerHeight="0dp"
+                android:divider="@android:color/transparent"/>
+        </android.support.v4.widget.SwipeRefreshLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
