@@ -35,7 +35,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private BusStop mBusStop;
     private FavouriteStop mFavouriteStop;
     private boolean mChooseLocation;
-    private MarkerOptions mLocationMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
