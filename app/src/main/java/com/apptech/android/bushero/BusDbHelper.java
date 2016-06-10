@@ -16,7 +16,7 @@ import com.apptech.android.bushero.BusDbSchema.OperatorColorTable;
  */
 class BusDbHelper extends SQLiteOpenHelper {
     private static final String DB_FILE = "busHero.db";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
 
     public BusDbHelper(Context context) {
         super(context, DB_FILE, null, DB_VERSION);
@@ -112,6 +112,7 @@ class BusDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + BusStopTable.NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + BusTable.NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + FavouriteStopTable.NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + OperatorColorTable.NAME + ";");
         onCreate(db);
     }
 }

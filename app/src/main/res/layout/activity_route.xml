@@ -27,7 +27,12 @@
                 android:contentDescription="@string/btn_back_text"
                 android:id="@+id/btnRouteBack"
                 android:onClick="onClickBack"
-                android:padding="8dp"/>
+                android:paddingTop="8dp"
+                android:paddingRight="10dp"
+                android:paddingEnd="10dp"
+                android:paddingLeft="0dp"
+                android:paddingStart="0dp"
+                android:paddingBottom="8dp"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"
