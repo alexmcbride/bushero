@@ -11,7 +11,8 @@
         style="@style/Base.TextAppearance.AppCompat.Small"
         android:textColor="@color/colorVeryDarkGrey"
         tools:text="Bus Stop Name"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginRight="2dp"
         android:layout_marginEnd="2dp"/>
 
@@ -24,7 +25,8 @@
         tools:text="(NW)"
         android:layout_toRightOf="@id/textName"
         android:layout_toEndOf="@id/textName"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginRight="2dp"
         android:layout_marginEnd="2dp"/>
 
@@ -33,7 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/textBearing"
         android:layout_toEndOf="@id/textBearing"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp">
         <ImageView
             android:layout_width="16dp"
             android:layout_height="16dp"
@@ -60,7 +63,8 @@
         style="@style/Base.TextAppearance.AppCompat.Small"
         android:textColor="@color/colorVeryDarkGrey"
         tools:ignore="RelativeOverlap"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
         tools:text="0m"/>
 
 </RelativeLayout>

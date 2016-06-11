@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ListView mListBuses;
     private ImageButton mButtonNearer;
     private ImageButton mButtonFurther;
-    private LinearLayout mLinearChangeLocation;
+    private LinearLayout mButtonLocation;
     private ProgressDialog mProgressDialog;
     private ImageButton mButtonFavourite;
     private ListView mListNearest;
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextLocationDistance = (TextView)findViewById(R.id.textLocationDistance);
         mButtonNearer = (ImageButton) findViewById(R.id.buttonNearer);
         mButtonFurther = (ImageButton) findViewById(R.id.buttonFurther);
-        mLinearChangeLocation = (LinearLayout) findViewById(R.id.buttonLocation);
+        mButtonLocation = (LinearLayout) findViewById(R.id.buttonLocation);
         mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
         mListBuses = (ListView) findViewById(R.id.listBuses);
         mSwipeContainer = (SwipeRefreshLayout)findViewById(R.id.swipeContainer);
@@ -586,7 +586,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // show change location button, store pending location for later.
                 mPendingLongitude = longitude;
                 mPendingLatitude = latitude;
-                mLinearChangeLocation.setVisibility(View.VISIBLE);
+                mButtonLocation.setVisibility(View.VISIBLE);
                 mTextLocationDistance.setText(getString(R.string.text_nearest_distance, (int)distance));
             }
         }
@@ -643,9 +643,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mCurrentPosition--;
 
             // remember and reset visibility after update.
-            int visibility = mLinearChangeLocation.getVisibility();
+            int visibility = mButtonLocation.getVisibility();
             updateBusStop();
-            mLinearChangeLocation.setVisibility(visibility);
+            mButtonLocation.setVisibility(visibility);
 
             if (mIsShowingUpdateMessage) {
                 mUpdateSnackbar.dismiss();
@@ -659,9 +659,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mCurrentPosition++;
 
             // remember and reset visibility after update.
-            int visibility = mLinearChangeLocation.getVisibility();
+            int visibility = mButtonLocation.getVisibility();
             updateBusStop();
-            mLinearChangeLocation.setVisibility(visibility);
+            mButtonLocation.setVisibility(visibility);
 
             if (mIsShowingUpdateMessage) {
                 mUpdateSnackbar.dismiss();
@@ -758,7 +758,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void loadFavouriteStop(FavouriteStop favourite) {
         // remember location button state.
-        int visibility = mLinearChangeLocation.getVisibility();
+        int visibility = mButtonLocation.getVisibility();
 
         // check if stop is in current nearest stops list, if so reselect it.
         boolean refreshNeeded = true;
@@ -779,7 +779,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // restore location button state.
-        mLinearChangeLocation.setVisibility(visibility);
+        mButtonLocation.setVisibility(visibility);
     }
 
     private void updateBusStop() {
@@ -848,7 +848,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // set update location button to be invisible
-        mLinearChangeLocation.setVisibility(View.GONE);
+        mButtonLocation.setVisibility(View.GONE);
 
         // hide update message if it's showing.
         if (mIsShowingUpdateMessage) {
@@ -1023,6 +1023,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
 
             mIsChangingLocation = true;
+
+            // disable buttons so the user cannot click them by accident.
+            mButtonFurther.setEnabled(false);
+            mButtonNearer.setEnabled(false);
+            mButtonLocation.setEnabled(false);
         }
 
         @Override
@@ -1087,7 +1092,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // do this before updateBusStop.
                 mLastLongitude = mLongitude;
                 mLastLatitude = mLatitude;
-                mLinearChangeLocation.setVisibility(View.GONE);
+                mButtonLocation.setVisibility(View.GONE);
 
                 // Get nearest bus stop if there are any stops returned.
                 if (mNearestBusStops.getStopCount() == 0) {
@@ -1105,6 +1110,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // No longer updating.
                 mIsChangingLocation = false;
                 dismissProgressDialog();
+
+                // re-enable buttons
+                mButtonFurther.setEnabled(true);
+                mButtonNearer.setEnabled(true);
+                mButtonLocation.setEnabled(true);
             }
         }
     }
@@ -1127,6 +1137,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mIsUpdatingLiveBuses = true;
 //            showProgressDialog(R.string.progress_finding_live_buses);
             mSwipeContainer.setRefreshing(true);
+
+            // disable buttons so the user cannot click them by accident.
+            mButtonFurther.setEnabled(false);
+            mButtonNearer.setEnabled(false);
+            mButtonLocation.setEnabled(false);
         }
 
         @Override
@@ -1170,7 +1185,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // Dismiss progress dialog and set flag as not updating.
                 mIsUpdatingLiveBuses = false;
                 mSwipeContainer.setRefreshing(false);
-//                dismissProgressDialog();
+
+                // re-enable buttons once finished operation.
+                mButtonFurther.setEnabled(true);
+                mButtonNearer.setEnabled(true);
+                mButtonLocation.setEnabled(true);
             }
         }
     }

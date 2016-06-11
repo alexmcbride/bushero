@@ -18,7 +18,7 @@
         android:textColor="@color/colorVeryDarkGrey"
         android:id="@+id/textFavouritesTitle"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="4dp"
         tools:ignore="RelativeOverlap" />
 
     <ImageButton
@@ -61,7 +61,8 @@
         android:textColor="@color/colorVeryDarkGrey"
         android:layout_below="@+id/listFavourites"
         android:id="@+id/textBusStopsTitle"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"/>
 
     <View
         android:layout_width="match_parent"
