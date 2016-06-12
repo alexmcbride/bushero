@@ -18,7 +18,7 @@ public class Bus {
     private String mSource;
     private String mDate;
     private long mDepartureTime;
-    private boolean isOverdue;
+    private boolean isExpired;
 
     public Bus() {
 
@@ -136,11 +136,11 @@ public class Bus {
         mDepartureTime = departureTime;
     }
 
-    public boolean isOverdue() {
-        return isOverdue;
+    public boolean isExpired() {
+        return isExpired;
     }
 
-    public void setOverdue(boolean overdue) {
-        isOverdue = overdue;
+    public void setExpired(boolean expired) {
+        isExpired = expired;
     }
 }

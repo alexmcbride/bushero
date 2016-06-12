@@ -83,7 +83,7 @@ class BusCursorWrapper extends CursorWrapper {
         bus.setSource(getString(getColumnIndex(BusTable.Columns.SOURCE)));
         bus.setDate(getString(getColumnIndex(BusTable.Columns.DATE)));
         bus.setDepartureTime(getLong(getColumnIndex(BusTable.Columns.DEPARTURE_TIME)));
-        bus.setOverdue(getInt(getColumnIndex(BusTable.Columns.IS_OVERDUE)) == 1);
+        bus.setExpired(getInt(getColumnIndex(BusTable.Columns.IS_EXPIRED)) == 1);
         return bus;
     }
 

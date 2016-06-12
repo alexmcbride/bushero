@@ -7,10 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Date;
-import java.util.Map;
 
 import com.apptech.android.bushero.BusDbSchema.BusRouteTable;
 import com.apptech.android.bushero.BusDbSchema.BusStopTable;
@@ -23,6 +21,7 @@ import com.apptech.android.bushero.BusDbSchema.OperatorColorTable;
  * Class to represent the database.
  */
 public class BusDatabase {
+    private static final String LOG_TAG = "BusDatabase";
     private final Context mContext;
 
     public BusDatabase(Context context) {
@@ -202,10 +201,53 @@ public class BusDatabase {
                 bus.setBusStopId(busStopId); // tell which stop the bus belongs to.
                 bus.setFavouriteStopId(favouriteStopId);
 
-                // insert bus into db
-                ContentValues values = getContentValues(bus);
-                long id = db.insert(BusTable.NAME, null, values);
-                bus.setId(id); // set new row id for this bus.
+                String selection = "((" + BusTable.Columns.OPERATOR + "=? "
+                        + "AND " + BusTable.Columns.LINE + "=? "
+                        + "AND " + BusTable.Columns.DATE + "=? "
+                        + "AND " + BusTable.Columns.BEST_DEPARTURE_ESTIMATE + "=?"
+                        + "))";
+
+                String[] columns = {BusTable.Columns.ID,
+                        BusTable.Columns.IS_EXPIRED,
+                        BusTable.Columns.BUS_STOP_ID,
+                        BusTable.Columns.FAVOURITE_STOP_ID};
+
+                // figure out if this bus already in database from previous results
+                Cursor cursor = db.query(BusTable.NAME,
+                        columns,
+                        selection,
+                        new String[]{bus.getOperator(), bus.getLine(), bus.getDate(), bus.getBestDepartureEstimate()},
+                        null, null, null);
+
+                if (cursor.moveToFirst()) {
+                    Log.d(LOG_TAG, "found existing bus: " + bus.getLine());
+
+                    // update bus object with existing data.
+                    long id = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.ID));
+                    boolean expired = cursor.getInt(cursor.getColumnIndex(BusTable.Columns.IS_EXPIRED)) == 1;
+                    long stopId = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.BUS_STOP_ID));
+                    long favouriteId = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.FAVOURITE_STOP_ID));
+
+                    bus.setId(id);
+                    bus.setExpired(expired);
+
+                    if (stopId != busStopId || favouriteId != favouriteStopId) {
+                        Log.d(LOG_TAG, "updating bus (" + bus.getLine() + ") stop and favourite");
+
+                        db.update(BusTable.NAME,
+                                getContentValues(bus),
+                                "((" + BusTable.Columns.ID + "=?))",
+                                new String[]{String.valueOf(id)});
+                    }
+                }
+                else {
+                    Log.d(LOG_TAG, "inserted new bus (" + bus.getLine() + ") in database");
+
+                    // insert bus into db
+                    ContentValues values = getContentValues(bus);
+                    long id = db.insert(BusTable.NAME, null, values);
+                    bus.setId(id); // set new row id for this bus.
+                }
             }
         }
         finally {
@@ -718,6 +760,26 @@ public class BusDatabase {
         }
     }
 
+    public void clearAllStopData() {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            db.execSQL("DELETE * FROM " + BusStopTable.NAME + ";");
+            db.execSQL("DELETE * FROM " + BusRouteTable.NAME + ";");
+            db.execSQL("DELETE * FROM " + BusTable.NAME + ";");
+            db.execSQL("DELETE * FROM " + BusStopTable.NAME + ";");
+            db.execSQL("DELETE * FROM " + NearestBusStopsTable.NAME + ";");
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     // Converts object into ContentValues so it can be inserted into DB.
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();
@@ -777,7 +839,7 @@ public class BusDatabase {
         values.put(BusTable.Columns.SOURCE, bus.getSource());
         values.put(BusTable.Columns.DATE, bus.getDate());
         values.put(BusTable.Columns.DEPARTURE_TIME, bus.getDepartureTime());
-        values.put(BusTable.Columns.IS_OVERDUE, bus.isOverdue() ? 1 : 0);
+        values.put(BusTable.Columns.IS_EXPIRED, bus.isExpired() ? 1 : 0);
         return values;
     }
 

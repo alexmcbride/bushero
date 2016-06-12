@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,6 +29,7 @@ class TransportClient {
     private static final String APP_ID = "a10284ad";
     private static final int MAX_BUSES = 16;
     private static final int MAX_BUS_STOPS = 10;
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-mm-dd");;
 
     public TransportClient() {}
 
@@ -240,6 +242,8 @@ class TransportClient {
         String name;
         reader.beginArray();
 
+        String today = DATE_FORMATTER.format(new Date());
+
         while (reader.hasNext()) {
             reader.beginObject();
             Bus bus = new Bus();
@@ -295,6 +299,11 @@ class TransportClient {
                         reader.skipValue();
                         break;
                 }
+            }
+
+            // if date is today then transport api doesn't supply a date, so for consistance lets add one
+            if (bus.getDate() == null) {
+                bus.setDate(today);
             }
 
             buses.addBus(bus);
