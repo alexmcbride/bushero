@@ -16,7 +16,7 @@ import com.apptech.android.bushero.BusDbSchema.OperatorColorTable;
  */
 class BusDbHelper extends SQLiteOpenHelper {
     private static final String DB_FILE = "busHero.db";
-    private static final int DB_VERSION = 8;
+    private static final int DB_VERSION = 9;
 
     public BusDbHelper(Context context) {
         super(context, DB_FILE, null, DB_VERSION);
@@ -102,6 +102,8 @@ class BusDbHelper extends SQLiteOpenHelper {
                 OperatorColorTable.Columns.NAME + " TEXT PRIMARY KEY," +
                 OperatorColorTable.Columns.COLOR + " TEXT" +
                 ");");
+
+
     }
 
     @Override
