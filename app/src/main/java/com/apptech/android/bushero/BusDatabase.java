@@ -220,7 +220,7 @@ public class BusDatabase {
                         null, null, null);
 
                 if (cursor.moveToFirst()) {
-                    Log.d(LOG_TAG, "found existing bus: " + bus.getLine());
+//                    Log.d(LOG_TAG, "found existing bus: " + bus.getLine());
 
                     // update bus object with existing data.
                     long id = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.ID));
@@ -241,7 +241,7 @@ public class BusDatabase {
                     }
                 }
                 else {
-                    Log.d(LOG_TAG, "inserted new bus (" + bus.getLine() + ") in database");
+//                    Log.d(LOG_TAG, "inserted new bus (" + bus.getLine() + ") in database");
 
                     // insert bus into db
                     ContentValues values = getContentValues(bus);
@@ -249,70 +249,6 @@ public class BusDatabase {
                     bus.setId(id); // set new row id for this bus.
                 }
             }
-        }
-        finally {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
-    public LiveBuses addLiveBuses2(LiveBuses live, long busStopId, long favouriteStopId) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            LiveBuses buses = new LiveBuses();
-            for (Bus bus : live.getBuses()) {
-                Cursor cursor = null;
-                try {
-                    if (bus.getDate() == null) {
-                        String[] selectionArgs = {String.valueOf(busStopId),
-                                String.valueOf(favouriteStopId),
-                                bus.getOperator(),
-                                bus.getLine(),
-                                bus.getBestDepartureEstimate()};
-
-                        cursor = db.query(BusTable.NAME,
-                                null,
-                                "busStopId=? AND favouriteStopId=? AND operator=? AND line=? AND time=?",
-                                selectionArgs,
-                                null, null, null);
-                    }
-                    else {
-                        String[] selectionArgs = {String.valueOf(busStopId),
-                                String.valueOf(favouriteStopId),
-                                bus.getOperator(),
-                                bus.getLine(),
-                                bus.getBestDepartureEstimate(),
-                                bus.getDate()};
-
-                        cursor = db.query(BusTable.NAME,
-                                null,
-                                "busStopId=? AND favouriteStopId=? AND operator=? AND line=? AND time=? AND date=?",
-                                selectionArgs,
-                                null, null, null);
-                    }
-
-                    if (cursor.moveToFirst()) {
-                        BusCursorWrapper cursorWrapper = new BusCursorWrapper(cursor);
-                        buses.addBus(cursorWrapper.getBus());
-                    }
-                    else {
-                        long id = db.insert(BusTable.NAME, null, getContentValues(bus));
-                        bus.setId(id);
-                        buses.addBus(bus);
-                    }
-                }
-                finally {
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }
-            }
-            return buses;
         }
         finally {
             if (db != null) db.close();
@@ -768,11 +704,11 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
-            db.execSQL("DELETE * FROM " + BusStopTable.NAME + ";");
-            db.execSQL("DELETE * FROM " + BusRouteTable.NAME + ";");
-            db.execSQL("DELETE * FROM " + BusTable.NAME + ";");
-            db.execSQL("DELETE * FROM " + BusStopTable.NAME + ";");
-            db.execSQL("DELETE * FROM " + NearestBusStopsTable.NAME + ";");
+            db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
+            db.execSQL("DELETE FROM " + BusRouteTable.NAME + ";");
+            db.execSQL("DELETE FROM " + BusTable.NAME + ";");
+            db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
+            db.execSQL("DELETE FROM " + NearestBusStopsTable.NAME + ";");
         }
         finally {
             if (db != null) db.close();
