@@ -54,33 +54,31 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // get widgets
         TextView textBusStopName = (TextView) findViewById(R.id.textBusStopName);
 
+        // get bus stop from database.
+        Log.d(LOG_TAG, "fetching bus stop or favourite from database");
+        BusDatabase busDatabase = new BusDatabase(this);
+        String name = null;
+        if (favouriteStopId > 0) {
+            mFavouriteStop = busDatabase.getFavouriteStop(favouriteStopId);
+            name = mFavouriteStop.getName();
+        } else if (busStopId > 0) {
+            mBusStop = busDatabase.getBusStop(busStopId);
+            name = mBusStop.getName();
+        }
+
         // check if we're showing a location or chosing one.
         if (mChooseLocation) {
-            Log.d(LOG_TAG, "choosing location");
-
             textBusStopName.setText(R.string.text_choose_location);
         }
         else {
-            // get bus stop from database.
-            Log.d(LOG_TAG, "fetching bus stop from database for id " + busStopId);
-            BusDatabase busDatabase = new BusDatabase(this);
-
-            String name = null;
-            if (favouriteStopId > 0) {
-                mFavouriteStop = busDatabase.getFavouriteStop(favouriteStopId);
-                name = mFavouriteStop.getName();
-            } else if (busStopId > 0) {
-                mBusStop = busDatabase.getBusStop(busStopId);
-                name = mBusStop.getName();
-            }
-
-            // update UI
             textBusStopName.setText(name);
         }
     }
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
+        Log.d(LOG_TAG, "map ready");
+
         // add event you location drag event.
         googleMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override public void onMarkerDragStart(Marker marker) {}
@@ -108,29 +106,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             }
         });
 
-        // if not choosing location place a bus stop marker
-        if (!mChooseLocation) {
-            double longitude;
-            double latitude;
-            String name;
-            if (mFavouriteStop == null) {
-                longitude = mBusStop.getLongitude();
-                latitude = mBusStop.getLatitude();
-                name = mBusStop.getName();
-            } else {
-                longitude = mFavouriteStop.getLongitude();
-                latitude = mFavouriteStop.getLatitude();
-                name = mFavouriteStop.getName();
-            }
-
-            // show bus stop location
-            // Add marker to map, move camera to that location and zoom.
-            LatLng busStopLocation = new LatLng(latitude, longitude);
-            googleMap.addMarker(new MarkerOptions().position(busStopLocation).title(name));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
+        double longitude;
+        double latitude;
+        String name;
+        if (mFavouriteStop == null) {
+            longitude = mBusStop.getLongitude();
+            latitude = mBusStop.getLatitude();
+            name = mBusStop.getName();
+        } else {
+            longitude = mFavouriteStop.getLongitude();
+            latitude = mFavouriteStop.getLatitude();
+            name = mFavouriteStop.getName();
         }
 
-        // show your location on the map, which can be dragged if choosing location.
+        LatLng busStopLocation = new LatLng(latitude, longitude);
+        MarkerOptions marker = new MarkerOptions().position(busStopLocation).title(name);
+
+        if (mChooseLocation) {
+            marker.draggable(true);
+        }
+
+        // show bus stop location
+        // Add marker to map, move camera to that location and zoom.
+        googleMap.addMarker(marker);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(busStopLocation, MAP_ZOOM_LEVEL));
+
+        // add you marker
         try {
             googleMap.setMyLocationEnabled(true);
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -143,16 +144,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 googleMap.addMarker(new MarkerOptions()
                         .position(myPosition)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .title(getString(R.string.marker_you))
-                        .draggable(mChooseLocation));
-                Log.d(LOG_TAG, "adding \"you\" marker");
-
-                // if not looking at bus stop then move camera to user
-                if (mChooseLocation) {
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPosition, MAP_ZOOM_LEVEL));
-
-                    Log.d(LOG_TAG, "moving camera to marker");
-                }
+                        .title(getString(R.string.marker_you)));
             }
         }
         catch (SecurityException e) {
@@ -188,8 +180,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         return intent;
     }
 
-    public static Intent newIntent(Context context, boolean chooseLocation) {
-        Intent intent = new Intent(context, MapActivity.class);
+    public static Intent newIntent(Context context, boolean chooseLocation, long busStopId, long favouriteStopId) {
+        Intent intent = newIntent(context, busStopId, favouriteStopId);
         intent.putExtra(KEY_CHOOSE_LOCATION, chooseLocation);
         return intent;
     }

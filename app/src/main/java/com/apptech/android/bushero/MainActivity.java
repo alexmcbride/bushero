@@ -957,9 +957,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void onClickChooseLocation(View view) {
-        Intent intent = MapActivity.newIntent(this, /* choose location = */ true);
-        startActivityForResult(intent, REQUEST_CHOOSE_LOCATION);
         mLayoutDrawer.closeDrawers();
+
+        if (mNearestBusStops != null) {
+            long busStopId = 0;
+            long favouriteStopId = 0;
+
+            if (mFavouriteStop == null) {
+                busStopId = getCurrentBusStop().getId();
+            }
+            else {
+                favouriteStopId = mFavouriteStop.getId();
+            }
+
+            Intent intent = MapActivity.newIntent(this, true, busStopId, favouriteStopId);
+            startActivityForResult(intent, REQUEST_CHOOSE_LOCATION);
+        }
     }
 
     private OperatorColor getOperatorColor(String operator) {
