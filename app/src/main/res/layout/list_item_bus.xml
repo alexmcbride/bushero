@@ -13,7 +13,7 @@
         android:contentDescription="@string/ic_bus_content_description"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:layout_marginRight="4dp"
         android:layout_marginEnd="4dp"/>
 
@@ -26,7 +26,7 @@
         android:id="@+id/textLine"
         android:layout_toRightOf="@+id/imageBus"
         android:layout_toEndOf="@+id/imageBus"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:layout_marginRight="4dp"
         android:layout_marginEnd="4dp"/>
 
@@ -39,7 +39,7 @@
         android:textColor="@color/colorVeryDarkGrey"
         android:layout_toRightOf="@+id/textLine"
         android:layout_toEndOf="@id/textLine"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:layout_marginRight="4dp"
         android:layout_marginEnd="4dp"/>
 
@@ -52,7 +52,7 @@
         android:id="@+id/textDestination"
         android:layout_toRightOf="@+id/textHyphen"
         android:layout_toEndOf="@+id/textHyphen"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginTop="2dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -63,7 +63,8 @@
         android:layout_toEndOf="@+id/imageBus"
         android:layout_below="@id/textLine"
         android:layout_marginRight="8dp"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="2dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -74,7 +75,8 @@
         android:layout_toEndOf="@+id/textTime"
         android:layout_below="@id/textLine"
         android:layout_marginRight="8dp"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="2dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -83,5 +85,6 @@
         android:id="@+id/textOperator"
         android:layout_toRightOf="@+id/textDirection"
         android:layout_toEndOf="@+id/textDirection"
-        android:layout_below="@id/textLine"/>
+        android:layout_below="@id/textLine"
+        android:layout_marginBottom="2dp"/>
 </RelativeLayout>

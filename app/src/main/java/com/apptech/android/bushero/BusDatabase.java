@@ -197,6 +197,9 @@ public class BusDatabase {
             db = helper.getWritableDatabase();
 
             // loop through each bus adding it to the database.
+            int updates = 0;
+            int inserts = 0;
+
             for (Bus bus : live.getBuses()) {
                 bus.setBusStopId(busStopId); // tell which stop the bus belongs to.
                 bus.setFavouriteStopId(favouriteStopId);
@@ -220,8 +223,6 @@ public class BusDatabase {
                         null, null, null);
 
                 if (cursor.moveToFirst()) {
-//                    Log.d(LOG_TAG, "found existing bus: " + bus.getLine());
-
                     // update bus object with existing data.
                     long id = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.ID));
                     boolean expired = cursor.getInt(cursor.getColumnIndex(BusTable.Columns.IS_EXPIRED)) == 1;
@@ -230,6 +231,8 @@ public class BusDatabase {
 
                     bus.setId(id);
                     bus.setExpired(expired);
+
+                    updates++;
 
                     if (stopId != busStopId || favouriteId != favouriteStopId) {
                         Log.d(LOG_TAG, "updating bus (" + bus.getLine() + ") stop and favourite");
@@ -241,14 +244,16 @@ public class BusDatabase {
                     }
                 }
                 else {
-//                    Log.d(LOG_TAG, "inserted new bus (" + bus.getLine() + ") in database");
-
                     // insert bus into db
                     ContentValues values = getContentValues(bus);
                     long id = db.insert(BusTable.NAME, null, values);
                     bus.setId(id); // set new row id for this bus.
+
+                    inserts++;
                 }
             }
+
+            Log.d(LOG_TAG, "finished live buses db update (" + inserts + " inserts and " + updates + " updates)");
         }
         finally {
             if (db != null) db.close();
