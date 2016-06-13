@@ -126,6 +126,8 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             Log.d(LOG_TAG, "updating route from DB");
             updateBusRoute();
         }
+
+        // TODO: clear routes if final stop in past?
     }
 
     @Override

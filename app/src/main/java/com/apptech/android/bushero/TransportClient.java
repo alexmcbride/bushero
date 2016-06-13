@@ -29,7 +29,7 @@ class TransportClient {
     private static final String APP_ID = "a10284ad";
     private static final int MAX_BUSES = 16;
     private static final int MAX_BUS_STOPS = 10;
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-mm-dd");;
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");;
 
     public TransportClient() {}
 

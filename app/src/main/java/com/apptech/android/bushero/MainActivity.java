@@ -840,6 +840,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mTextLocality.setText(mFavouriteStop.getLocality());
         }
 
+        // prune any expired buses, so as not to mess everything up
+        Log.d(LOG_TAG, "clearing expired buses");
+        mBusDatabase.clearExpiredBuses(busStopId, favouriteStopId);
+
         // Get live buses from database, if nothing in DB then load from transport API.
         mLiveBuses = mBusDatabase.getLiveBuses(busStopId, favouriteStopId);
         if (mLiveBuses == null) {
@@ -1098,6 +1102,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             try {
                 // Delete current stop and its buses.
+                // TODO: do we need to do this?
                 if (mNearestBusStops != null) {
                     Log.d(LOG_TAG, "deleting bus stop data from database");
                     mBusDatabase.clearAllStopData();

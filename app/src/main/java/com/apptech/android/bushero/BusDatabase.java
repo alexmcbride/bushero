@@ -721,6 +721,31 @@ public class BusDatabase {
         }
     }
 
+    public boolean clearExpiredBuses(long busStopId, long favouriteStopId) {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            String where = "((" + BusTable.Columns.DEPARTURE_TIME + "<? " +
+                    "AND " + BusTable.Columns.BUS_STOP_ID +"=? " +
+                    "AND " + BusTable.Columns.FAVOURITE_STOP_ID + "=?))";
+
+            long now = System.currentTimeMillis();
+            String[] args = {String.valueOf(now), String.valueOf(busStopId), String.valueOf(favouriteStopId)};
+
+            int rows = db.delete(BusTable.NAME, where, args);
+
+            return rows > 0;
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     // Converts object into ContentValues so it can be inserted into DB.
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();
