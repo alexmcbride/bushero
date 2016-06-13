@@ -353,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Stop checking for live bus updates.
         stopUpdateTask();
 
-        savePreferences(); // Yup.
+        savePreferences();
     }
 
     @Override
@@ -375,15 +375,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         startUpdateTask();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        // When stopping make sure preferences are saved.
-        savePreferences();
-    }
-
     private void savePreferences() {
+        Log.d(LOG_TAG, "saving preferences");
+
         // Save preferences. These are things we want preserved so they are available the next time
         // the user starts up the app.
         SharedPreferences preference = getPreferences(0);
@@ -840,9 +834,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mTextLocality.setText(mFavouriteStop.getLocality());
         }
 
-        // prune any expired buses, so as not to mess everything up
-        Log.d(LOG_TAG, "clearing expired buses");
-        mBusDatabase.clearExpiredBuses(busStopId, favouriteStopId);
+        // get rid of old buses.
+        Log.d(LOG_TAG, "expiring old buses");
+        mBusDatabase.expireOldBuses();
 
         // Get live buses from database, if nothing in DB then load from transport API.
         mLiveBuses = mBusDatabase.getLiveBuses(busStopId, favouriteStopId);
@@ -855,11 +849,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         else {
             // Check we have a bus stop already in our live buses.
             Bus bus = getNonExpiredBus();
-            if (bus == null) {
-                // if there are no buses then change location.
-//                changeLocation();
-            }
-            else {
+            if (bus != null) {
                 // if the next bus is overdue then updates buses
                 if (isBusDepartureDue(bus)) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
@@ -1112,6 +1102,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(LOG_TAG, "adding nearest stops to cache.");
                 mBusDatabase.addNearestBusStops(result);
                 mNearestBusStops = result;
+
+                // save preferneces here so we KNOW nearest stops id is saved, cause that's been
+                // really annoying me recently that the emulator doesn't seem to remember it.
+                savePreferences();
 
                 // Reset current position. If we have an existing stop then reselect it, otherwise
                 // just select the first stop.

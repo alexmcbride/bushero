@@ -746,6 +746,27 @@ public class BusDatabase {
         }
     }
 
+    public void expireOldBuses() {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            String sql = "UPDATE " + BusTable.NAME +
+                    " SET " + BusTable.Columns.IS_EXPIRED + "=1" +
+                    " WHERE " + BusTable.Columns.DEPARTURE_TIME + "<?;";
+
+            long now = System.currentTimeMillis();
+            db.execSQL(sql, new String[]{String.valueOf(now)});
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
     // Converts object into ContentValues so it can be inserted into DB.
     private ContentValues getContentValues(NearestBusStops nearest) {
         ContentValues values = new ContentValues();

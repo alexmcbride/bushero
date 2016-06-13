@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/imageBus"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
         android:src="@drawable/ic_bus_black"
         android:contentDescription="@string/ic_bus_content_description"
         android:layout_marginLeft="8dp"
