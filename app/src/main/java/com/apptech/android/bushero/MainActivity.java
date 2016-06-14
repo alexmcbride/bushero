@@ -41,6 +41,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -382,7 +383,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // the user starts up the app.
         SharedPreferences preference = getPreferences(0);
         SharedPreferences.Editor editor = preference.edit();
-        editor.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? -1 : mNearestBusStops.getId());
+        long id = mNearestBusStops == null ? -1 : mNearestBusStops.getId();
+        editor.putLong(SAVED_NEAREST_STOP_ID, id);
         editor.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
         editor.putLong(SAVED_FAVOURITE_STOP_ID, mFavouriteStop == null ? -1 : mFavouriteStop.getId());
 
@@ -391,6 +393,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         editor.putLong(SAVED_LAST_LATITUDE, Double.doubleToLongBits(mLastLatitude));
 
         editor.apply();
+
+        Log.d(LOG_TAG, "preferences nearest id: " + id);
     }
 
     @Override
@@ -398,11 +402,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Save state data so activity can be recreated. This is used to save state while the
         // activity is running, for instance if the user rotates the device the activity is
         // destroyed and recreated, this lets us save state to be restored later.
-        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, mNearestBusStops == null ? -1 : mNearestBusStops.getId());
+        long id =  mNearestBusStops == null ? -1 : mNearestBusStops.getId();
+        savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, id);
         savedInstanceState.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
         savedInstanceState.putDouble(SAVED_LAST_LATITUDE, mLastLatitude);
         savedInstanceState.putLong(SAVED_FAVOURITE_STOP_ID, mFavouriteStop == null ? -1 : mFavouriteStop.getId());
+
+        Log.d(LOG_TAG, "save nearest id: " + id);
     }
 
     private void startUpdateTask() {
@@ -835,8 +842,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         // get rid of old buses.
-        Log.d(LOG_TAG, "expiring old buses");
-        mBusDatabase.expireOldBuses();
+        DateFormat fmt = SimpleDateFormat.getDateTimeInstance();
+        long time = System.currentTimeMillis() - DEPARTURE_TIME_ADJUSTMENT;
+        Log.d(LOG_TAG, "deleting buses older than: " + fmt.format(new Date(time)));
+        mBusDatabase.deleteOldBuses(time);
 
         // Get live buses from database, if nothing in DB then load from transport API.
         mLiveBuses = mBusDatabase.getLiveBuses(busStopId, favouriteStopId);

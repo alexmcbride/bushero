@@ -60,11 +60,11 @@ public class BusDatabase {
                     // If the nearest parent doesn't exist yet, create it and populate it with data
                     // from DB.
                     if (nearest == null) {
-                        nearest = busCursor.getNearestBusStops();
+                        nearest = busCursor.getNearestBusStopsJoin();
                     }
 
                     // Get individual stops and add them to nearest bus stop object.
-                    nearest.addStop(busCursor.getBusStop());
+                    nearest.addStop(busCursor.getBusStopJoin());
                 }
                 while (cursor.moveToNext()); // keep looping until there are no records left
 
@@ -746,7 +746,7 @@ public class BusDatabase {
         }
     }
 
-    public void expireOldBuses() {
+    public void deleteOldBuses(long time) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
 
@@ -754,12 +754,9 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
-            String sql = "UPDATE " + BusTable.NAME +
-                    " SET " + BusTable.Columns.IS_EXPIRED + "=1" +
-                    " WHERE " + BusTable.Columns.DEPARTURE_TIME + "<?;";
-
-            long now = System.currentTimeMillis();
-            db.execSQL(sql, new String[]{String.valueOf(now)});
+            db.delete(BusTable.NAME,
+                    "((" + BusTable.Columns.DEPARTURE_TIME + "<?))",
+                    new String[]{String.valueOf(time)});
         }
         finally {
             if (db != null) db.close();

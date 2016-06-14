@@ -1,5 +1,7 @@
 package com.apptech.android.bushero;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,8 @@ public class NearestBusStops {
     }
 
     public void setId(long id) {
+        Log.d("NearestBusStops", "setting id: " + id);
+
         mId = id;
     }
 

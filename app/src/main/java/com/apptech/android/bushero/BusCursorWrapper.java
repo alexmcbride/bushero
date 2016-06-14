@@ -37,6 +37,22 @@ class BusCursorWrapper extends CursorWrapper {
         return nearest;
     }
 
+    public NearestBusStops getNearestBusStopsJoin() {
+        NearestBusStops nearest = new NearestBusStops();
+        nearest.setId(getLong(0));
+        nearest.setMinLongitude(getDouble(1));
+        nearest.setMinLatitude(getDouble(2));
+        nearest.setMaxLongitude(getDouble(3));
+        nearest.setMaxLatitude(getDouble(4));
+        nearest.setSearchLongitude(getDouble(5));
+        nearest.setSearchLatitude(getDouble(6));
+        nearest.setPage(getInt(7));
+        nearest.setReturnedPerPage(getInt(8));
+        nearest.setTotal(getInt(9));
+        nearest.setRequestTime(getString(10));
+        return nearest;
+    }
+
     public BusRoute getBusRoute() {
         BusRoute route = new BusRoute();
         route.setId(getLong(getColumnIndex(BusRouteTable.Columns.ID)));
@@ -64,6 +80,25 @@ class BusCursorWrapper extends CursorWrapper {
         stop.setLatitude(getDouble(getColumnIndex(BusStopTable.Columns.LATITUDE)));
         stop.setDistance(getInt(getColumnIndex(BusStopTable.Columns.DISTANCE)));
         stop.setTime(getString(getColumnIndex(BusStopTable.Columns.TIME)));
+        return stop;
+    }
+
+    public BusStop getBusStopJoin() {
+        BusStop stop = new BusStop();
+        stop.setId(getLong(11));
+        stop.setNearestBusStopsId(getLong(12));
+        stop.setBusRouteId(getLong(13));
+        stop.setAtcoCode(getString(14));
+        stop.setSmsCode(getString(15));
+        stop.setName(getString(16));
+        stop.setMode(getString(17));
+        stop.setBearing(getString(18));
+        stop.setLocality(getString(19));
+        stop.setIndicator(getString(20));
+        stop.setLongitude(getDouble(21));
+        stop.setLatitude(getDouble(22));
+        stop.setDistance(getInt(23));
+        stop.setTime(getString(24));
         return stop;
     }
 
