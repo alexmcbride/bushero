@@ -197,63 +197,15 @@ public class BusDatabase {
             db = helper.getWritableDatabase();
 
             // loop through each bus adding it to the database.
-            int updates = 0;
-            int inserts = 0;
-
             for (Bus bus : live.getBuses()) {
                 bus.setBusStopId(busStopId); // tell which stop the bus belongs to.
                 bus.setFavouriteStopId(favouriteStopId);
 
-                String selection = "((" + BusTable.Columns.OPERATOR + "=? "
-                        + "AND " + BusTable.Columns.LINE + "=? "
-                        + "AND " + BusTable.Columns.DATE + "=? "
-                        + "AND " + BusTable.Columns.BEST_DEPARTURE_ESTIMATE + "=?"
-                        + "))";
-
-                String[] columns = {BusTable.Columns.ID,
-                        BusTable.Columns.IS_EXPIRED,
-                        BusTable.Columns.BUS_STOP_ID,
-                        BusTable.Columns.FAVOURITE_STOP_ID};
-
-                // figure out if this bus already in database from previous results
-                Cursor cursor = db.query(BusTable.NAME,
-                        columns,
-                        selection,
-                        new String[]{bus.getOperator(), bus.getLine(), bus.getDate(), bus.getBestDepartureEstimate()},
-                        null, null, null);
-
-                if (cursor.moveToFirst()) {
-                    // update bus object with existing data.
-                    long id = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.ID));
-                    boolean expired = cursor.getInt(cursor.getColumnIndex(BusTable.Columns.IS_EXPIRED)) == 1;
-                    long stopId = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.BUS_STOP_ID));
-                    long favouriteId = cursor.getLong(cursor.getColumnIndex(BusTable.Columns.FAVOURITE_STOP_ID));
-
-                    bus.setId(id);
-                    bus.setExpired(expired);
-
-                    updates++;
-
-                    if (stopId != busStopId || favouriteId != favouriteStopId) {
-                        Log.d(LOG_TAG, "updating bus (" + bus.getLine() + ") stop and favourite");
-
-                        db.update(BusTable.NAME,
-                                getContentValues(bus),
-                                "((" + BusTable.Columns.ID + "=?))",
-                                new String[]{String.valueOf(id)});
-                    }
-                }
-                else {
-                    // insert bus into db
-                    ContentValues values = getContentValues(bus);
-                    long id = db.insert(BusTable.NAME, null, values);
-                    bus.setId(id); // set new row id for this bus.
-
-                    inserts++;
-                }
+                // insert bus into db
+                ContentValues values = getContentValues(bus);
+                long id = db.insert(BusTable.NAME, null, values);
+                bus.setId(id); // set new row id for this bus.
             }
-
-            Log.d(LOG_TAG, "finished live buses db update (" + inserts + " inserts and " + updates + " updates)");
         }
         finally {
             if (db != null) db.close();

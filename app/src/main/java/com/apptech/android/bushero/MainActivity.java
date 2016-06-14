@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
     private static final String[] OPERATOR_COLORS = {"ic_bus_purple", "ic_bus_red", "ic_bus_green", "ic_bus_blue", "ic_bus_yellow"};
     private static final String DEFAULT_OPERATOR_COLOR = "ic_bus_black";
-    private static final int DEPARTURE_TIME_ADJUSTMENT = 60 * 1000; // ms.
+    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 * 1000) + 10; // ms.
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
@@ -447,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
 
                 // get the next due bus.
-                Bus bus = getNonExpiredBus();
+                Bus bus = mLiveBuses.getBus(0);
                 if (bus == null) {
                     return;
                 }
@@ -490,20 +490,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         new ChangeLocationAsyncTask().execute(longitude, latitude);
     }
 
-    private Bus getNonExpiredBus() {
-        if (mLiveBuses == null) {
-            return null;
-        }
-
-        for (Bus bus : mLiveBuses.getBuses()) {
-            if (!bus.isExpired()) {
-                return bus;
-            }
-        }
-
-        return null;
-    }
-
     private void performBusUpdate() {
         // get bus stop info
         String atcoCode;
@@ -537,17 +523,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Date b = new Date(departureTime);
         Log.d(LOG_TAG, "Checking bus expired - now: " + fmt.format(a) + " departure: " + fmt.format(b));
 
-        // Check departure time was in the past.
-        if (now > departureTime) {
-            Log.d(LOG_TAG, "updating bus (" + bus.getLine() + ") as expired");
-
-            bus.setExpired(true);
-            mBusDatabase.updateBus(bus);
-
-            return true;
-        }
-
-        return false;
+        return now > departureTime;
     }
 
     @Override
@@ -841,12 +817,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mTextLocality.setText(mFavouriteStop.getLocality());
         }
 
-        // get rid of old buses.
-        DateFormat fmt = SimpleDateFormat.getDateTimeInstance();
-        long time = System.currentTimeMillis() - DEPARTURE_TIME_ADJUSTMENT;
-        Log.d(LOG_TAG, "deleting buses older than: " + fmt.format(new Date(time)));
-        mBusDatabase.deleteOldBuses(time);
-
         // Get live buses from database, if nothing in DB then load from transport API.
         mLiveBuses = mBusDatabase.getLiveBuses(busStopId, favouriteStopId);
         if (mLiveBuses == null) {
@@ -857,7 +827,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         else {
             // Check we have a bus stop already in our live buses.
-            Bus bus = getNonExpiredBus();
+            Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
                 // if the next bus is overdue then updates buses
                 if (isBusDepartureDue(bus)) {
@@ -1212,6 +1182,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                     return;
                 }
+
+                // Remove current buses for this stop.
+                Log.d(LOG_TAG, "removing old live buses from database");
+                mBusDatabase.removeLiveBuses(mBusStopId, mFavouriteStopId);
 
                 // Add newly downloaded buses to database
                 Log.d(LOG_TAG, "caching live buses in database");
