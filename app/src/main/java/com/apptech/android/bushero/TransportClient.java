@@ -411,44 +411,30 @@ class TransportClient {
                                 BusStop stop = new BusStop();
                                 while (reader.hasNext()) {
                                     name = reader.nextName();
+
+                                    if (reader.peek() == JsonToken.NULL) {
+                                        reader.skipValue();
+                                        continue;
+                                    }
+
                                     switch (name) {
                                         case "time":
-                                            if (reader.peek() == JsonToken.NULL) {
-                                                reader.skipValue();
-                                            }
-                                            else {
-                                                stop.setTime(reader.nextString());
-                                            }
+                                            stop.setTime(reader.nextString());
                                             break;
                                         case "atcocode":
                                             stop.setAtcoCode(reader.nextString());
                                             break;
                                         case "smscode":
-                                            if (reader.peek() == JsonToken.NULL) {
-                                                reader.skipValue();
-                                            }
-                                            else {
-                                                stop.setSmsCode(reader.nextString());
-                                            }
+                                            stop.setSmsCode(reader.nextString());
                                             break;
                                         case "name":
                                             stop.setName(reader.nextString());
                                             break;
                                         case "locality":
-                                            if (reader.peek() == JsonToken.NULL) {
-                                                reader.skipValue();
-                                            }
-                                            else {
-                                                stop.setLocality(reader.nextString());
-                                            }
+                                            stop.setLocality(reader.nextString());
                                             break;
                                         case "indicator":
-                                            if (reader.peek() == JsonToken.NULL) {
-                                                reader.skipValue();
-                                            }
-                                            else {
-                                                stop.setIndicator(reader.nextString());
-                                            }
+                                            stop.setIndicator(reader.nextString());
                                             break;
                                         case "latitude":
                                             stop.setLatitude(reader.nextDouble());
@@ -458,6 +444,9 @@ class TransportClient {
                                             break;
                                         case "bearing":
                                             stop.setBearing(reader.nextString());
+                                            break;
+                                        default:
+                                            reader.skipValue();
                                             break;
                                     }
                                 }

@@ -80,6 +80,10 @@ public class TextHelper {
     }
 
     public static String getBearing(String bearing) {
+        if (bearing == null) {
+            return "";
+        }
+
         switch (bearing) {
             case "N":
                 return "North";
