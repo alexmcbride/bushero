@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
     private static final String[] OPERATOR_COLORS = {"ic_bus_purple", "ic_bus_red", "ic_bus_green", "ic_bus_blue", "ic_bus_yellow"};
     private static final String DEFAULT_OPERATOR_COLOR = "ic_bus_black";
-    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 * 1000) + 10; // ms.
+    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 + 10) * 1000; // ms.
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
