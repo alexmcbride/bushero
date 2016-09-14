@@ -1337,6 +1337,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             TextView textName = (TextView)convertView.findViewById(R.id.textName);
             textName.setText(stop.getName());
 
+            TextView textBearing = (TextView)convertView.findViewById(R.id.textBearing);
+            textBearing.setText(getString(R.string.bearing_brackets, stop.getBearing()));
+
             // We use tag to store the position so we can retrieve it later.
             ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
             buttonDelete.setTag(position);
