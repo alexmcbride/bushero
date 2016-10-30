@@ -721,10 +721,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void removeFavouriteStop(final FavouriteStop favourite) {
-        // check user definietly wants to remove it...
+        // check user definitely wants to remove it...
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("Favourites")
-                .setMessage("Remove '" + favourite.getName() + "'?")
+                .setMessage("Remove '" + favourite.getName() + " (" + favourite.getBearing() + ")'?")
                 .setNegativeButton("No", null);
 
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
