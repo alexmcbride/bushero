@@ -1250,12 +1250,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
 
             // get operator color.
-            if (mLastColor == null || !mLastColor.getName().equals(bus.getOperator())) {
-                mLastColor = getOperatorColor(bus.getOperator());
-                mLastResource = getResources().getIdentifier(mLastColor.getColor(), "drawable", getPackageName());
+            if (bus.getOperator() == null) {
+                imageBus.setImageResource(R.drawable.ic_bus_black);
             }
-
-            imageBus.setImageResource(mLastResource);
+            else {
+                if (mLastColor == null || !mLastColor.getName().equals(bus.getOperator())) {
+                    mLastColor = getOperatorColor(bus.getOperator());
+                    mLastResource = getResources().getIdentifier(mLastColor.getColor(), "drawable", getPackageName());
+                }
+                imageBus.setImageResource(mLastResource);
+            }
 
             return convertView;
         }

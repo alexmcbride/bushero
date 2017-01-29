@@ -262,7 +262,12 @@ class TransportClient {
                         bus.setDestination(reader.nextString());
                         break;
                     case "operator":
-                        bus.setOperator(reader.nextString());
+                        if (reader.peek() == JsonToken.NULL) {
+                            reader.skipValue();
+                        }
+                        else {
+                            bus.setOperator(reader.nextString());
+                        }
                         break;
                     case "aimed_departure_time":
                         if (reader.peek() == JsonToken.NULL) {
@@ -273,7 +278,12 @@ class TransportClient {
                         }
                         break;
                     case "dir":
-                        bus.setDirection(reader.nextString());
+                        if (reader.peek() == JsonToken.NULL) {
+                            reader.skipValue();
+                        }
+                        else {
+                            bus.setDirection(reader.nextString());
+                        }
                         break;
                     case "date":
                         bus.setDate(reader.nextString());

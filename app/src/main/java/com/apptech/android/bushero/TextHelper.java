@@ -28,6 +28,10 @@ public class TextHelper {
     }
 
     public static String getOperator(String operator) {
+        if (operator == null) {
+            return "";
+        }
+
         switch (operator) {
             case "FGL":
                 return "First";
