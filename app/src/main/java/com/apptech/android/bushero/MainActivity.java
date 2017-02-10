@@ -1215,6 +1215,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public BusAdapter(Context context, List<Bus> buses) {
             super(context, -1);
 
+            // Default bus color.
+            mLastResource = R.drawable.ic_bus_black;
+
             addAll(buses);
         }
 
@@ -1250,16 +1253,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             textOperator.setText(TextHelper.getOperator(bus.getOperator()));
 
             // get operator color.
-            if (bus.getOperator() == null) {
-                imageBus.setImageResource(R.drawable.ic_bus_black);
+            if (bus.getOperator() != null && (mLastColor == null || !mLastColor.getName().equals(bus.getOperator()))) {
+                mLastColor = getOperatorColor(bus.getOperator());
+                mLastResource = getResources().getIdentifier(mLastColor.getColor(), "drawable", getPackageName());
             }
-            else {
-                if (mLastColor == null || !mLastColor.getName().equals(bus.getOperator())) {
-                    mLastColor = getOperatorColor(bus.getOperator());
-                    mLastResource = getResources().getIdentifier(mLastColor.getColor(), "drawable", getPackageName());
-                }
-                imageBus.setImageResource(mLastResource);
-            }
+            imageBus.setImageResource(mLastResource);
 
             return convertView;
         }

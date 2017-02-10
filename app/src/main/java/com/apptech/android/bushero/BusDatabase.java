@@ -618,6 +618,7 @@ public class BusDatabase {
         try {
             helper = new BusDbHelper(mContext);
             db = helper.getReadableDatabase();
+
             cursor = db.query(OperatorColorTable.NAME, null, null, null, null, null, null);
 
             List<OperatorColor> colors = new ArrayList<>();
@@ -646,6 +647,22 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
             db.insert(OperatorColorTable.NAME, null, getContentValues(color));
+        }
+        finally {
+            if (db != null) db.close();
+            if (helper != null) helper.close();
+        }
+    }
+
+    public void clearOperatorColors() {
+        BusDbHelper helper = null;
+        SQLiteDatabase db = null;
+
+        try {
+            helper = new BusDbHelper(mContext);
+            db = helper.getWritableDatabase();
+
+            db.delete(OperatorColorTable.NAME, null, null);
         }
         finally {
             if (db != null) db.close();
