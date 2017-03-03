@@ -6,3 +6,6 @@
 .DS_Store
 /build
 /captures
+
+# Transport API keys
+secret.xml

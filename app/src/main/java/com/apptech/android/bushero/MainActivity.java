@@ -202,7 +202,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // Setup database and transport API client.
         mBusDatabase = new BusDatabase(this);
-        mTransportClient = new TransportClient();
+        mTransportClient = new TransportClient(
+                getResources().getString(R.string.apiKey),
+                getResources().getString(R.string.appId));
 
         // get operator colors;
         mOperatorColors = mBusDatabase.getOperatorColors();

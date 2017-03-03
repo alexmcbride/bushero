@@ -185,7 +185,9 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
 
         @Override
         protected BusRoute doInBackground(Void... params) {
-            TransportClient client = new TransportClient();
+            TransportClient client = new TransportClient(
+                    getResources().getString(R.string.apiKey),
+                    getResources().getString(R.string.appId));
             try {
                 return client.getBusRoute(
                         mBus.getOperator(),

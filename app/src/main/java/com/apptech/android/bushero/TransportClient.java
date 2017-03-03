@@ -25,24 +25,27 @@ class TransportClient {
     private static final String NEAREST_BUS_STOPS_URL = "http://transportapi.com/v3/uk/bus/stops/near.json?app_key=%s&app_id=%s&lat=%f&lon=%f&page=%d&rpp=%d";
     private static final String LIVE_BUSES_URL = "http://transportapi.com/v3/uk/bus/stop/%s/live.json?app_key=%s&app_id=%s&group=no&limit=%d&nextbuses=no";
     private static final String BUS_ROUTE_URL = "http://transportapi.com/v3/uk/bus/route/%s/%s/%s/%s/%s/%s/timetable.json?app_key=%s&app_id=%s";
-    private static final String APP_KEY = "bffef3b1ab0a109dffa95562c1687756";
-    private static final String APP_ID = "a10284ad";
+    private String mApiKey;
+    private String mAppId;
     private static final int MAX_BUSES = 16;
     private static final int MAX_BUS_STOPS = 10;
     private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");;
 
-    public TransportClient() {}
+    public TransportClient(String apiKey, String appId) {
+        mApiKey = apiKey;
+        mAppId = appId;
+    }
 
     private URL getNearestBusStopsUrl(double longitude, double latitude, int page, int returnPerPage) throws MalformedURLException {
-        return new URL(String.format(Locale.ENGLISH, NEAREST_BUS_STOPS_URL, APP_KEY, APP_ID, latitude, longitude, page, returnPerPage));
+        return new URL(String.format(Locale.ENGLISH, NEAREST_BUS_STOPS_URL, mApiKey, mAppId, latitude, longitude, page, returnPerPage));
     }
 
     private URL getLiveBusesUrl(String atcoCode, int limit) throws MalformedURLException {
-        return new URL(String.format(Locale.ENGLISH, LIVE_BUSES_URL, atcoCode, APP_KEY, APP_ID, limit));
+        return new URL(String.format(Locale.ENGLISH, LIVE_BUSES_URL, atcoCode, mApiKey, mAppId, limit));
     }
 
     private URL getBusRouteUrl(String operator, String line, String direction, String atcoCode, String date, String time) throws MalformedURLException {
-        return new URL(String.format(Locale.ENGLISH, BUS_ROUTE_URL, operator, line, direction, atcoCode, date, time, APP_KEY, APP_ID));
+        return new URL(String.format(Locale.ENGLISH, BUS_ROUTE_URL, operator, line, direction, atcoCode, date, time, mApiKey, mAppId));
     }
 
     public NearestBusStops getNearestBusStops(double longitude, double latitude) throws IOException {
