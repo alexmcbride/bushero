@@ -1,6 +1,7 @@
 package com.apptech.android.bushero;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -404,7 +405,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Save state data so activity can be recreated. This is used to save state while the
         // activity is running, for instance if the user rotates the device the activity is
         // destroyed and recreated, this lets us save state to be restored later.
-        long id =  mNearestBusStops == null ? -1 : mNearestBusStops.getId();
+        super.onSaveInstanceState(savedInstanceState);
+        long id = mNearestBusStops == null ? -1 : mNearestBusStops.getId();
         savedInstanceState.putLong(SAVED_NEAREST_STOP_ID, id);
         savedInstanceState.putInt(SAVED_CURRENT_POSITION, mCurrentPosition);
         savedInstanceState.putDouble(SAVED_LAST_LONGITUDE, mLastLongitude);
@@ -548,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             // Request location updates. When location changes the method onLocationChanged(Location) is called.
             Log.d(LOG_TAG, "requesting location updates");
-            LocationRequest request = new LocationRequest();
+            @SuppressLint("RestrictedApi") LocationRequest request = new LocationRequest();
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             request.setInterval(LOCATION_UPDATE_INTERVAL);
             request.setFastestInterval(LOCATION_UPDATE_INTERVAL);

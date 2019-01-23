@@ -130,6 +130,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
 
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putLong(SAVED_BUS_ID, mBus.getId());
         savedInstanceState.putString(SAVED_ATCOCODE, mAtcoCode);
     }

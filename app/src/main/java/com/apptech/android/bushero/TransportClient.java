@@ -216,8 +216,7 @@ class TransportClient {
                         reader.beginObject();
 
                         if (reader.peek() != JsonToken.END_OBJECT) {
-                            name = reader.nextName();
-                            if (name.equals("all") && reader.peek() != JsonToken.NULL) {
+                            if (reader.peek() != JsonToken.NULL) {
                                 getBuses(reader, buses);
                             }
                         }
