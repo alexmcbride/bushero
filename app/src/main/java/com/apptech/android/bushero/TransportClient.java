@@ -23,12 +23,12 @@ class TransportClient {
     private static final String LOG_TAG = "TransportClient";
 
     private static final String NEAREST_BUS_STOPS_URL = "http://transportapi.com/v3/uk/bus/stops/near.json?app_key=%s&app_id=%s&lat=%f&lon=%f&page=%d&rpp=%d";
-    private static final String LIVE_BUSES_URL = "http://transportapi.com/v3/uk/bus/stop/%s/live.json?app_key=%s&app_id=%s&group=no&limit=%d&nextbuses=no";
+    private static final String LIVE_BUSES_URL = "http://transportapi.com/v3/uk/bus/stop/%s/live.json?app_key=%s&app_id=%s&limit=%d&nextbuses=no";
     private static final String BUS_ROUTE_URL = "http://transportapi.com/v3/uk/bus/route/%s/%s/%s/%s/%s/%s/timetable.json?app_key=%s&app_id=%s";
     private String mApiKey;
     private String mAppId;
-    private static final int MAX_BUSES = 16;
-    private static final int MAX_BUS_STOPS = 10;
+    private static final int MAX_BUSES = 20;
+    private static final int MAX_BUS_STOPS = 15;
     private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
     TransportClient(String apiKey, String appId) {

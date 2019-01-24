@@ -2,8 +2,6 @@ package com.apptech.android.bushero;
 
 public class TextHelper {
     public static String getDestination(String dest) {
-
-
         int start = dest.lastIndexOf("(");
         int end = dest.lastIndexOf(")");
 
