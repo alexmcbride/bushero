@@ -4,10 +4,11 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.apptech.android.bushero"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -24,5 +25,5 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:design:26.1.0'
     implementation 'com.google.android.gms:play-services:12.0.1'
-    implementation 'com.squareup.moshi:moshi:1.8.0'
+    implementation 'com.android.support:multidex:1.0.3'
 }

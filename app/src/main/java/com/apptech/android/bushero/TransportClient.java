@@ -29,40 +29,35 @@ class TransportClient {
     private String mAppId;
     private static final int MAX_BUSES = 16;
     private static final int MAX_BUS_STOPS = 10;
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");;
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
-    public TransportClient(String apiKey, String appId) {
+    TransportClient(String apiKey, String appId) {
         mApiKey = apiKey;
         mAppId = appId;
     }
 
-    private URL getNearestBusStopsUrl(double longitude, double latitude, int page, int returnPerPage) throws MalformedURLException {
-        return new URL(String.format(Locale.ENGLISH, NEAREST_BUS_STOPS_URL, mApiKey, mAppId, latitude, longitude, page, returnPerPage));
+    private URL getNearestBusStopsUrl(double longitude, double latitude) throws MalformedURLException {
+        return new URL(String.format(Locale.ENGLISH, NEAREST_BUS_STOPS_URL, mApiKey, mAppId, latitude, longitude, 1, TransportClient.MAX_BUS_STOPS));
     }
 
-    private URL getLiveBusesUrl(String atcoCode, int limit) throws MalformedURLException {
-        return new URL(String.format(Locale.ENGLISH, LIVE_BUSES_URL, atcoCode, mApiKey, mAppId, limit));
+    private URL getLiveBusesUrl(String atcoCode) throws MalformedURLException {
+        return new URL(String.format(Locale.ENGLISH, LIVE_BUSES_URL, atcoCode, mApiKey, mAppId, TransportClient.MAX_BUSES));
     }
 
     private URL getBusRouteUrl(String operator, String line, String direction, String atcoCode, String date, String time) throws MalformedURLException {
         return new URL(String.format(Locale.ENGLISH, BUS_ROUTE_URL, operator, line, direction, atcoCode, date, time, mApiKey, mAppId));
     }
 
-    public NearestBusStops getNearestBusStops(double longitude, double latitude) throws IOException {
-        URL url = getNearestBusStopsUrl(longitude, latitude, 1, MAX_BUS_STOPS);
+    NearestBusStops getNearestBusStops(double longitude, double latitude) throws IOException {
+        URL url = getNearestBusStopsUrl(longitude, latitude);
         URLConnection connection = url.openConnection();
         connection.connect();
 
         Log.d(LOG_TAG, "URL: " + url);
 
-        InputStream input = null;
-        InputStreamReader streamReader = null;
-        JsonReader reader = null;
-
-        try {
-            input = new BufferedInputStream(url.openStream());
-            streamReader = new InputStreamReader(input);
-            reader = new JsonReader(streamReader);
+        try (InputStream input = new BufferedInputStream(url.openStream());
+             InputStreamReader streamReader = new InputStreamReader(input);
+             JsonReader reader = new JsonReader(streamReader)) {
 
             reader.beginObject();
             NearestBusStops nearest = new NearestBusStops();
@@ -110,11 +105,6 @@ class TransportClient {
             reader.endObject();
 
             return nearest;
-        }
-        finally {
-            if (reader != null) reader.close();
-            if (streamReader != null) streamReader.close();
-            if (input != null) input.close();
         }
     }
 
@@ -174,21 +164,16 @@ class TransportClient {
         return stops;
     }
 
-    public LiveBuses getLiveBuses(String atcoCode) throws IOException {
-        URL url = getLiveBusesUrl(atcoCode, MAX_BUSES);
+    LiveBuses getLiveBuses(String atcoCode) throws IOException {
+        URL url = getLiveBusesUrl(atcoCode);
         URLConnection connection = url.openConnection();
         connection.connect();
 
         Log.d(LOG_TAG, "URL: " + url);
 
-        InputStream input = null;
-        InputStreamReader streamReader = null;
-        JsonReader reader = null;
-
-        try {
-            input = new BufferedInputStream(url.openStream());
-            streamReader = new InputStreamReader(input);
-            reader = new JsonReader(streamReader);
+        try (InputStream input = new BufferedInputStream(url.openStream());
+             InputStreamReader streamReader = new InputStreamReader(input);
+             JsonReader reader = new JsonReader(streamReader)) {
             LiveBuses buses = new LiveBuses();
 
             reader.beginObject();
@@ -199,8 +184,7 @@ class TransportClient {
                     case "atcocode":
                         if (reader.peek() == JsonToken.NULL) {
                             reader.skipValue();
-                        }
-                        else {
+                        } else {
                             Log.i("TransportClient", "atcocode: " + reader.nextString());
                         }
                         break;
@@ -215,10 +199,9 @@ class TransportClient {
                     case "departures":
                         reader.beginObject();
 
-                        if (reader.peek() != JsonToken.END_OBJECT) {
-                            if (reader.peek() != JsonToken.NULL) {
-                                getBuses(reader, buses);
-                            }
+                        while (reader.hasNext()) {
+                            reader.nextName(); // Name of line
+                            getBuses(reader, buses);
                         }
 
                         reader.endObject();
@@ -231,12 +214,9 @@ class TransportClient {
 
             reader.endObject();
 
+            buses.sortBuses();
+
             return buses;
-        }
-        finally {
-            if (reader != null) reader.close();
-            if (streamReader != null) streamReader.close();
-            if (input != null) input.close();
         }
     }
 
@@ -377,21 +357,16 @@ class TransportClient {
         bus.setDepartureTime(t);
     }
 
-    public BusRoute getBusRoute(String operator, String line, String direction, String atcoCode, String date, String time) throws IOException {
+    BusRoute getBusRoute(String operator, String line, String direction, String atcoCode, String date, String time) throws IOException {
         URL url = getBusRouteUrl(operator, line, direction, atcoCode, date, time);
         URLConnection connection = url.openConnection();
         connection.connect();
 
         Log.d(LOG_TAG, "URL: " + url);
 
-        InputStream input = null;
-        InputStreamReader streamReader = null;
-        JsonReader reader = null;
-
-        try {
-            input = new BufferedInputStream(url.openStream());
-            streamReader = new InputStreamReader(input);
-            reader = new JsonReader(streamReader);
+        try (InputStream input = new BufferedInputStream(url.openStream());
+             InputStreamReader streamReader = new InputStreamReader(input);
+             JsonReader reader = new JsonReader(streamReader)) {
 
             reader.beginObject();
             BusRoute route = new BusRoute();
@@ -475,11 +450,6 @@ class TransportClient {
             }
 
             return route;
-        }
-        finally {
-            if (reader != null) reader.close();
-            if (streamReader != null) streamReader.close();
-            if (input != null) input.close();
         }
     }
 }

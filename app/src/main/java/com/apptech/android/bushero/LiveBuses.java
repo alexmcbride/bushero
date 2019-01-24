@@ -1,6 +1,7 @@
 package com.apptech.android.bushero;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -30,5 +31,14 @@ public class LiveBuses {
 
     public int getBusesCount() {
         return mBuses.size();
+    }
+
+    void sortBuses() {
+        mBuses.sort(new Comparator<Bus>() {
+            @Override
+            public int compare(Bus o1, Bus o2) {
+                return Long.compare(o1.getDepartureTime(), o2.getDepartureTime());
+            }
+        });
     }
 }
