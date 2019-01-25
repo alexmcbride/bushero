@@ -42,10 +42,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -62,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
     private static final String[] OPERATOR_COLORS = {"ic_bus_purple", "ic_bus_red", "ic_bus_green", "ic_bus_blue", "ic_bus_yellow"};
     private static final String DEFAULT_OPERATOR_COLOR = "ic_bus_black";
-    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 + 10) * 1000; // ms.
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
@@ -457,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
 
                 // Check departure time was in the past.
-                if (isBusDepartureDue(bus)) {
+                if (bus.isDepartureDue()) {
                     // Ask user if they want to update live bus info.
                     mUpdateSnackbar = Snackbar.make(mLayoutDrawer, R.string.snackbar_live_message, Snackbar.LENGTH_INDEFINITE);
                     mUpdateSnackbar.setAction(R.string.snackbar_live_update, new View.OnClickListener() {
@@ -514,20 +510,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // start async task
         new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
-    }
-
-    private boolean isBusDepartureDue(Bus bus) {
-        // we add a minute to the time so the bus expires at the end of the minute rather than the
-        // start of it.
-        long departureTime = bus.getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
-        long now = System.currentTimeMillis(); // Current system time.
-
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd - hh:mm:ss", Locale.ENGLISH);
-        Date a = new Date(now);
-        Date b = new Date(departureTime);
-        Log.d(LOG_TAG, "Checking bus expired - now: " + fmt.format(a) + " departure: " + fmt.format(b));
-
-        return now > departureTime;
     }
 
     @Override
@@ -836,7 +818,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
                 // if the next bus is overdue then updates buses
-                if (isBusDepartureDue(bus)) {
+                if (bus.isDepartureDue()) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
                     new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
                 }
@@ -912,7 +894,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void showProgressDialog(int resid) {
-        // Show progess dialog if it doesn't exist, if it does then change the message.
+        // Show progress dialog if it doesn't exist, if it does then change the message.
         if (mProgressDialog == null) {
             mProgressDialog = ProgressDialog.show(this, getString(R.string.progress_title), getString(resid), true);
         }

@@ -4,6 +4,8 @@ package com.apptech.android.bushero;
  * Class to represent a bus.
  */
 public class Bus {
+    private static final int DEPARTURE_TIME_ADJUSTMENT = (60 + 10) * 1000; // ms.
+
     private long mId;
     private long mBusStopId; // The bus stop this bus is owned by.
     private long mFavouriteStopId; // Or this is set if owned by a favourite stop.
@@ -142,5 +144,13 @@ public class Bus {
 
     public void setExpired(boolean expired) {
         isExpired = expired;
+    }
+
+    public boolean isDepartureDue() {
+        // we add a minute to the time so the bus expires at the end of the minute rather than the
+        // start of it.
+        long departureTime = getDepartureTime() + DEPARTURE_TIME_ADJUSTMENT;
+        long now = System.currentTimeMillis(); // Current system time.
+        return now > departureTime;
     }
 }
