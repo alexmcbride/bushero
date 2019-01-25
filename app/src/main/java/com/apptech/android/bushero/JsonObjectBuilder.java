@@ -7,9 +7,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -214,9 +212,6 @@ public class JsonObjectBuilder {
                         break;
                     case "best_departure_estimate":
                         bus.setBestDepartureEstimate(reader.nextString());
-
-                        // Once we've got the time, update the bus objects departure time.
-                        updateBusDepartureTime(bus);
                         break;
                     case "expected_departure_time":
                         if (reader.peek() == JsonToken.NULL) {
@@ -232,7 +227,12 @@ public class JsonObjectBuilder {
                 }
             }
 
-            // if date is today then transport api doesn't supply a date, so for consistance lets add one
+            // TODO: just get rid of all the different time properties and just use this one?
+            // Update the departure time
+            bus.setDepartureTime(DepartureTimeParser.getTime(bus));
+
+            // if date is today then transport api doesn't supply a date, so for consistency lets
+            // add one
             if (bus.getDate() == null) {
                 bus.setDate(today);
             }
@@ -242,58 +242,6 @@ public class JsonObjectBuilder {
         }
 
         reader.endArray();
-    }
-
-
-    // TODO: just get rid of all the different time properties and just use this one???
-    // We convert the Transport API "hh:mm" time into a timestamp we can actually used.
-    private static void updateBusDepartureTime(Bus bus) {
-        String time = bus.getBestDepartureEstimate();
-
-        int index = time.indexOf(":");
-        if (index == -1) {
-            return;
-        }
-
-        // get hours and minutes from string.
-        String hoursStr = time.substring(0, index);
-        String minutesStr = time.substring(index + 1);
-        int hours = Integer.parseInt(hoursStr);
-        int minutes = Integer.parseInt(minutesStr);
-
-        // set this current date/time.
-        Calendar now = GregorianCalendar.getInstance();
-
-        // if this bus is due on a different date then transport api gives us a date object,
-        // otherwise it just defaults to today.
-        String date = bus.getDate();
-        if (date != null && date.length() > 0) {
-            String[] tokens = date.split("-");
-            if (tokens.length == 3) {
-                try {
-                    int year = Integer.parseInt(tokens[0]);
-                    int month = Integer.parseInt(tokens[1]) - 1; // months are indexed from 0
-                    int day = Integer.parseInt(tokens[2]);
-
-                    now.set(Calendar.YEAR, year);
-                    now.set(Calendar.MONTH, month);
-                    now.set(Calendar.DAY_OF_MONTH, day);
-                }
-                catch (NumberFormatException e) {
-                    // well, let's just not do that then...
-                }
-            }
-        }
-
-        // set bus due time.
-        now.set(Calendar.HOUR_OF_DAY, hours);
-        now.set(Calendar.MINUTE, minutes);
-        now.set(Calendar.SECOND, 0);
-        now.set(Calendar.MILLISECOND, 0);
-
-        long t = now.getTimeInMillis();
-
-        bus.setDepartureTime(t);
     }
 
     public static BusRoute buildBusRoute(JsonReader reader) throws IOException {
