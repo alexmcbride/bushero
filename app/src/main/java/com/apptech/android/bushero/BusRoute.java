@@ -82,11 +82,4 @@ public class BusRoute {
         }
         return null;
     }
-
-    public BusStop getLastStop() {
-        if (mStops.size() > 0) {
-            return mStops.get(mStops.size() - 1);
-        }
-        return null;
-    }
 }

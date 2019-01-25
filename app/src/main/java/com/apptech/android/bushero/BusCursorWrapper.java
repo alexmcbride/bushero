@@ -21,22 +21,6 @@ class BusCursorWrapper extends CursorWrapper {
         super(cursor);
     }
 
-    public NearestBusStops getNearestBusStops() {
-        NearestBusStops nearest = new NearestBusStops();
-        nearest.setId(getLong(getColumnIndex(NearestBusStopsTable.Columns.ID)));
-        nearest.setMinLongitude(getDouble(getColumnIndex(NearestBusStopsTable.Columns.MIN_LONGITUDE)));
-        nearest.setMinLatitude(getDouble(getColumnIndex(NearestBusStopsTable.Columns.MIN_LATITUDE)));
-        nearest.setMaxLongitude(getDouble(getColumnIndex(NearestBusStopsTable.Columns.MAX_LONGITUDE)));
-        nearest.setMaxLatitude(getDouble(getColumnIndex(NearestBusStopsTable.Columns.MAX_LATITUDE)));
-        nearest.setSearchLongitude(getDouble(getColumnIndex(NearestBusStopsTable.Columns.SEARCH_LONGITUDE)));
-        nearest.setSearchLatitude(getDouble(getColumnIndex(NearestBusStopsTable.Columns.SEARCH_LATITUDE)));
-        nearest.setPage(getInt(getColumnIndex(NearestBusStopsTable.Columns.PAGE)));
-        nearest.setReturnedPerPage(getInt(getColumnIndex(NearestBusStopsTable.Columns.RETURNED_PER_PAGE)));
-        nearest.setTotal(getInt(getColumnIndex(NearestBusStopsTable.Columns.TOTAL)));
-        nearest.setRequestTime(getString(getColumnIndex(NearestBusStopsTable.Columns.REQUEST_TIME)));
-        return nearest;
-    }
-
     public NearestBusStops getNearestBusStopsJoin() {
         NearestBusStops nearest = new NearestBusStops();
         nearest.setId(getLong(0));

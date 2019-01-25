@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class RouteActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String LOG_TAG = "RouteActivity";
@@ -44,14 +46,14 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         setContentView(R.layout.activity_route);
 
         // get widgets.
-        TextView textLine = (TextView) findViewById(R.id.textRouteLine);
-        TextView textDirection = (TextView) findViewById(R.id.textRouteDirection);
-        TextView textOperator = (TextView) findViewById(R.id.textRouteOperator);
-        mListStops = (ListView)findViewById(R.id.listStops);
+        TextView textLine = findViewById(R.id.textRouteLine);
+        TextView textDirection = findViewById(R.id.textRouteDirection);
+        TextView textOperator = findViewById(R.id.textRouteOperator);
+        mListStops = findViewById(R.id.listStops);
         mListStops.setOnItemClickListener(this);
 
         // handle drawer layout event.
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -72,17 +74,14 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         });
 
         // handle route list
-        mListRoutes = (ListView)findViewById(R.id.listRoutes);
+        mListRoutes = findViewById(R.id.listRoutes);
         mListRoutes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 BusRoute route = mRouteAdatper.getItem(position);
-                BusStop stop = route.getStop(0);
+                BusStop stop = Objects.requireNonNull(route).getStop(0);
                 if (stop == null) {
                     Toast.makeText(RouteActivity.this, "No stops found for route", Toast.LENGTH_SHORT).show();
-                }
-                else {
-
                 }
             }
         });
@@ -176,6 +175,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         return intent;
     }
 
+    //todo: move this into own class.
     private class DownloadRouteAsyncTask extends AsyncTask<Void, Void, BusRoute> {
         @Override
         protected void onPreExecute() {
@@ -232,7 +232,8 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             super(context, -1);
         }
 
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             // get the bus we're showing the view for.
             BusStop stop = getItem(position);
 
@@ -243,13 +244,13 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             }
 
             // get widgets from view.
-            TextView textName = (TextView)convertView.findViewById(R.id.textName);
-            TextView time = (TextView)convertView.findViewById(R.id.textTime);
-            TextView locality = (TextView)convertView.findViewById(R.id.textLocality);
-            TextView bearing = (TextView)convertView.findViewById(R.id.textBearing);
+            TextView textName = convertView.findViewById(R.id.textName);
+            TextView time = convertView.findViewById(R.id.textTime);
+            TextView locality = convertView.findViewById(R.id.textLocality);
+            TextView bearing = convertView.findViewById(R.id.textBearing);
 
             // update them
-            textName.setText(stop.getName());
+            textName.setText(Objects.requireNonNull(stop).getName());
             time.setText(stop.getTime());
             locality.setText(stop.getLocality());
             bearing.setText(TextHelper.getBearing(stop.getBearing()));
@@ -264,7 +265,8 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             addAll(routes);
         }
 
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             Log.d(LOG_TAG, "route view: " + position);
 
             // if a view already exists then reuse it.
@@ -273,14 +275,14 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
                 convertView = inflater.inflate(R.layout.list_item_bus_route, parent, false);
             }
 
-            TextView textOperator = (TextView)convertView.findViewById(R.id.textOperator);
-            TextView textLine = (TextView)convertView.findViewById(R.id.textLine);
-            TextView textOrigin = (TextView)convertView.findViewById(R.id.textOrigin);
-            TextView textTime = (TextView)convertView.findViewById(R.id.textTime);
+            TextView textOperator = convertView.findViewById(R.id.textOperator);
+            TextView textLine = convertView.findViewById(R.id.textLine);
+            TextView textOrigin = convertView.findViewById(R.id.textOrigin);
+            TextView textTime = convertView.findViewById(R.id.textTime);
 
             // show route details.
             BusRoute route = getItem(position);
-            textOperator.setText(route.getOperator());
+            textOperator.setText(Objects.requireNonNull(route).getOperator());
             textLine.setText(route.getLine());
 
             // show original stop details.

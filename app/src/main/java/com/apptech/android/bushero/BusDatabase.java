@@ -21,7 +21,6 @@ import com.apptech.android.bushero.BusDbSchema.OperatorColorTable;
  * Class to represent the database.
  */
 public class BusDatabase {
-    private static final String LOG_TAG = "BusDatabase";
     private final Context mContext;
 
     public BusDatabase(Context context) {
@@ -111,28 +110,6 @@ public class BusDatabase {
         }
     }
 
-    public void deleteNearestStops(NearestBusStops nearest) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            db.delete(NearestBusStopsTable.NAME, "id=?", new String[]{Long.toString(nearest.getId())});
-
-            for (BusStop stop : nearest.getStops()) {
-                // delete bus stops and their buses.
-                db.delete(BusStopTable.NAME, "id=?", new String[]{Long.toString(stop.getId())});
-                db.delete(BusTable.NAME, "busStopId=?", new String[]{Long.toString(stop.getId())});
-            }
-        }
-        finally {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
     public LiveBuses getLiveBuses(long busStopId, long favouriteStopId) {
         if (busStopId == 0 && favouriteStopId == 0) {
             return null;
@@ -213,7 +190,7 @@ public class BusDatabase {
         }
     }
 
-    public boolean removeLiveBuses(long busStopId, long favouriteStopId) {
+    public void removeLiveBuses(long busStopId, long favouriteStopId) {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
 
@@ -221,23 +198,20 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
 
-            int rows = 0;
             if (busStopId > 0) {
                 Log.d("BusDatabase", "deleteing live buses for bus stop id: " + busStopId);
 
-                rows = db.delete(BusTable.NAME,
-                        BusTable.Columns.BUS_STOP_ID + "=?",
-                        new String[]{Long.toString(busStopId)});
+                db.delete(BusTable.NAME,
+                    BusTable.Columns.BUS_STOP_ID + "=?",
+                    new String[]{Long.toString(busStopId)});
             }
             else if (favouriteStopId > 0) {
                 Log.d("BusDatabase", "deleteing live buses for favourite stop id: " + favouriteStopId);
 
-                rows = db.delete(BusTable.NAME,
-                        BusTable.Columns.FAVOURITE_STOP_ID + "=?",
-                        new String[]{Long.toString(favouriteStopId)});
+                db.delete(BusTable.NAME,
+                    BusTable.Columns.FAVOURITE_STOP_ID + "=?",
+                    new String[]{Long.toString(favouriteStopId)});
             }
-
-            return rows > 0;
         }
         finally {
             if (db != null) db.close();
@@ -452,27 +426,6 @@ public class BusDatabase {
         }
     }
 
-    public boolean updateBus(Bus bus) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            int rows = db.update(BusTable.NAME,
-                    getContentValues(bus),
-                    BusTable.Columns.ID + "=?",
-                    new String[]{String.valueOf(bus.getId())});
-
-            return rows > 0;
-        }
-        finally {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
     public List<FavouriteStop> getFavouriteStops() {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -654,22 +607,6 @@ public class BusDatabase {
         }
     }
 
-    public void clearOperatorColors() {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            db.delete(OperatorColorTable.NAME, null, null);
-        }
-        finally {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
     public void clearAllStopData() {
         BusDbHelper helper = null;
         SQLiteDatabase db = null;
@@ -683,49 +620,6 @@ public class BusDatabase {
             db.execSQL("DELETE FROM " + BusTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
             db.execSQL("DELETE FROM " + NearestBusStopsTable.NAME + ";");
-        }
-        finally {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
-    public boolean clearExpiredBuses(long busStopId, long favouriteStopId) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            String where = "((" + BusTable.Columns.DEPARTURE_TIME + "<? " +
-                    "AND " + BusTable.Columns.BUS_STOP_ID +"=? " +
-                    "AND " + BusTable.Columns.FAVOURITE_STOP_ID + "=?))";
-
-            long now = System.currentTimeMillis();
-            String[] args = {String.valueOf(now), String.valueOf(busStopId), String.valueOf(favouriteStopId)};
-
-            int rows = db.delete(BusTable.NAME, where, args);
-
-            return rows > 0;
-        }
-        finally {
-            if (db != null) db.close();
-            if (helper != null) helper.close();
-        }
-    }
-
-    public void deleteOldBuses(long time) {
-        BusDbHelper helper = null;
-        SQLiteDatabase db = null;
-
-        try {
-            helper = new BusDbHelper(mContext);
-            db = helper.getWritableDatabase();
-
-            db.delete(BusTable.NAME,
-                    "((" + BusTable.Columns.DEPARTURE_TIME + "<?))",
-                    new String[]{String.valueOf(time)});
         }
         finally {
             if (db != null) db.close();

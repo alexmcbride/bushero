@@ -23,6 +23,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Objects;
+
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String LOG_TAG = "MapActivity";
     private static final String KEY_BUS_STOP_ID = "com.apptech.android.bushero.BUS_STOP_ID";
@@ -52,7 +54,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mChooseLocation = intent.getBooleanExtra(KEY_CHOOSE_LOCATION, false);
 
         // get widgets
-        TextView textBusStopName = (TextView) findViewById(R.id.textBusStopName);
+        TextView textBusStopName = findViewById(R.id.textBusStopName);
 
         // get bus stop from database.
         Log.d(LOG_TAG, "fetching bus stop or favourite from database");
@@ -66,7 +68,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             name = mBusStop.getName();
         }
 
-        // check if we're showing a location or chosing one.
+        // check if we're showing a location or choosing one.
         if (mChooseLocation) {
             textBusStopName.setText(R.string.text_choose_location);
         }
@@ -136,7 +138,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             googleMap.setMyLocationEnabled(true);
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             Criteria criteria = new Criteria();
-            String provider = locationManager.getBestProvider(criteria, true);
+            String provider = Objects.requireNonNull(locationManager).getBestProvider(criteria, true);
 
             Location youLocation = locationManager.getLastKnownLocation(provider);
             if (youLocation != null) {

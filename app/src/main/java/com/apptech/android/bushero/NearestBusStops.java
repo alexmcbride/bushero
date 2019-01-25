@@ -145,14 +145,6 @@ public class NearestBusStops {
         return -1;
     }
 
-    public BusStop getStop(String atcoCode) {
-        int position = getStopPosition(atcoCode);
-        if (position > -1) {
-            return mStops.get(position);
-        }
-        return null;
-    }
-
     public int getStopCount() {
         return mStops.size();
     }

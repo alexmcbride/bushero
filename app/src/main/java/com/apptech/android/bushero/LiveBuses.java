@@ -29,10 +29,6 @@ public class LiveBuses {
         return null;
     }
 
-    public int getBusesCount() {
-        return mBuses.size();
-    }
-
     void sortBuses() {
         mBuses.sort(new Comparator<Bus>() {
             @Override
