@@ -123,10 +123,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mSwipeContainer = findViewById(R.id.swipeContainer);
 
         // navigation drawer
-        View include = findViewById(R.id.drawerMain);
-        mListNearest = include.findViewById(R.id.listNearest);
-        mListFavorites = include.findViewById(R.id.listFavourites);
-        mButtonFavourite = include.findViewById(R.id.buttonFavourite);
+        View drawerMain = findViewById(R.id.drawerMain);
+        mListNearest = drawerMain.findViewById(R.id.listNearest);
+        mListFavorites = drawerMain.findViewById(R.id.listFavourites);
+        mButtonFavourite = drawerMain.findViewById(R.id.buttonFavourite);
 
         // Handle list view item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
