@@ -46,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "MainActivity";
@@ -109,25 +110,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
 
         // Get widgets from layout.
-        mTextName = (TextView) findViewById(R.id.textName);
-        mTextDistance = (TextView) findViewById(R.id.textDistance);
-        mTextBearing = (TextView) findViewById(R.id.textBearing);
-        mTextLocality = (TextView) findViewById(R.id.textLocality);
-        mTextLocationDistance = (TextView)findViewById(R.id.textLocationDistance);
-        mButtonNearer = (ImageButton) findViewById(R.id.buttonNearer);
-        mButtonFurther = (ImageButton) findViewById(R.id.buttonFurther);
-        mButtonLocation = (LinearLayout) findViewById(R.id.buttonLocation);
-        mLayoutDrawer = (DrawerLayout)findViewById(R.id.drawerLayout);
-        mListBuses = (ListView) findViewById(R.id.listBuses);
-        mSwipeContainer = (SwipeRefreshLayout)findViewById(R.id.swipeContainer);
+        mTextName = findViewById(R.id.textName);
+        mTextDistance = findViewById(R.id.textDistance);
+        mTextBearing = findViewById(R.id.textBearing);
+        mTextLocality = findViewById(R.id.textLocality);
+        mTextLocationDistance = findViewById(R.id.textLocationDistance);
+        mButtonNearer = findViewById(R.id.buttonNearer);
+        mButtonFurther = findViewById(R.id.buttonFurther);
+        mButtonLocation = findViewById(R.id.buttonLocation);
+        mLayoutDrawer = findViewById(R.id.drawerLayout);
+        mListBuses = findViewById(R.id.listBuses);
+        mSwipeContainer = findViewById(R.id.swipeContainer);
 
         // navigation drawer
         View include = findViewById(R.id.drawerMain);
-        mListNearest = (ListView)include.findViewById(R.id.listNearest);
-        mListFavorites = (ListView)include.findViewById(R.id.listFavourites);
-        mButtonFavourite = (ImageButton)include.findViewById(R.id.buttonFavourite);
+        mListNearest = include.findViewById(R.id.listNearest);
+        mListFavorites = include.findViewById(R.id.listFavourites);
+        mButtonFavourite = include.findViewById(R.id.buttonFavourite);
 
-        // Handle listview item onclick events.
+        // Handle list view item onclick events.
         mListBuses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 String atcoCode;
                 if (mFavouriteStop == null) {
-                    atcoCode = stop.getAtcoCode();
+                    atcoCode = Objects.requireNonNull(stop).getAtcoCode();
                 }
                 else {
                     atcoCode = mFavouriteStop.getAtcoCode();
@@ -297,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         for (int i = 0; i < mFavouritesAdapter.getCount(); i++) {
-            if (mFavouritesAdapter.getItem(i).getAtcoCode().equals(atcoCode)) {
+            if (Objects.requireNonNull(mFavouritesAdapter.getItem(i)).getAtcoCode().equals(atcoCode)) {
                 return true;
             }
         }
@@ -466,7 +467,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             mIsShowingUpdateMessage = false;
                         }
                     });
-                    mUpdateSnackbar.setCallback(new Snackbar.Callback() {
+                    mUpdateSnackbar.addCallback(new Snackbar.Callback() {
                         @Override
                         public void onDismissed(Snackbar snackbar, int event) {
                             super.onDismissed(snackbar, event);
@@ -553,6 +554,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             request.setInterval(LOCATION_UPDATE_INTERVAL);
             request.setFastestInterval(LOCATION_UPDATE_INTERVAL);
+
+            //todo: fix this as it's now deprecated!
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
         }
         else {
@@ -897,7 +900,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             long favouriteStopId = 0;
 
             if (mFavouriteStop == null) {
-                busStopId = getCurrentBusStop().getId();
+                busStopId = Objects.requireNonNull(getCurrentBusStop()).getId();
             }
             else {
                 favouriteStopId = mFavouriteStop.getId();
@@ -940,7 +943,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             long favouriteStopId = 0;
 
             if (mFavouriteStop == null) {
-                busStopId = getCurrentBusStop().getId();
+                busStopId = Objects.requireNonNull(getCurrentBusStop()).getId();
             }
             else {
                 favouriteStopId = mFavouriteStop.getId();
@@ -1012,6 +1015,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         startActivity(intent);
     }
 
+    //todo: move this into own class.
     private class ChangeLocationAsyncTask extends AsyncTask<Double, Void, NearestBusStops> {
         private String mAtcoCode;
         private double mLongitude;
@@ -1085,7 +1089,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 mBusDatabase.addNearestBusStops(result);
                 mNearestBusStops = result;
 
-                // save preferneces here so we KNOW nearest stops id is saved, cause that's been
+                // save preferences here so we KNOW nearest stops id is saved, cause that's been
                 // really annoying me recently that the emulator doesn't seem to remember it.
                 savePreferences();
 
@@ -1137,6 +1141,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    //todo: move this into own class.
     private class UpdateBusesAsyncTask extends AsyncTask<BusStop, Void, LiveBuses> {
         private final String mAtcoCode;
         private final long mBusStopId;
@@ -1229,8 +1234,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             addAll(buses);
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             // Get the bus we're showing the view for.
             Bus bus = getItem(position);
 
@@ -1241,15 +1247,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
 
             // Get widgets
-            TextView textLine = (TextView) convertView.findViewById(R.id.textLine);
-            TextView textDestination = (TextView) convertView.findViewById(R.id.textDestination);
-            TextView textTime = (TextView) convertView.findViewById(R.id.textTime);
-            TextView textDirection = (TextView) convertView.findViewById(R.id.textDirection);
-            TextView textOperator = (TextView) convertView.findViewById(R.id.textOperator);
-            ImageView imageBus = (ImageView) convertView.findViewById(R.id.imageBus);
+            TextView textLine = convertView.findViewById(R.id.textLine);
+            TextView textDestination = convertView.findViewById(R.id.textDestination);
+            TextView textTime = convertView.findViewById(R.id.textTime);
+            TextView textDirection = convertView.findViewById(R.id.textDirection);
+            TextView textOperator = convertView.findViewById(R.id.textOperator);
+            ImageView imageBus = convertView.findViewById(R.id.imageBus);
 
             // Set widgets
-            textLine.setText(bus.getLine().trim());
+            textLine.setText(Objects.requireNonNull(bus).getLine().trim());
             textDestination.setText(TextHelper.getDestination(bus.getDestination()));
             textTime.setText(bus.getBestDepartureEstimate());
             textDirection.setText(TextHelper.getDirection(bus.getDirection()));
@@ -1275,8 +1281,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             BusStop stop = getItem(position);
 
             // If a view already exists then reuse it.
@@ -1285,13 +1292,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 convertView = inflater.inflate(R.layout.list_item_nearest_stop, parent, false);
             }
 
-            TextView textName = (TextView)convertView.findViewById(R.id.textName);
-            TextView textBearing = (TextView)convertView.findViewById(R.id.textBearing);
-            TextView textDistance = (TextView)convertView.findViewById(R.id.textDistance);
-            ImageView imageLocation = (ImageView)convertView.findViewById(R.id.imageLocation);
-            ImageView imageFavourite = (ImageView)convertView.findViewById(R.id.imageFavourite);
+            TextView textName = convertView.findViewById(R.id.textName);
+            TextView textBearing = convertView.findViewById(R.id.textBearing);
+            TextView textDistance = convertView.findViewById(R.id.textDistance);
+            ImageView imageLocation = convertView.findViewById(R.id.imageLocation);
+            ImageView imageFavourite = convertView.findViewById(R.id.imageFavourite);
 
-            textName.setText(stop.getName());
+            textName.setText(Objects.requireNonNull(stop).getName());
             textBearing.setText(getString(R.string.bearing_brackets, stop.getBearing()));
             textDistance.setText(getString(R.string.text_nearest_distance, stop.getDistance()));
 
@@ -1315,8 +1322,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             FavouriteStop stop = getItem(position);
 
             // If a view already exists then reuse it.
@@ -1325,28 +1333,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 convertView = inflater.inflate(R.layout.list_item_favourite, parent, false);
 
                 // Only do this once when the view is inflated.
-                ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
+                ImageButton buttonDelete = convertView.findViewById(R.id.buttonDelete);
                 buttonDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         int position = (int)v.getTag(); // Get position from tag.
                         FavouriteStop stop = getItem(position);
 
-                        Log.d(LOG_TAG, "removing favourite stop: " + stop.getName());
+                        Log.d(LOG_TAG, "removing favourite stop: " + Objects.requireNonNull(stop).getName());
 
                         removeFavouriteStop(stop);
                     }
                 });
             }
 
-            TextView textName = (TextView)convertView.findViewById(R.id.textName);
-            textName.setText(stop.getName());
+            TextView textName = convertView.findViewById(R.id.textName);
+            textName.setText(Objects.requireNonNull(stop).getName());
 
-            TextView textBearing = (TextView)convertView.findViewById(R.id.textBearing);
+            TextView textBearing = convertView.findViewById(R.id.textBearing);
             textBearing.setText(getString(R.string.bearing_brackets, stop.getBearing()));
 
             // We use tag to store the position so we can retrieve it later.
-            ImageButton buttonDelete = (ImageButton)convertView.findViewById(R.id.buttonDelete);
+            ImageButton buttonDelete = convertView.findViewById(R.id.buttonDelete);
             buttonDelete.setTag(position);
 
             return convertView;
@@ -1355,7 +1363,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         public void remove(String atcoCode) {
             for (int i = 0; i < getCount(); i++) {
                 FavouriteStop favourite = getItem(i);
-                if (favourite.getAtcoCode().equals(atcoCode)) {
+                if (Objects.requireNonNull(favourite).getAtcoCode().equals(atcoCode)) {
                     remove(favourite);
                     break;
                 }
