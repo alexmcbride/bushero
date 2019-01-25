@@ -57,8 +57,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int LOCATION_UPDATE_INTERVAL = 30000; // ms
     private static final int MIN_DISTANCE = 45; // metres
     private static final int UPDATE_CHECK_INTERVAL = 10000; // ms.
-    private static final String[] OPERATOR_COLORS = {"ic_bus_purple", "ic_bus_red", "ic_bus_green", "ic_bus_blue", "ic_bus_yellow"};
-    private static final String DEFAULT_OPERATOR_COLOR = "ic_bus_black";
 
     // Widgets
     private DrawerLayout mLayoutDrawer;
@@ -97,8 +95,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mPendingLongitude;
     private double mPendingLatitude;
     private boolean mIsShowingUpdateMessage;
-    private List<OperatorColor> mOperatorColors;
     private SwipeRefreshLayout mSwipeContainer;
+    private OperatorHandler mOperatorHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -204,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 getResources().getString(R.string.appId));
 
         // get operator colors;
-        mOperatorColors = mBusDatabase.getOperatorColors();
+        mOperatorHandler = new OperatorHandler(mBusDatabase);
 
         // Check if we need to get info from preferences or if we are restoring from instance state.
         long nearestStopsId;
@@ -936,47 +934,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private OperatorColor getOperatorColor(String operator) {
-        // find existing color for operator
-        for (OperatorColor color : mOperatorColors) {
-            if (color.getName().equals(operator)) {
-                return color;
-            }
-        }
-
-        // create new color and add to DB
-        String unusedColor = getUnusedColor();
-        OperatorColor color = new OperatorColor();
-        color.setName(operator);
-        color.setColor(unusedColor);
-        mBusDatabase.addOperatorColor(color);
-        mOperatorColors.add(color);
-
-        return color;
-    }
-
-    private String getUnusedColor() {
-        // loop through operator colours looking for one that's unused.
-        for (String color : OPERATOR_COLORS) {
-            boolean found = false;
-
-            for (OperatorColor operator : mOperatorColors) {
-                if (operator.getColor().equals(color)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            // if not found then return that colour
-            if (!found) {
-                return color;
-            }
-        }
-
-        // all colours used so return default.
-        return DEFAULT_OPERATOR_COLOR;
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
@@ -1245,7 +1202,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             // get operator color.
             if (bus.getOperator() != null && (mLastColor == null || !mLastColor.getName().equals(bus.getOperator()))) {
-                mLastColor = getOperatorColor(bus.getOperator());
+                mLastColor = mOperatorHandler.getColor(bus.getOperator());
                 mLastResource = getResources().getIdentifier(mLastColor.getColor(), "drawable", getPackageName());
             }
             imageBus.setImageResource(mLastResource);
