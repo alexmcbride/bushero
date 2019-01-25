@@ -37,7 +37,7 @@ public class BusDatabase {
             db = helper.getReadableDatabase();
 
             // Query DB for nearest stop info and bus stops in a single query.
-            String sql = "SELECT * FROM " + NearestBusStopsTable.NAME  + " AS n" +
+            String sql = "SELECT * FROM " + NearestBusStopsTable.NAME + " AS n" +
                     " JOIN " + BusStopTable.NAME + " AS b" +
                     " ON n." + NearestBusStopsTable.Columns.ID +
                     "=b." + BusStopTable.Columns.NEAREST_BUS_STOPS_ID +
@@ -72,8 +72,7 @@ public class BusDatabase {
 
             // ain't no records.
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -103,8 +102,7 @@ public class BusDatabase {
                 long stopId = db.insert(BusStopTable.NAME, null, values);
                 stop.setId(stopId); // set bus stop id.
             }
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -131,8 +129,7 @@ public class BusDatabase {
                         BusTable.Columns.BUS_STOP_ID + "=?",
                         new String[]{Long.toString(busStopId)},
                         null, null, null);
-            }
-            else if (favouriteStopId > 0) {
+            } else if (favouriteStopId > 0) {
                 // query DB for buses.
                 cursor = db.query(
                         BusTable.NAME,
@@ -157,8 +154,7 @@ public class BusDatabase {
             }
 
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -183,8 +179,7 @@ public class BusDatabase {
                 long id = db.insert(BusTable.NAME, null, values);
                 bus.setId(id); // set new row id for this bus.
             }
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -202,18 +197,16 @@ public class BusDatabase {
                 Log.d("BusDatabase", "deleteing live buses for bus stop id: " + busStopId);
 
                 db.delete(BusTable.NAME,
-                    BusTable.Columns.BUS_STOP_ID + "=?",
-                    new String[]{Long.toString(busStopId)});
-            }
-            else if (favouriteStopId > 0) {
+                        BusTable.Columns.BUS_STOP_ID + "=?",
+                        new String[]{Long.toString(busStopId)});
+            } else if (favouriteStopId > 0) {
                 Log.d("BusDatabase", "deleteing live buses for favourite stop id: " + favouriteStopId);
 
                 db.delete(BusTable.NAME,
-                    BusTable.Columns.FAVOURITE_STOP_ID + "=?",
-                    new String[]{Long.toString(favouriteStopId)});
+                        BusTable.Columns.FAVOURITE_STOP_ID + "=?",
+                        new String[]{Long.toString(favouriteStopId)});
             }
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -248,8 +241,7 @@ public class BusDatabase {
                 while (busCursor.moveToNext());
             }
             return routes;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -287,8 +279,7 @@ public class BusDatabase {
             }
 
             return route;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -315,8 +306,7 @@ public class BusDatabase {
                 long busStopId = db.insert(BusStopTable.NAME, null, values);
                 stop.setId(busStopId);
             }
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -354,8 +344,7 @@ public class BusDatabase {
             rows += db.delete(BusRouteTable.NAME, BusRouteTable.Columns.REQUEST_TIME + "<?", whereArgs);
 
             return rows;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -386,8 +375,7 @@ public class BusDatabase {
             }
 
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -418,8 +406,7 @@ public class BusDatabase {
             }
 
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -454,8 +441,7 @@ public class BusDatabase {
             }
 
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -474,8 +460,7 @@ public class BusDatabase {
             ContentValues values = getContentValues(stop);
             long id = db.insert(FavouriteStopTable.NAME, null, values);
             stop.setId(id); // update stop with its new db id.
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -503,8 +488,7 @@ public class BusDatabase {
             }
 
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -537,8 +521,7 @@ public class BusDatabase {
             }
 
             return null;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -555,9 +538,8 @@ public class BusDatabase {
 
             db.delete(FavouriteStopTable.NAME,
                     BusRouteTable.Columns.ID + "=?",
-                    new String[] { Long.toString(stop.getId()) });
-        }
-        finally {
+                    new String[]{Long.toString(stop.getId())});
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -584,8 +566,7 @@ public class BusDatabase {
                 while (cursor.moveToNext());
             }
             return colors;
-        }
-        finally {
+        } finally {
             if (cursor != null) cursor.close();
             if (db != null) db.close();
             if (helper != null) helper.close();
@@ -600,8 +581,7 @@ public class BusDatabase {
             helper = new BusDbHelper(mContext);
             db = helper.getWritableDatabase();
             db.insert(OperatorColorTable.NAME, null, getContentValues(color));
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }
@@ -620,8 +600,7 @@ public class BusDatabase {
             db.execSQL("DELETE FROM " + BusTable.NAME + ";");
             db.execSQL("DELETE FROM " + BusStopTable.NAME + ";");
             db.execSQL("DELETE FROM " + NearestBusStopsTable.NAME + ";");
-        }
-        finally {
+        } finally {
             if (db != null) db.close();
             if (helper != null) helper.close();
         }

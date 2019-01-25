@@ -71,8 +71,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // check if we're showing a location or choosing one.
         if (mChooseLocation) {
             textBusStopName.setText(R.string.text_choose_location);
-        }
-        else {
+        } else {
             textBusStopName.setText(name);
         }
     }
@@ -83,8 +82,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // add event you location drag event.
         googleMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-            @Override public void onMarkerDragStart(Marker marker) {}
-            @Override public void onMarkerDrag(Marker marker) {}
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+            }
 
             @Override
             public void onMarkerDragEnd(final Marker marker) {
@@ -148,8 +152,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                         .title(getString(R.string.marker_you)));
             }
-        }
-        catch (SecurityException e) {
+        } catch (SecurityException e) {
             Toast.makeText(this, R.string.error_permissions, Toast.LENGTH_SHORT).show();
         }
     }

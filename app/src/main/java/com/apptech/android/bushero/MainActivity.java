@@ -133,8 +133,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 String atcoCode;
                 if (mFavouriteStop == null) {
                     atcoCode = Objects.requireNonNull(stop).getAtcoCode();
-                }
-                else {
+                } else {
                     atcoCode = mFavouriteStop.getAtcoCode();
                 }
 
@@ -170,17 +169,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             private boolean mIsClosed = true;
 
             @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {}
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
 
-            @Override public void onDrawerOpened(View drawerView) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
                 mIsClosed = false;
             }
 
-            @Override public void onDrawerClosed(View drawerView) {
+            @Override
+            public void onDrawerClosed(View drawerView) {
                 mIsClosed = true;
             }
 
-            @Override public void onDrawerStateChanged(int newState) {
+            @Override
+            public void onDrawerStateChanged(int newState) {
                 if (mIsClosed && newState == DrawerLayout.STATE_DRAGGING) {
                     updateDrawerState();
                 }
@@ -218,8 +221,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mLastLatitude = Double.longBitsToDouble(preferences.getLong(SAVED_LAST_LATITUDE, 0));
 
             Log.d(LOG_TAG, "got nearest stops id (" + nearestStopsId + ") from preferences");
-        }
-        else {
+        } else {
             mCurrentPosition = savedInstanceState.getInt(SAVED_CURRENT_POSITION);
             nearestStopsId = savedInstanceState.getLong(SAVED_NEAREST_STOP_ID, -1);
             mLastLongitude = savedInstanceState.getDouble(SAVED_LAST_LONGITUDE);
@@ -310,8 +312,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mNearestStopsAdapter == null) {
             mNearestStopsAdapter = new NearestStopsAdapter(MainActivity.this, mNearestBusStops.getStops());
             mListNearest.setAdapter(mNearestStopsAdapter);
-        }
-        else {
+        } else {
             // Adapter exists already so just update it.
             mNearestStopsAdapter.clear();
             mNearestStopsAdapter.addAll(mNearestBusStops.getStops());
@@ -334,8 +335,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             // Start checking to see if live bus updates are available.
             startUpdateTask();
-        }
-        else {
+        } else {
             instance.getErrorDialog(this, error, 1).show();
         }
     }
@@ -471,8 +471,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     mUpdateSnackbar.show();
                     mIsShowingUpdateMessage = true;
                 }
-            }
-            finally {
+            } finally {
                 // TODO: handler.sendMessageAtTime()????
                 // Schedule next time this method should be run.
                 mUpdateHandler.postDelayed(mUpdateChecker, UPDATE_CHECK_INTERVAL);
@@ -497,12 +496,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mFavouriteStop != null) {
             atcoCode = mFavouriteStop.getAtcoCode();
             favouriteStopId = mFavouriteStop.getId();
-        }
-        else if (busStop != null) {
+        } else if (busStop != null) {
             atcoCode = busStop.getAtcoCode();
             busStopId = busStop.getId();
-        }
-        else {
+        } else {
             return;
         }
 
@@ -537,8 +534,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             //todo: fix this as it's now deprecated!
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
-        }
-        else {
+        } else {
             // Request permission to use location from user. This is answered in the method
             // onRequestPermissionsResult.
             ActivityCompat.requestPermissions(
@@ -560,8 +556,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mNearestBusStops == null) {
             Log.d(LOG_TAG, "nearest stops is null");
             changeLocation(longitude, latitude);
-        }
-        else {
+        } else {
             // Check to see how far the user has moved since last update.
             float distance = getDistanceSinceLastUpdate(longitude, latitude);
             Log.d(LOG_TAG, "distance:" + distance);
@@ -570,7 +565,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 mPendingLongitude = longitude;
                 mPendingLatitude = latitude;
                 mButtonLocation.setVisibility(View.VISIBLE);
-                mTextLocationDistance.setText(getString(R.string.text_nearest_distance, (int)distance));
+                mTextLocationDistance.setText(getString(R.string.text_nearest_distance, (int) distance));
             }
         }
     }
@@ -591,8 +586,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     // Yes, we have permission, try and update location again.
                     Log.d(LOG_TAG, "permission granted");
                     startLocationUpdates();
-                }
-                else {
+                } else {
                     Log.d(LOG_TAG, "location permission refused :(");
                     new AlertDialog.Builder(this).
                             setMessage("This app requires location permission to work").
@@ -676,19 +670,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     favourite.setLatitude(stop.getLatitude());
 
                     addStopToFavourites(favourite);
-                }
-                else {
+                } else {
                     // remove from favourites.
                     removeFavouriteStop(favourite);
                 }
             }
-        }
-        else {
+        } else {
             // check if currently viewed favourite stop is in favourites list.
             if (mBusDatabase.hasFavouriteStop(mFavouriteStop.getAtcoCode())) {
                 removeFavouriteStop(mFavouriteStop);
-            }
-            else {
+            } else {
                 addStopToFavourites(mFavouriteStop);
             }
         }
@@ -787,8 +778,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mTextDistance.setText(getString(R.string.bus_stop_distance, busStop.getDistance()));
             mTextBearing.setText(TextHelper.getBearing(busStop.getBearing()));
             mTextLocality.setText(busStop.getLocality());
-        }
-        else {
+        } else {
             Log.d(LOG_TAG, "loading favourite stop");
 
             // we calculate the distance ourselves.
@@ -810,8 +800,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Download live bus data on background thread so as not to hang the main UI while the
             // potentially long network operation completes.
             new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
-        }
-        else {
+        } else {
             // Check we have a bus stop already in our live buses.
             Bus bus = mLiveBuses.getBus(0);
             if (bus != null) {
@@ -819,8 +808,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (bus.isDepartureDue()) {
                     Log.d(LOG_TAG, "live buses from the db is out of date (" + bus.getBestDepartureEstimate() + ") - getting fresh info.");
                     new UpdateBusesAsyncTask(atcoCode, busStopId, favouriteStopId).execute();
-                }
-                else {
+                } else {
                     // We're good to go, lets use what we got from the DB.
                     updateBuses();
 
@@ -849,8 +837,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mBusAdapter == null) {
             mBusAdapter = new BusAdapter(this, mLiveBuses.getBuses());
             mListBuses.setAdapter(mBusAdapter);
-        }
-        else {
+        } else {
             mBusAdapter.updateBuses(mLiveBuses.getBuses());
         }
 
@@ -858,16 +845,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // Show/hide nearer button.
             if (mCurrentPosition == 0 || mFavouriteStop != null) {
                 mButtonNearer.setVisibility(View.GONE);
-            }
-            else {
+            } else {
                 mButtonNearer.setVisibility(View.VISIBLE);
             }
 
             // Show/hide further button.
             if ((mCurrentPosition == mNearestBusStops.getStopCount() - 1) || mFavouriteStop != null) {
                 mButtonFurther.setVisibility(View.GONE);
-            }
-            else {
+            } else {
                 mButtonFurther.setVisibility(View.VISIBLE);
             }
         }
@@ -881,8 +866,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             if (mFavouriteStop == null) {
                 busStopId = Objects.requireNonNull(getCurrentBusStop()).getId();
-            }
-            else {
+            } else {
                 favouriteStopId = mFavouriteStop.getId();
             }
 
@@ -895,8 +879,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Show progress dialog if it doesn't exist, if it does then change the message.
         if (mProgressDialog == null) {
             mProgressDialog = ProgressDialog.show(this, getString(R.string.progress_title), getString(resid), true);
-        }
-        else if (mProgressDialog.isShowing()){
+        } else if (mProgressDialog.isShowing()) {
             mProgressDialog.setMessage(getString(resid));
         }
     }
@@ -924,8 +907,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             if (mFavouriteStop == null) {
                 busStopId = Objects.requireNonNull(getCurrentBusStop()).getId();
-            }
-            else {
+            } else {
                 favouriteStopId = mFavouriteStop.getId();
             }
 
@@ -988,15 +970,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         protected NearestBusStops doInBackground(Double[] params) {
-           try {
-               mLongitude = params[0];
-               mLatitude = params[1];
+            try {
+                mLongitude = params[0];
+                mLatitude = params[1];
 
                 // Get nearest stops from Transport API.
                 Log.d(LOG_TAG, "fetching nearest bus stops");
                 return mTransportClient.getNearestBusStops(mLongitude, mLatitude);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // can't really handle exception on background thread so store it for later.
                 mException = e;
                 return null;
@@ -1037,15 +1018,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (mAtcoCode == null) {
                     Log.d(LOG_TAG, "no ATCO code, current position 0");
                     mCurrentPosition = 0;
-                }
-                else {
+                } else {
                     Log.d(LOG_TAG, "existing ATCO code: " + mAtcoCode);
                     int position = result.getStopPosition(mAtcoCode);
                     Log.d(LOG_TAG, "current position: " + mCurrentPosition);
                     if (position > -1) {
                         mCurrentPosition = position;
-                    }
-                    else {
+                    } else {
                         mCurrentPosition = 0;
                     }
                 }
@@ -1060,14 +1039,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     // If there are no stops no other action will be performed, so hide the process
                     // dialog here.
                     dismissProgressDialog();
-                }
-                else {
+                } else {
                     // Update the activity for this bus stop.
                     Log.d(LOG_TAG, "updating bus stop info");
                     updateBusStop();
                 }
-            }
-            finally {
+            } finally {
                 // No longer updating.
                 mIsChangingLocation = false;
                 dismissProgressDialog();
@@ -1112,8 +1089,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(LOG_TAG, "fetching live buses");
             try {
                 return mTransportClient.getLiveBuses(mAtcoCode);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 mException = e;
                 return null;
             }
@@ -1140,8 +1116,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 mLiveBuses = result; // need this later.
 
                 updateBuses(); // Update buses UI for the activity.
-            }
-            finally {
+            } finally {
                 // Dismiss progress dialog and set flag as not updating.
                 mIsUpdatingLiveBuses = false;
                 mSwipeContainer.setRefreshing(false);
@@ -1276,7 +1251,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 buttonDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        int position = (int)v.getTag(); // Get position from tag.
+                        int position = (int) v.getTag(); // Get position from tag.
                         FavouriteStop stop = getItem(position);
 
                         Log.d(LOG_TAG, "removing favourite stop: " + Objects.requireNonNull(stop).getName());

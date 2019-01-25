@@ -36,8 +36,7 @@ public class DepartureTimeParser {
                     now.set(Calendar.YEAR, year);
                     now.set(Calendar.MONTH, month);
                     now.set(Calendar.DAY_OF_MONTH, day);
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     // well, let's just not do that then...
                 }
             }

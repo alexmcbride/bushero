@@ -62,15 +62,23 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
                 if (mRouteAdatper == null) {
                     mRouteAdatper = new BusRouteArrayAdapter(RouteActivity.this, routes);
                     mListRoutes.setAdapter(mRouteAdatper);
-                }
-                else {
+                } else {
                     mRouteAdatper.clear();
                     mRouteAdatper.addAll(routes);
                 }
             }
-            @Override public void onDrawerOpened(View drawerView) {}
-            @Override public void onDrawerClosed(View drawerView) {}
-            @Override public void onDrawerStateChanged(int newState) {}
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
         });
 
         // handle route list
@@ -92,8 +100,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
             Intent intent = getIntent();
             busId = intent.getLongExtra(KEY_BUS_ID, -1);
             mAtcoCode = intent.getStringExtra(KEY_ATCOCODE);
-        }
-        else {
+        } else {
             busId = savedInstanceState.getLong(SAVED_BUS_ID);
             mAtcoCode = savedInstanceState.getString(SAVED_ATCOCODE);
         }
@@ -120,8 +127,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
         if (mBusRoute == null) {
             Log.d(LOG_TAG, "no route in DB, starting async download task.");
             new DownloadRouteAsyncTask().execute();
-        }
-        else {
+        } else {
             Log.d(LOG_TAG, "updating route from DB");
             updateBusRoute();
         }
@@ -197,8 +203,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
                         mAtcoCode,
                         mBus.getDate(),
                         mBus.getBestDepartureEstimate());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -220,8 +225,7 @@ public class RouteActivity extends AppCompatActivity implements AdapterView.OnIt
                 mBusRoute = result;
 
                 updateBusRoute();
-            }
-            finally {
+            } finally {
                 dismissProgressDialog();
             }
         }

@@ -183,24 +183,21 @@ public class JsonObjectBuilder {
                     case "operator":
                         if (reader.peek() == JsonToken.NULL) {
                             reader.skipValue();
-                        }
-                        else {
+                        } else {
                             bus.setOperator(reader.nextString());
                         }
                         break;
                     case "aimed_departure_time":
                         if (reader.peek() == JsonToken.NULL) {
                             reader.skipValue();
-                        }
-                        else {
+                        } else {
                             bus.setAimedDepartureTime(reader.nextString());
                         }
                         break;
                     case "dir":
                         if (reader.peek() == JsonToken.NULL) {
                             reader.skipValue();
-                        }
-                        else {
+                        } else {
                             bus.setDirection(reader.nextString());
                         }
                         break;
@@ -216,8 +213,7 @@ public class JsonObjectBuilder {
                     case "expected_departure_time":
                         if (reader.peek() == JsonToken.NULL) {
                             reader.skipValue();
-                        }
-                        else {
+                        } else {
                             bus.setExpectedDepartureTime(reader.nextString());
                         }
                         break;
