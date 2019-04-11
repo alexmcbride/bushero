@@ -22,7 +22,10 @@ The app uses [Transport API](http://www.transportapi.com) for data, in order to 
 ```XML
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="apiKey" type="string"><API_KEY></item>
-    <item name="appId" type="string"><APP_ID></item>
+    <item name="apiKey" type="string">API_KEY</item>
+    <item name="appId" type="string">APP_ID</item>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+        GOOGLE_MAPS_KEY
+    </string>
 </resources>
 ```
